@@ -107,7 +107,7 @@ class ETAPI:
             "noteId": noteId,
             "branchId": branchId
         }
-        res = requests.post(url, data=format_query_string(params), headers=self.get_header())
+        res = requests.post(url, json=params, headers=self.get_header())
 
         return res.json()
 
@@ -118,7 +118,7 @@ class ETAPI:
             "type": type,
             "mime": mime,
         }
-        res = requests.patch(url, data=format_query_string(params), headers=self.get_header())
+        res = requests.patch(url, json=params, headers=self.get_header())
         return res.json()
 
     def delete_note(self, noteId: str):
@@ -159,7 +159,7 @@ class ETAPI:
             "isExpanded": isExpanded,
             "utcDateModified": utcDateModified
         }
-        res = requests.post(url, data=format_query_string(params), headers=self.get_header())
+        res = requests.post(url, json=params, headers=self.get_header())
         print(res.status_code)
         return res.json()
 
@@ -170,7 +170,7 @@ class ETAPI:
             "prefix": prefix,
             "isExpanded": isExpanded,
         }
-        res = requests.patch(url, data=format_query_string(params), headers=self.get_header())
+        res = requests.patch(url, json=params, headers=self.get_header())
         return res.json()
 
     def delete_branch(self, branchId: str):
@@ -195,7 +195,7 @@ class ETAPI:
             "value": value,
             "isInheritable": isInheritable,
         }
-        res = requests.post(url, data=format_query_string(params), headers=self.get_header())
+        res = requests.post(url, json=params, headers=self.get_header())
         print(res.status_code)
         return res.json()
 
@@ -204,7 +204,7 @@ class ETAPI:
         params = {
             "value": value,
         }
-        res = requests.patch(url, data=format_query_string(params), headers=self.get_header())
+        res = requests.patch(url, json=params, headers=self.get_header())
         return res.json()
 
     def delete_attribute(self, attributeId: str):

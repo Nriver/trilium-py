@@ -51,7 +51,7 @@ class ETAPI:
             return True
         return False
 
-    def search_notes(self, search, **params):
+    def search_note(self, search, **params):
         """
 
         :param search:
@@ -65,46 +65,143 @@ class ETAPI:
         res = requests.get(url, params=format_query_string(params), headers=self.get_header())
         return res.json()
 
-    def get_note(self, note_id):
+    def get_note(self, noteId):
         """
         get note by note id
         root note's id is just "root"
 
-        :param note_id:
+        :param noteId:
         :return:
         """
-        url = f'{self.server_url}/etapi/notes/{note_id}'
+        url = f'{self.server_url}/etapi/notes/{noteId}'
         res = requests.get(url, headers=self.get_header())
         return res.json()
 
-    def create_note(self, parent_note_id, title, type, mime, content, note_position, prefix, is_expanded, note_id,
-                    branch_id):
+    def create_note(self, parentNoteId, title, type, mime, content, notePosition, prefix, isExpanded, noteId,
+                    branchId):
         """
-        If note_id already exists, the corresponding note will be updated
-        :param parent_note_id:
+        Actually it's create or update, if noteId already exists, the corresponding note will be updated
+        :param parentNoteId:
         :param title:
         :param type:
         :param mime:
         :param content:
-        :param note_position:
+        :param notePosition:
         :param prefix:
-        :param is_expanded:
-        :param note_id:
-        :param branch_id:
+        :param isExpanded:
+        :param noteId:
+        :param branchId:
         :return:
         """
         url = f'{self.server_url}/etapi/create-note'
         params = {
-            "parentNoteId": parent_note_id,
+            "parentNoteId": parentNoteId,
             "title": title,
             "type": type,
             # "mime": "application/json",
             "content": content,
-            # "notePosition": note_position,
+            # "notePosition": notePosition,
             # "prefix": prefix,
-            # "isExpanded": is_expanded,
-            "noteId": note_id,
-            "branchId": branch_id
+            # "isExpanded": isExpanded,
+            "noteId": noteId,
+            "branchId": branchId
         }
         res = requests.post(url, data=format_query_string(params), headers=self.get_header())
-        print(res.json())
+        return res.json()
+
+    def patch_note(self, noteId: str, title: str, type: str, mime: str):
+        url = f'{self.server_url}/etapi/notes/{noteId}'
+        params = {
+            "title": title,
+            "type": type,
+            "mime": mime,
+        }
+        res = requests.patch(url, data=format_query_string(params), headers=self.get_header())
+        return res.json()
+
+    def delete_note(self, noteId: str):
+        url = f'{self.server_url}/etapi/notes/{noteId}'
+        res = requests.delete(url, headers=self.get_header())
+        if res.status_code == 204:
+            return True
+        return False
+
+    def get_branch(self, branchId):
+        url = f'{self.server_url}/etapi/branches/{branchId}'
+        res = requests.get(url, headers=self.get_header())
+        return res.json()
+
+    def create_branch(self, branchId, noteId, parentNoteId, prefix, notePosition, isExpanded, utcDateModified):
+        # url = f'{self.server_url}/etapi/branches/{branchId}'
+        url = f'{self.server_url}/etapi/branches/'
+        params = {
+            "branchId": branchId,
+            "noteId": noteId,
+            "parentNoteId": parentNoteId,
+            "prefix": prefix,
+            # "notePosition": notePosition,
+            # "isExpanded": isExpanded,
+            "utcDateModified": utcDateModified
+        }
+        res = requests.post(url, data=format_query_string(params), headers=self.get_header())
+        print(res.status_code)
+        return res.json()
+
+    def patch_branch(self, branchId, notePosition, prefix, isExpanded):
+        url = f'{self.server_url}/etapi/branches/{branchId}'
+        params = {
+            # "notePosition": notePosition,
+            "prefix": prefix,
+            # "isExpanded": isExpanded,
+        }
+        res = requests.patch(url, data=format_query_string(params), headers=self.get_header())
+        return res.json()
+
+    def delete_branch(self, branchId: str):
+        url = f'{self.server_url}/etapi/branches/{branchId}'
+        res = requests.delete(url, headers=self.get_header())
+        if res.status_code == 204:
+            return True
+        return False
+
+    def get_attribute(self, attributeId):
+        url = f'{self.server_url}/etapi/attributes/{attributeId}'
+        res = requests.get(url, headers=self.get_header())
+        return res.json()
+
+    def create_attribute(self, attributeId, noteId, type, name, value, isInheritable):
+        # url = f'{self.server_url}/etapi/attributes/{attributeId}'
+        url = f'{self.server_url}/etapi/attributes/'
+        params = {
+            "attributeId": attributeId,
+            "noteId": noteId,
+            "type": type,
+            "name": name,
+            "value": value,
+            # "isInheritable": isInheritable,
+        }
+        res = requests.post(url, data=format_query_string(params), headers=self.get_header())
+        print(res.status_code)
+        return res.json()
+
+    def patch_attribute(self, attributeId, value):
+        url = f'{self.server_url}/etapi/attributes/{attributeId}'
+        params = {
+            "value": value,
+        }
+        res = requests.patch(url, data=format_query_string(params), headers=self.get_header())
+        return res.json()
+
+    def delete_attribute(self, attributeId: str):
+        url = f'{self.server_url}/etapi/attributes/{attributeId}'
+        res = requests.delete(url, headers=self.get_header())
+        if res.status_code == 204:
+            return True
+        return False
+
+    def refresh_note_ordering(self, parentNoteId):
+        url = f'{self.server_url}/etapi/refresh-note-ordering/{parentNoteId}'
+        res = requests.post(url, headers=self.get_header())
+        if res.status_code == 204:
+            return True
+        return False

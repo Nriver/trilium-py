@@ -205,3 +205,28 @@ class ETAPI:
         if res.status_code == 204:
             return True
         return False
+
+    def inbox(self, date):
+        url = f'{self.server_url}/etapi/inbox/{date}'
+        res = requests.get(url, headers=self.get_header())
+        return res.json()
+
+    def get_calendar_days(self, date):
+        url = f'{self.server_url}/etapi/calendar/days/{date}'
+        res = requests.get(url, headers=self.get_header())
+        return res.json()
+
+    def get_calendar_weeks(self, date):
+        url = f'{self.server_url}/etapi/calendar/weeks/{date}'
+        res = requests.get(url, headers=self.get_header())
+        return res.json()
+
+    def get_calendar_months(self, month):
+        url = f'{self.server_url}/etapi/calendar/months/{month}'
+        res = requests.get(url, headers=self.get_header())
+        return res.json()
+
+    def get_calendar_years(self, year):
+        url = f'{self.server_url}/etapi/calendar/years/{year}'
+        res = requests.get(url, headers=self.get_header())
+        return res.json()

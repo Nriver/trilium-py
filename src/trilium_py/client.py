@@ -77,8 +77,9 @@ class ETAPI:
         res = requests.get(url, headers=self.get_header())
         return res.json()
 
-    def create_note(self, parentNoteId, title, type, mime, content, notePosition, prefix, isExpanded, noteId,
-                    branchId):
+    def create_note(self, parentNoteId, title, type, mime=None, content=None, notePosition: int = None, prefix=None,
+                    isExpanded=None, noteId=None,
+                    branchId=None):
         """
         Actually it's create or update, if noteId already exists, the corresponding note will be updated
         :param parentNoteId:
@@ -98,18 +99,19 @@ class ETAPI:
             "parentNoteId": parentNoteId,
             "title": title,
             "type": type,
-            # "mime": "application/json",
+            "mime": mime,
             "content": content,
-            # "notePosition": notePosition,
-            # "prefix": prefix,
-            # "isExpanded": isExpanded,
+            "notePosition": notePosition,
+            "prefix": prefix,
+            "isExpanded": isExpanded,
             "noteId": noteId,
             "branchId": branchId
         }
         res = requests.post(url, data=format_query_string(params), headers=self.get_header())
+
         return res.json()
 
-    def patch_note(self, noteId: str, title: str, type: str, mime: str):
+    def patch_note(self, noteId: str, title: str = None, type: str = None, mime: str = None):
         url = f'{self.server_url}/etapi/notes/{noteId}'
         params = {
             "title": title,
@@ -126,12 +128,26 @@ class ETAPI:
             return True
         return False
 
+    def get_note_content(self, noteId):
+        url = f'{self.server_url}/etapi/notes/{noteId}/content'
+        res = requests.get(url, headers=self.get_header())
+        return res.content
+
+    def update_note_content(self, noteId, content):
+        """update note content"""
+        url = f'{self.server_url}/etapi/notes/{noteId}/content'
+        res = requests.put(url, data=content, headers={'content-type': 'text/plain', 'Authorization': self.token, })
+        print(res.text)
+        if res.status_code == 204:
+            return True
+        return False
+
     def get_branch(self, branchId):
         url = f'{self.server_url}/etapi/branches/{branchId}'
         res = requests.get(url, headers=self.get_header())
         return res.json()
 
-    def create_branch(self, branchId, noteId, parentNoteId, prefix, notePosition, isExpanded, utcDateModified):
+    def create_branch(self, branchId, noteId, parentNoteId, prefix, notePosition: int, isExpanded, utcDateModified):
         # url = f'{self.server_url}/etapi/branches/{branchId}'
         url = f'{self.server_url}/etapi/branches/'
         params = {
@@ -139,20 +155,20 @@ class ETAPI:
             "noteId": noteId,
             "parentNoteId": parentNoteId,
             "prefix": prefix,
-            # "notePosition": notePosition,
-            # "isExpanded": isExpanded,
+            "notePosition": notePosition,
+            "isExpanded": isExpanded,
             "utcDateModified": utcDateModified
         }
         res = requests.post(url, data=format_query_string(params), headers=self.get_header())
         print(res.status_code)
         return res.json()
 
-    def patch_branch(self, branchId, notePosition, prefix, isExpanded):
+    def patch_branch(self, branchId, notePosition: int, prefix, isExpanded):
         url = f'{self.server_url}/etapi/branches/{branchId}'
         params = {
-            # "notePosition": notePosition,
+            "notePosition": notePosition,
             "prefix": prefix,
-            # "isExpanded": isExpanded,
+            "isExpanded": isExpanded,
         }
         res = requests.patch(url, data=format_query_string(params), headers=self.get_header())
         return res.json()
@@ -170,7 +186,6 @@ class ETAPI:
         return res.json()
 
     def create_attribute(self, attributeId, noteId, type, name, value, isInheritable):
-        # url = f'{self.server_url}/etapi/attributes/{attributeId}'
         url = f'{self.server_url}/etapi/attributes/'
         params = {
             "attributeId": attributeId,
@@ -178,7 +193,7 @@ class ETAPI:
             "type": type,
             "name": name,
             "value": value,
-            # "isInheritable": isInheritable,
+            "isInheritable": isInheritable,
         }
         res = requests.post(url, data=format_query_string(params), headers=self.get_header())
         print(res.status_code)

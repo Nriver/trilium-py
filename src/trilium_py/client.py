@@ -1,6 +1,6 @@
 import requests
 
-from .utils.url_util import format_query_string
+from .utils.param_util import format_query_string, clean_param
 
 
 class ETAPI:
@@ -96,6 +96,7 @@ class ETAPI:
         :return:
         """
         url = f'{self.server_url}/etapi/create-note'
+
         params = {
             "parentNoteId": parentNoteId,
             "title": title,
@@ -108,7 +109,7 @@ class ETAPI:
             "noteId": noteId,
             "branchId": branchId
         }
-        res = requests.post(url, json=params, headers=self.get_header())
+        res = requests.post(url, json=clean_param(params), headers=self.get_header())
 
         return res.json()
 
@@ -119,7 +120,7 @@ class ETAPI:
             "type": type,
             "mime": mime,
         }
-        res = requests.patch(url, json=params, headers=self.get_header())
+        res = requests.patch(url, json=clean_param(params), headers=self.get_header())
         return res.json()
 
     def delete_note(self, noteId: str) -> bool:
@@ -160,7 +161,7 @@ class ETAPI:
             "isExpanded": isExpanded,
             "utcDateModified": utcDateModified
         }
-        res = requests.post(url, json=params, headers=self.get_header())
+        res = requests.post(url, json=clean_param(params), headers=self.get_header())
         return res.json()
 
     def patch_branch(self, branchId: str, notePosition: int, prefix: str, isExpanded: bool) -> dict:
@@ -170,7 +171,7 @@ class ETAPI:
             "prefix": prefix,
             "isExpanded": isExpanded,
         }
-        res = requests.patch(url, json=params, headers=self.get_header())
+        res = requests.patch(url, json=clean_param(params), headers=self.get_header())
         return res.json()
 
     def delete_branch(self, branchId: str) -> bool:
@@ -196,7 +197,7 @@ class ETAPI:
             "value": value,
             "isInheritable": isInheritable,
         }
-        res = requests.post(url, json=params, headers=self.get_header())
+        res = requests.post(url, json=clean_param(params), headers=self.get_header())
         return res.json()
 
     def patch_attribute(self, attributeId: str, value: str) -> dict:
@@ -204,7 +205,7 @@ class ETAPI:
         params = {
             "value": value,
         }
-        res = requests.patch(url, json=params, headers=self.get_header())
+        res = requests.patch(url, json=clean_param(params), headers=self.get_header())
         return res.json()
 
     def delete_attribute(self, attributeId: str) -> bool:

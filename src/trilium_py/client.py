@@ -5,16 +5,16 @@ from .utils.url_util import format_query_string
 
 class ETAPI:
 
-    def __init__(self, server_url, token=None):
+    def __init__(self, server_url: str, token: str = None):
         self.server_url = server_url
         self.token = token
 
-    def get_header(self):
+    def get_header(self) -> dict:
         return {
             'Authorization': self.token,
         }
 
-    def login(self, password):
+    def login(self, password: str) -> str:
         """
         generate token with password
         """
@@ -30,7 +30,7 @@ class ETAPI:
             print(res.json()['message'])
             return None
 
-    def logout(self, token_to_destroy=None):
+    def logout(self, token_to_destroy: str = None) -> bool:
         """
         destroy token
         """
@@ -39,7 +39,7 @@ class ETAPI:
             token_to_destroy = self.token
 
         if not token_to_destroy:
-            return
+            return False
 
         url = f'{self.server_url}/etapi/auth/logout'
         headers = {
@@ -51,7 +51,7 @@ class ETAPI:
             return True
         return False
 
-    def search_note(self, search, **params):
+    def search_note(self, search: str, **params) -> dict:
         """
 
         :param search:
@@ -65,7 +65,7 @@ class ETAPI:
         res = requests.get(url, params=format_query_string(params), headers=self.get_header())
         return res.json()
 
-    def get_note(self, noteId):
+    def get_note(self, noteId: str) -> dict:
         """
         get note by note id
         root note's id is just "root"
@@ -77,9 +77,10 @@ class ETAPI:
         res = requests.get(url, headers=self.get_header())
         return res.json()
 
-    def create_note(self, parentNoteId, title, type, mime=None, content=None, notePosition: int = None, prefix=None,
-                    isExpanded=None, noteId=None,
-                    branchId=None):
+    def create_note(self, parentNoteId: str, title: str, type: str, mime: str = None, content=None,
+                    notePosition: int = None, prefix: str = None,
+                    isExpanded: str = None, noteId: str = None,
+                    branchId: str = None) -> dict:
         """
         Actually it's create or update, if noteId already exists, the corresponding note will be updated
         :param parentNoteId:
@@ -111,7 +112,7 @@ class ETAPI:
 
         return res.json()
 
-    def patch_note(self, noteId: str, title: str = None, type: str = None, mime: str = None):
+    def patch_note(self, noteId: str, title: str = None, type: str = None, mime: str = None) -> dict:
         url = f'{self.server_url}/etapi/notes/{noteId}'
         params = {
             "title": title,
@@ -121,33 +122,33 @@ class ETAPI:
         res = requests.patch(url, json=params, headers=self.get_header())
         return res.json()
 
-    def delete_note(self, noteId: str):
+    def delete_note(self, noteId: str) -> bool:
         url = f'{self.server_url}/etapi/notes/{noteId}'
         res = requests.delete(url, headers=self.get_header())
         if res.status_code == 204:
             return True
         return False
 
-    def get_note_content(self, noteId):
+    def get_note_content(self, noteId: str) -> str:
         url = f'{self.server_url}/etapi/notes/{noteId}/content'
         res = requests.get(url, headers=self.get_header())
-        return res.content
+        return res.content.decode('utf-8')
 
-    def update_note_content(self, noteId, content):
+    def update_note_content(self, noteId: str, content: str) -> bool:
         """update note content"""
         url = f'{self.server_url}/etapi/notes/{noteId}/content'
         res = requests.put(url, data=content, headers={'content-type': 'text/plain', 'Authorization': self.token, })
-        print(res.text)
         if res.status_code == 204:
             return True
         return False
 
-    def get_branch(self, branchId):
+    def get_branch(self, branchId: str) -> dict:
         url = f'{self.server_url}/etapi/branches/{branchId}'
         res = requests.get(url, headers=self.get_header())
         return res.json()
 
-    def create_branch(self, branchId, noteId, parentNoteId, prefix, notePosition: int, isExpanded, utcDateModified):
+    def create_branch(self, branchId: str, noteId: str, parentNoteId: str, prefix: str, notePosition: int,
+                      isExpanded: bool, utcDateModified) -> dict:
         # url = f'{self.server_url}/etapi/branches/{branchId}'
         url = f'{self.server_url}/etapi/branches/'
         params = {
@@ -160,10 +161,9 @@ class ETAPI:
             "utcDateModified": utcDateModified
         }
         res = requests.post(url, json=params, headers=self.get_header())
-        print(res.status_code)
         return res.json()
 
-    def patch_branch(self, branchId, notePosition: int, prefix, isExpanded):
+    def patch_branch(self, branchId: str, notePosition: int, prefix: str, isExpanded: bool) -> dict:
         url = f'{self.server_url}/etapi/branches/{branchId}'
         params = {
             "notePosition": notePosition,
@@ -173,19 +173,20 @@ class ETAPI:
         res = requests.patch(url, json=params, headers=self.get_header())
         return res.json()
 
-    def delete_branch(self, branchId: str):
+    def delete_branch(self, branchId: str) -> bool:
         url = f'{self.server_url}/etapi/branches/{branchId}'
         res = requests.delete(url, headers=self.get_header())
         if res.status_code == 204:
             return True
         return False
 
-    def get_attribute(self, attributeId):
+    def get_attribute(self, attributeId: str) -> dict:
         url = f'{self.server_url}/etapi/attributes/{attributeId}'
         res = requests.get(url, headers=self.get_header())
         return res.json()
 
-    def create_attribute(self, attributeId, noteId, type, name, value, isInheritable):
+    def create_attribute(self, attributeId: str, noteId: str, type: str, name: str, value: str,
+                         isInheritable: bool) -> dict:
         url = f'{self.server_url}/etapi/attributes/'
         params = {
             "attributeId": attributeId,
@@ -196,10 +197,9 @@ class ETAPI:
             "isInheritable": isInheritable,
         }
         res = requests.post(url, json=params, headers=self.get_header())
-        print(res.status_code)
         return res.json()
 
-    def patch_attribute(self, attributeId, value):
+    def patch_attribute(self, attributeId: str, value: str) -> dict:
         url = f'{self.server_url}/etapi/attributes/{attributeId}'
         params = {
             "value": value,
@@ -207,41 +207,41 @@ class ETAPI:
         res = requests.patch(url, json=params, headers=self.get_header())
         return res.json()
 
-    def delete_attribute(self, attributeId: str):
+    def delete_attribute(self, attributeId: str) -> bool:
         url = f'{self.server_url}/etapi/attributes/{attributeId}'
         res = requests.delete(url, headers=self.get_header())
         if res.status_code == 204:
             return True
         return False
 
-    def refresh_note_ordering(self, parentNoteId):
+    def refresh_note_ordering(self, parentNoteId: str) -> bool:
         url = f'{self.server_url}/etapi/refresh-note-ordering/{parentNoteId}'
         res = requests.post(url, headers=self.get_header())
         if res.status_code == 204:
             return True
         return False
 
-    def inbox(self, date):
+    def inbox(self, date: str) -> dict:
         url = f'{self.server_url}/etapi/inbox/{date}'
         res = requests.get(url, headers=self.get_header())
         return res.json()
 
-    def get_calendar_days(self, date):
+    def get_calendar_days(self, date: str) -> dict:
         url = f'{self.server_url}/etapi/calendar/days/{date}'
         res = requests.get(url, headers=self.get_header())
         return res.json()
 
-    def get_calendar_weeks(self, date):
+    def get_calendar_weeks(self, date: str):
         url = f'{self.server_url}/etapi/calendar/weeks/{date}'
         res = requests.get(url, headers=self.get_header())
         return res.json()
 
-    def get_calendar_months(self, month):
+    def get_calendar_months(self, month: str) -> dict:
         url = f'{self.server_url}/etapi/calendar/months/{month}'
         res = requests.get(url, headers=self.get_header())
         return res.json()
 
-    def get_calendar_years(self, year):
+    def get_calendar_years(self, year: str) -> dict:
         url = f'{self.server_url}/etapi/calendar/years/{year}'
         res = requests.get(url, headers=self.get_header())
         return res.json()

@@ -1,4 +1,7 @@
+from datetime import datetime
+
 import requests
+from bs4 import BeautifulSoup
 
 from .utils.param_util import format_query_string, clean_param
 
@@ -113,6 +116,51 @@ class ETAPI:
 
         return res.json()
 
+    # def create_image_note(self, parentNoteId: str, title: str, type: str, image_file: str, mime: str = None,
+    #                       content=None,
+    #                       notePosition: int = None, prefix: str = None,
+    #                       isExpanded: str = None, noteId: str = None,
+    #                       branchId: str = None):
+    #     # Not working
+    #
+    #     # Create a note
+    #     # set file name attribute
+    #     # Update its content
+    #
+    #     url = f'{self.server_url}/etapi/create-note'
+    #     print(image_file)
+    #     params = {
+    #         "parentNoteId": parentNoteId,
+    #         "title": title,
+    #         "type": type,
+    #         "mime": mime,
+    #         "content": "image",
+    #         "notePosition": notePosition,
+    #         "prefix": prefix,
+    #         "isExpanded": isExpanded,
+    #         "noteId": noteId,
+    #         "branchId": branchId
+    #     }
+    #     res = requests.post(url, json=clean_param(params), headers=self.get_header())
+    #     print(res)
+    #     new_noteId = res.json()['note']['noteId']
+    #
+    #     # set file name
+    #     image_file_name = os.path.basename(image_file)
+    #     self.create_attribute(attributeId=None, noteId=new_noteId, type='label', name='originalFileName',
+    #                           value=image_file_name, isInheritable=False)
+    #
+    #     # upload image, set note content
+    #     url = f'{self.server_url}/etapi/notes/{new_noteId}/content'
+    #     image_data = open(image_file, 'rb').read()
+    #     # content-type here will effect the result
+    #     # not working, encoding issue? automated force encoding to utf-8 and lost data
+    #     res = requests.put(url, data=image_data,
+    #                        headers={'content-type': 'text/plain', 'Authorization': self.token, })
+    #     if res.status_code == 204:
+    #         return True
+    #     return False
+
     def patch_note(self, noteId: str, title: str = None, type: str = None, mime: str = None) -> dict:
         url = f'{self.server_url}/etapi/notes/{noteId}'
         params = {
@@ -138,7 +186,8 @@ class ETAPI:
     def update_note_content(self, noteId: str, content: str) -> bool:
         """update note content"""
         url = f'{self.server_url}/etapi/notes/{noteId}/content'
-        res = requests.put(url, data=content, headers={'content-type': 'text/plain', 'Authorization': self.token, })
+        res = requests.put(url, data=content.encode('utf-8'),
+                           headers={'content-type': 'text/plain', 'Authorization': self.token})
         if res.status_code == 204:
             return True
         return False
@@ -246,3 +295,67 @@ class ETAPI:
         url = f'{self.server_url}/etapi/calendar/years/{year}'
         res = requests.get(url, headers=self.get_header())
         return res.json()
+
+    def get_today_note_content(self):
+        date = datetime.now().strftime("%Y-%m-%d")
+        url = f'{self.server_url}/etapi/calendar/days/{date}'
+        res = requests.get(url, headers=self.get_header())
+        noteId = res.json()['noteId']
+        content = self.get_note_content(noteId)
+        return content
+
+    def set_today_note_content(self, content):
+        date = datetime.now().strftime("%Y-%m-%d")
+        url = f'{self.server_url}/etapi/calendar/days/{date}'
+        res = requests.get(url, headers=self.get_header())
+        noteId = res.json()['noteId']
+        return self.update_note_content(noteId, content)
+
+    def get_todo(self):
+        """get today's todo list"""
+
+        content = self.get_today_note_content()
+        soup = BeautifulSoup(content, 'html.parser')
+        todo_labels = soup.find_all("label", {"class": "todo-list__label"})
+        todo_list = []
+        for x in todo_labels:
+            description = x.text.strip()
+            checked = x.find("input").get("checked")
+            if checked:
+                status = True
+            else:
+                status = False
+            todo_list.append([status, description])
+        # free mem
+        soup.decompose()
+        del soup
+        return todo_list
+
+    def todo_check(self, todo_index, check=True):
+        """check/uncheck a todo"""
+        content = self.get_today_note_content()
+        soup = BeautifulSoup(content, 'html.parser')
+        todo_labels = soup.find_all("label", {"class": "todo-list__label"})
+        try:
+            label = todo_labels[todo_index]
+            check_input = label.find("input")
+            if check:
+                check_input['checked'] = 'checked'
+            else:
+                del check_input['checked']
+
+            new_content = str(soup)
+            # free mem
+            soup.decompose()
+            del soup
+
+            return self.set_today_note_content(new_content)
+        except IndexError:
+            # free mem
+            soup.decompose()
+            del soup
+            return False
+
+    def todo_uncheck(self, todo_index):
+        """uncheck a todo"""
+        return self.todo_check(todo_index, check=False)

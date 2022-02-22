@@ -130,6 +130,22 @@ ea.todo_check(0)
 ea.todo_uncheck(1)
 ```
 
+## Update a TODO item
+
+Use `update_todo` to update a TODO item description at certain index.
+
+```
+ea.update_todo(0, "去码头整点薯条")
+```
+
+# Delete a TDOO item
+
+Remove a TODO item by its index.
+
+```
+ea.delete_todo(1)
+```
+
 # Develop
 
 Install with pip egg link to make package change without reinstall.

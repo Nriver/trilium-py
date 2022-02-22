@@ -364,7 +364,6 @@ class ETAPI:
         """append item to todo list"""
         try:
             content = self.get_today_note_content()
-            print(content)
             soup = BeautifulSoup(content, 'html.parser')
             todo_labels = soup.find_all("label", {"class": "todo-list__label"})
             # append todo item after last todo item
@@ -378,13 +377,13 @@ class ETAPI:
                 todo_item = BeautifulSoup(todo_item_html, 'html.parser')
                 soup.insert(0, todo_item)
             else:
-                last_todo = todo_labels[-1]
-                if not last_todo.text.strip():
-                    target_span = last_todo.find_next("span", {"class": "todo-list__label__description"})
+                last_todo_label = todo_labels[-1]
+                if not last_todo_label.text.strip():
+                    target_span = last_todo_label.find_next("span", {"class": "todo-list__label__description"})
                     target_span.string = todo_description
                 else:
                     todo_item = BeautifulSoup(todo_item_html, 'html.parser')
-                    last_todo.append(todo_item)
+                    last_todo_label.append(todo_item)
 
             new_content = str(soup)
             # free mem
@@ -395,4 +394,48 @@ class ETAPI:
 
         except Exception as e:
             print(e)
+            return False
+
+    def update_todo(self, todo_index, todo_description):
+        """update a todo item description"""
+        content = self.get_today_note_content()
+        soup = BeautifulSoup(content, 'html.parser')
+        todo_labels = soup.find_all("label", {"class": "todo-list__label"})
+        try:
+            todo_label = todo_labels[todo_index]
+            target_span = todo_label.find_next("span", {"class": "todo-list__label__description"})
+            target_span.string = todo_description
+            new_content = str(soup)
+            # free mem
+            soup.decompose()
+            del soup
+            return self.set_today_note_content(new_content)
+
+        except IndexError:
+            # free mem
+            soup.decompose()
+            del soup
+            return False
+
+    def delete_todo(self, todo_index):
+        """delete a todo item"""
+        content = self.get_today_note_content()
+        soup = BeautifulSoup(content, 'html.parser')
+        todo_labels = soup.find_all("label", {"class": "todo-list__label"})
+
+        try:
+            todo_label = todo_labels[todo_index]
+            # decompose parent <li> tag
+            todo_label.parent.decompose()
+            new_content = str(soup)
+
+            # free mem
+            soup.decompose()
+            del soup
+            return self.set_today_note_content(new_content)
+
+        except IndexError:
+            # free mem
+            soup.decompose()
+            del soup
             return False

@@ -111,6 +111,25 @@ Simply delete a note by id.
 ea.delete_note("note1")
 ```
 
+# TODO List
+
+## Add TODO item
+
+You can use `add_todo` to add a TODO item, param is the TODO description
+
+```
+ea.add_todo("买暖宝宝")
+```
+
+## Check/Uncheck a TODO item
+
+param is the index of the TODO item
+
+```
+ea.todo_check(0)
+ea.todo_uncheck(1)
+```
+
 # Develop
 
 Install with pip egg link to make package change without reinstall.

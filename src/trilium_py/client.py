@@ -359,3 +359,40 @@ class ETAPI:
     def todo_uncheck(self, todo_index):
         """uncheck a todo"""
         return self.todo_check(todo_index, check=False)
+
+    def add_todo(self, todo_description):
+        """append item to todo list"""
+        try:
+            content = self.get_today_note_content()
+            print(content)
+            soup = BeautifulSoup(content, 'html.parser')
+            todo_labels = soup.find_all("label", {"class": "todo-list__label"})
+            # append todo item after last todo item
+            # special case 1: no todo available, add it to the beginning of document
+            # special case 2: if last todo item is empty, update it
+
+            todo_item_html = f'''<li><label class="todo-list__label"><input type="checkbox"/><span class="todo-list__label__description">{todo_description}</span></label></li>'''
+
+            if not todo_labels:
+                todo_item_html = f'''<p>TODO:</p><ul class="todo-list">{todo_item_html}</ul>'''
+                todo_item = BeautifulSoup(todo_item_html, 'html.parser')
+                soup.insert(0, todo_item)
+            else:
+                last_todo = todo_labels[-1]
+                if not last_todo.text.strip():
+                    target_span = last_todo.find_next("span", {"class": "todo-list__label__description"})
+                    target_span.string = todo_description
+                else:
+                    todo_item = BeautifulSoup(todo_item_html, 'html.parser')
+                    last_todo.append(todo_item)
+
+            new_content = str(soup)
+            # free mem
+            soup.decompose()
+            del soup
+
+            return self.set_today_note_content(new_content)
+
+        except Exception as e:
+            print(e)
+            return False

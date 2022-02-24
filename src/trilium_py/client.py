@@ -362,6 +362,7 @@ class ETAPI:
 
     def add_todo(self, todo_description):
         """append item to todo list"""
+        todo_description = todo_description.strip()
         try:
             content = self.get_today_note_content()
             soup = BeautifulSoup(content, 'html.parser')
@@ -385,7 +386,6 @@ class ETAPI:
                     todo_item = BeautifulSoup(todo_item_html, 'html.parser')
                     todo_list_label = soup.find_all("ul", {"class": "todo-list"})[0]
                     todo_list_label.append(todo_item)
-
             new_content = str(soup)
             # free mem
             soup.decompose()
@@ -399,6 +399,7 @@ class ETAPI:
 
     def update_todo(self, todo_index, todo_description):
         """update a todo item description"""
+        todo_description = todo_description.strip()
         content = self.get_today_note_content()
         soup = BeautifulSoup(content, 'html.parser')
         todo_labels = soup.find_all("label", {"class": "todo-list__label"})

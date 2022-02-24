@@ -370,7 +370,7 @@ class ETAPI:
             # special case 1: no todo available, add it to the beginning of document
             # special case 2: if last todo item is empty, update it
 
-            todo_item_html = f'''<li><label class="todo-list__label"><input type="checkbox"/><span class="todo-list__label__description">{todo_description}</span></label></li>'''
+            todo_item_html = f'''<li><label class="todo-list__label"><input disabled="disabled" type="checkbox"/><span class="todo-list__label__description">{todo_description}</span></label></li>'''
 
             if not todo_labels:
                 todo_item_html = f'''<p>TODO:</p><ul class="todo-list">{todo_item_html}</ul>'''
@@ -383,7 +383,8 @@ class ETAPI:
                     target_span.string = todo_description
                 else:
                     todo_item = BeautifulSoup(todo_item_html, 'html.parser')
-                    last_todo_label.append(todo_item)
+                    todo_list_label = soup.find_all("ul", {"class": "todo-list"})[0]
+                    todo_list_label.append(todo_item)
 
             new_content = str(soup)
             # free mem

@@ -1,9 +1,8 @@
-from datetime import datetime
-
 import requests
 from bs4 import BeautifulSoup
 
 from .utils.param_util import format_query_string, clean_param
+from .utils.time_util import get_yesterday, get_today
 
 
 class ETAPI:
@@ -297,15 +296,34 @@ class ETAPI:
         return res.json()
 
     def get_today_note_content(self):
-        date = datetime.now().strftime("%Y-%m-%d")
+        date = get_today()
+        return self.get_day_note(date)
+
+    def set_today_note_content(self, content):
+        date = get_today()
+        return self.set_day_note(date, content)
+
+    def get_yesterday_note_content(self):
+        date = get_yesterday()
+        return self.get_day_note(date)
+
+    def set_yesterday_note_content(self, content):
+        date = get_yesterday()
+        return self.set_day_note(date, content)
+
+    def get_day_note(self, date):
+        """
+        get note content by date
+        :param date: date string in format of "%Y-%m-%d", e.g. 2022-02-25
+        :return:
+        """
         url = f'{self.server_url}/etapi/calendar/days/{date}'
         res = requests.get(url, headers=self.get_header())
         noteId = res.json()['noteId']
         content = self.get_note_content(noteId)
         return content
 
-    def set_today_note_content(self, content):
-        date = datetime.now().strftime("%Y-%m-%d")
+    def set_day_note(self, date, content):
         url = f'{self.server_url}/etapi/calendar/days/{date}'
         res = requests.get(url, headers=self.get_header())
         noteId = res.json()['noteId']
@@ -421,7 +439,15 @@ class ETAPI:
 
     def delete_todo(self, todo_index):
         """delete a todo item"""
-        content = self.get_today_note_content()
+        date = get_today()
+        self.delete_date_todo(date, todo_index)
+
+    def delete_yesterday_todo(self, todo_index):
+        date = get_yesterday()
+        self.delete_date_todo(date, todo_index)
+
+    def delete_date_todo(self, date, todo_index):
+        content = self.get_day_note(date)
         soup = BeautifulSoup(content, 'html.parser')
         todo_labels = soup.find_all("label", {"class": "todo-list__label"})
 
@@ -434,10 +460,52 @@ class ETAPI:
             # free mem
             soup.decompose()
             del soup
-            return self.set_today_note_content(new_content)
+            return self.set_day_note(date, new_content)
 
         except IndexError:
             # free mem
             soup.decompose()
             del soup
             return False
+
+    def get_yesterday_unfinished_todo(self):
+        content = self.get_yesterday_note_content()
+        soup = BeautifulSoup(content, 'html.parser')
+        todo_labels = soup.find_all("label", {"class": "todo-list__label"})
+        unfinished_todo_list = []
+        for x in todo_labels:
+            checked = x.find("input").get("checked")
+            if not checked:
+                description = x.text.strip()
+                unfinished_todo_list.append([False, description])
+        # free mem
+        soup.decompose()
+        del soup
+        return unfinished_todo_list
+
+    def move_yesterday_unfinished_todo_to_today(self):
+        content = self.get_yesterday_note_content()
+        soup = BeautifulSoup(content, 'html.parser')
+        todo_labels = soup.find_all("label", {"class": "todo-list__label"})
+        todo_indexes = []
+        todo_descriptions = []
+        for i, x in enumerate(todo_labels):
+            checked = x.find("input").get("checked")
+            if not checked:
+                description = x.text.strip()
+                if not description:
+                    # skip empty todos
+                    continue
+                todo_indexes.append(i)
+                todo_descriptions.append(description)
+
+        if not todo_descriptions:
+            return
+
+        # add todos to today
+        for description in todo_descriptions:
+            self.add_todo(description)
+
+        # remove todos from yesterday
+        for i in reversed(sorted(todo_indexes)):
+            self.delete_yesterday_todo(i)

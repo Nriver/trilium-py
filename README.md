@@ -8,9 +8,9 @@ Python client for ETAPI of Trilium Note.
 python3 -m pip install trilium-py --user
 ```
 
-# Usage
+# (Basic) Usage
 
-Down below are some simple example code to use this package.
+These are basic function that Trilium's ETAPI provides. Down below are some simple example code to use this package.
 
 ## initialize
 
@@ -111,7 +111,24 @@ Simply delete a note by id.
 ea.delete_note("note1")
 ```
 
-# TODO List
+## Day note
+
+You can get the content of a certain date with `get_day_note`. The date string should be in format of "%Y-%m-%d", e.g. "
+2022-02-25".
+
+```
+es.get_day_note("2022-02-25")
+```
+
+Then set/update a day note with `set_day_note`. The content should be a (html) string.
+
+```
+self.set_day_note(date, new_content)
+```
+
+# (Advanced Usage) TODO List
+
+With the power of Python, I have expanded the basic usage of ETAPI. You can do something with todo list now.
 
 ## Add TODO item
 
@@ -138,12 +155,21 @@ Use `update_todo` to update a TODO item description at certain index.
 ea.update_todo(0, "去码头整点薯条")
 ```
 
-# Delete a TDOO item
+## Delete a TDOO item
 
 Remove a TODO item by its index.
 
 ```
 ea.delete_todo(1)
+```
+
+## Move yesterday's unfinished todo to today
+
+As the title suggests, you can move yesterday's unfinished things to today. Unfinished todos will be deleted from
+yesterday's note.
+
+```
+ea.move_yesterday_unfinished_todo_to_today()
 ```
 
 # Develop

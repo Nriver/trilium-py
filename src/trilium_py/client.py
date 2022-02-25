@@ -314,7 +314,7 @@ class ETAPI:
     def get_day_note(self, date):
         """
         get note content by date
-        :param date: date string in format of "%Y-%m-%d", e.g. 2022-02-25
+        :param date: date string in format of "%Y-%m-%d", e.g. "2022-02-25"
         :return:
         """
         url = f'{self.server_url}/etapi/calendar/days/{date}'

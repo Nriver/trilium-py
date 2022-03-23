@@ -72,6 +72,18 @@ The `noteId` is not mandatory, if not provided, Trilium will generate a random o
 noteId = res['note']['noteId']
 ```
 
+## Create Image note
+
+You can create an image note with minimal information like this. The `image_file` refers to the path of image.
+
+```
+res = ea.create_image_note(
+    parentNoteId="root",
+    title="Image note 1",
+    image_file="shield.png",
+)
+```
+
 ## Get note
 
 To retrieve the note's content.

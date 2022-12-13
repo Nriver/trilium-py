@@ -165,10 +165,10 @@ class ETAPI:
             "noteId": noteId,
             "branchId": branchId
         }
-        res = requests.post(url, json=clean_param(params),
+        res_image = requests.post(url, json=clean_param(params),
                             headers={'content-type': 'application/json', 'Authorization': self.token, })
-
-        new_noteId = res.json()['note']['noteId']
+        res_image_json = res_image.json()
+        new_noteId = res_image_json['note']['noteId']
 
         # set file name
         image_file_name = os.path.basename(image_file)
@@ -178,7 +178,7 @@ class ETAPI:
         # upload image, set note content
         url = f'{self.server_url}/etapi/notes/{new_noteId}/content'
         image_data = open(image_file, 'rb').read()
-        # content-type here will effect the result
+        # content-type here will affect the result
         # not working, encoding issue? automated force encoding to utf-8 and lost data
         res = requests.put(url, data=image_data,
                            # headers={'content-type': 'text/plain', 'Authorization': self.token, })
@@ -188,8 +188,8 @@ class ETAPI:
                                'Authorization': self.token,
                            })
         if res.status_code == 204:
-            return True
-        return False
+            return res_image_json
+        return
 
     def patch_note(self, noteId: str, title: str = None, type: str = None, mime: str = None) -> dict:
         url = f'{self.server_url}/etapi/notes/{noteId}'

@@ -24,6 +24,7 @@ Python client for ETAPI of Trilium Note.
     * [Update a TODO item](#update-a-todo-item)
     * [Delete a TDOO item](#delete-a-tdoo-item)
     * [Move yesterday's unfinished todo to today](#move-yesterdays-unfinished-todo-to-today)
+* [(Advanced Usage) Upload markdown file with images](#advanced-usage-upload-markdown-file-with-images)
 * [Develop](#develop)
 * [Original OpenAPI Documentation](#original-openapi-documentation)
 

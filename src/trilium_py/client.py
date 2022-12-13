@@ -1,6 +1,8 @@
 import os
+import re
 
 import magic
+import markdown
 import requests
 from bs4 import BeautifulSoup
 
@@ -166,7 +168,7 @@ class ETAPI:
             "branchId": branchId
         }
         res_image = requests.post(url, json=clean_param(params),
-                            headers={'content-type': 'application/json', 'Authorization': self.token, })
+                                  headers={'content-type': 'application/json', 'Authorization': self.token, })
         res_image_json = res_image.json()
         new_noteId = res_image_json['note']['noteId']
 
@@ -540,3 +542,76 @@ class ETAPI:
         # remove todos from yesterday
         for i in reversed(sorted(todo_indexes)):
             self.delete_yesterday_todo(i)
+
+    def upload_md_file(self, file: str, parentNoteId: str):
+        md_file = os.path.abspath(file).replace('\\', '/').replace('//', '/')
+        md_full_name = os.path.basename(md_file)
+        md_name = md_full_name[:-3]
+        md_folder = os.path.dirname(md_file)
+        print(md_file)
+        # print(md_name)
+        # print(md_folder)
+
+        # convert md to html
+        with open(md_file, 'r', encoding='utf-8') as f:
+            content = f.read()
+            html = markdown.markdown(content)
+            # print(html)
+
+        # detect images
+        pat = '<img alt="(.*?)" src="(.*?)" />'
+        images = re.findall(pat, html)
+
+        if not images:
+            res = self.create_note(
+                parentNoteId=parentNoteId,
+                title=md_name,
+                type="text",
+                content=html,
+            )
+
+        else:
+            # images require manually upload and url need to be replaced
+            print('found images:')
+            print(images)
+
+            # create empty note, replace it later
+            res = self.create_note(
+                parentNoteId=parentNoteId,
+                title=md_name,
+                type="text",
+                content='importing...',
+            )
+            # print(res)
+
+            note_id = res['note']['noteId']
+            # print(note_id)
+
+            # process images
+            for image_name, image_path in images:
+                # absolute path
+                if image_path.startswith('http'):
+                    image_file_path = image_path
+                else:
+                    image_file_path = os.path.join(md_folder, image_path).replace('\\', '/')
+
+                if not image_name:
+                    # if image name is not specified, use file name
+                    image_name = os.path.basename(image_path)
+
+                res = self.create_image_note(
+                    parentNoteId=note_id,
+                    title=image_name,
+                    image_file=image_file_path,
+                )
+                # print(res)
+                image_url = f"api/images/{res['note']['noteId']}/{res['note']['title']}"
+                print(image_url)
+
+                html = html.replace(image_path, image_url)
+
+            # replace note content
+            res = self.update_note_content(note_id, html)
+            # print(res)
+
+            return res

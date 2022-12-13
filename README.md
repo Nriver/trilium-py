@@ -5,26 +5,28 @@ Python client for ETAPI of Trilium Note.
 # Toc
 
 <!--ts-->
+
 * [trilium-py](#trilium-py)
 * [Toc](#toc)
 * [Installation](#installation)
 * [(Basic) Usage](#basic-usage)
-   * [initialize](#initialize)
-   * [Search note](#search-note)
-   * [Create Note](#create-note)
-      * [Create Image note](#create-image-note)
-   * [Get note](#get-note)
-   * [Update note](#update-note)
-   * [Delete note](#delete-note)
-   * [Day note](#day-note)
+    * [initialize](#initialize)
+    * [Search note](#search-note)
+    * [Create Note](#create-note)
+        * [Create Image note](#create-image-note)
+    * [Get note](#get-note)
+    * [Update note](#update-note)
+    * [Delete note](#delete-note)
+    * [Day note](#day-note)
 * [(Advanced Usage) TODO List](#advanced-usage-todo-list)
-   * [Add TODO item](#add-todo-item)
-   * [Check/Uncheck a TODO item](#checkuncheck-a-todo-item)
-   * [Update a TODO item](#update-a-todo-item)
-   * [Delete a TDOO item](#delete-a-tdoo-item)
-   * [Move yesterday's unfinished todo to today](#move-yesterdays-unfinished-todo-to-today)
+    * [Add TODO item](#add-todo-item)
+    * [Check/Uncheck a TODO item](#checkuncheck-a-todo-item)
+    * [Update a TODO item](#update-a-todo-item)
+    * [Delete a TDOO item](#delete-a-tdoo-item)
+    * [Move yesterday's unfinished todo to today](#move-yesterdays-unfinished-todo-to-today)
 * [Develop](#develop)
 * [Original OpenAPI Documentation](#original-openapi-documentation)
+
 <!--te-->
 
 # Installation
@@ -208,6 +210,17 @@ yesterday's note.
 
 ```
 ea.move_yesterday_unfinished_todo_to_today()
+```
+
+# (Advanced Usage) Upload markdown file with images
+
+You can import markdown file with images into Trilium now!
+
+```
+res = ea.upload_md_file(
+    parentNoteId="root",
+    file="./md-demo/manjaro 修改caps lock.md",
+)
 ```
 
 # Develop

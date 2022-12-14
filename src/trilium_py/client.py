@@ -559,7 +559,7 @@ class ETAPI:
             # print(html)
 
         # detect images
-        pat = '<img alt="(.*?)" src="(.*?)" />'
+        pat = '<img (.*?) />'
         images = re.findall(pat, html)
 
         if not images:
@@ -588,7 +588,19 @@ class ETAPI:
             # print(note_id)
 
             # process images
-            for image_name, image_path in images:
+            for match in images:
+                # extract image url and name
+                image_names = re.findall('alt="(.*?)"', match)
+                image_paths = re.findall('src="(.*?)"', match)
+
+                if not image_paths:
+                    continue
+                image_path = image_paths[0]
+                if not image_names:
+                    image_name = ''
+                else:
+                    image_name = image_names[0]
+
                 # absolute path
                 if image_path.startswith('http'):
                     image_file_path = image_path

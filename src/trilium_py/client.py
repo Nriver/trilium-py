@@ -605,9 +605,20 @@ class ETAPI:
 
                 # absolute path
                 if image_path.startswith('http'):
-                    image_file_path = image_path
-                else:
-                    image_file_path = os.path.join(md_folder, image_path).replace('\\', '/')
+                    # skip online images
+                    continue
+
+                # fix vnote image with special size format
+                if ' ' in image_path and image_path.endswith('x'):
+                    image_path = image_path.split(' ')[0]
+
+                image_file_path = os.path.join(md_folder, image_path).replace('\\', '/')
+
+                # skip if path does not point to a valid file
+                if os.path.isdir(image_file_path):
+                    continue
+                if not os.path.exists(image_file_path):
+                    continue
 
                 if not image_name:
                     # if image name is not specified, use file name

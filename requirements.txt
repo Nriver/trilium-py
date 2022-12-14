@@ -1,4 +1,4 @@
 requests
 BeautifulSoup4
 python-magic
-markdown
+markdown2[all]

@@ -150,7 +150,8 @@ setup(
     #
     # For an analysis of "install_requires" vs pip's requirements files see:
     # https://packaging.python.org/discussions/install-requires-vs-requirements/
-    install_requires=['BeautifulSoup4', 'requests', 'python-magic', 'markdown'],  # Optional
+    install_requires=['BeautifulSoup4', 'requests', 'python-magic', 'markdown2[all]', 'natsort'],
+    # Optional
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). Users will be able to install these using the "extras"

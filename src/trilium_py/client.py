@@ -2,7 +2,7 @@ import os
 import re
 
 import magic
-import markdown
+import markdown2
 import requests
 from bs4 import BeautifulSoup
 
@@ -555,7 +555,9 @@ class ETAPI:
         # convert md to html
         with open(md_file, 'r', encoding='utf-8') as f:
             content = f.read()
-            html = markdown.markdown(content)
+            # extra format support
+            # https://github.com/trentm/python-markdown2/wiki/Extras
+            html = markdown2.markdown(content, extras=['fenced-code-blocks', 'strike', 'tables', 'task_list'])
             # print(html)
 
         # detect images

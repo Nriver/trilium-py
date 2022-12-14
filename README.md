@@ -24,7 +24,9 @@ Python client for ETAPI of Trilium Note.
     * [Update a TODO item](#update-a-todo-item)
     * [Delete a TDOO item](#delete-a-tdoo-item)
     * [Move yesterday's unfinished todo to today](#move-yesterdays-unfinished-todo-to-today)
-* [(Advanced Usage) Upload markdown file with images](#advanced-usage-upload-markdown-file-with-images)
+* [(Advanced Usage) Upload Markdown files](#advanced-usage-upload-markdown-files)
+    * [Upload single Markdown file with images](#upload-single-markdown-file-with-images)
+    * [Bulk upload Markdown files in a folder!](#bulk-upload-markdown-files-in-a-folder)
 * [Develop](#develop)
 * [Original OpenAPI Documentation](#original-openapi-documentation)
 
@@ -213,14 +215,31 @@ yesterday's note.
 ea.move_yesterday_unfinished_todo_to_today()
 ```
 
-# (Advanced Usage) Upload markdown file with images
+# (Advanced Usage) Upload Markdown files
 
-You can import markdown file with images into Trilium now!
+## Upload single Markdown file with images
+
+You can import Markdown file with images into Trilium now! Trilium-py will help you to upload the images and fix the
+links for you!
 
 ```
 res = ea.upload_md_file(
     parentNoteId="root",
     file="./md-demo/manjaro 修改caps lock.md",
+)
+```
+
+## Bulk upload Markdown files in a folder!
+
+You can upload a folder with lots of Markdown files to Trilium and preserve the folder structure!
+
+Say, upload all the notes from [VNote](https://github.com/vnotex/vnote), simply do this:
+
+```
+res = ea.upload_md_folder(
+    parentNoteId="root",
+    mdFolder="~/data/vnotebook/",
+    ignoreFolder=['vx_notebook', 'vx_recycle_bin', '_v_images'],
 )
 ```
 

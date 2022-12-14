@@ -630,10 +630,15 @@ class ETAPI:
                     image_file=image_file_path,
                 )
                 # print(res)
-                image_url = f"api/images/{res['note']['noteId']}/{res['note']['title']}"
+                image_note_id = res['note']['noteId']
+                image_url = f"api/images/{image_note_id}/{res['note']['title']}"
                 print(image_url)
 
                 html = html.replace(image_path, image_url)
+
+                # add relation for image
+                self.create_attribute(attributeId=None, noteId=note_id, type='relation', name='imageLink',
+                                      value=image_note_id, isInheritable=False)
 
             # replace note content
             res = self.update_note_content(note_id, html)

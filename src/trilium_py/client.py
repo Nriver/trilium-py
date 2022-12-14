@@ -5,6 +5,7 @@ import magic
 import markdown2
 import requests
 from bs4 import BeautifulSoup
+from natsort import natsort
 
 from .utils.param_util import format_query_string, clean_param
 from .utils.time_util import get_yesterday, get_today
@@ -645,3 +646,58 @@ class ETAPI:
             # print(res)
 
             return res
+
+    def upload_md_folder(self, parentNoteId: str, mdFolder: str, includePattern=[],
+                         ignoreFolder=[], ignoreFile=[]):
+        if not includePattern:
+            includePattern = ['*md', ]
+
+        # note tree
+        # record for noteId
+        note_tree = {'.': parentNoteId}
+        print(mdFolder)
+
+        mdFolder = os.path.expandvars(os.path.expanduser(mdFolder))
+
+        for root, dirs, files in os.walk(mdFolder, topdown=True):
+            root_folder_name = os.path.basename(root)
+
+            rel_path = os.path.relpath(root, start=mdFolder)
+            if any(x in rel_path for x in ignoreFolder):
+                continue
+
+            print('==============')
+            print(f'root {root}')
+            print(f'root_folder_name {root_folder_name}')
+            print(f'rel_path {rel_path}')
+
+            current_parent_note_id = note_tree[rel_path]
+
+            print(f'files')
+            for name in natsort.natsorted(files):
+                # only include markdown files
+                if any(x == name for x in ignoreFile):
+                    continue
+
+                if any(x in name for x in includePattern):
+                    file_path = os.path.join(root, name)
+                    print(file_path)
+                    self.upload_md_file(file=file_path, parentNoteId=current_parent_note_id)
+
+            print(f'dirs')
+            for name in natsort.natsorted(dirs):
+                if all(x not in name for x in ignoreFolder):
+                    dir_path = os.path.join(root, name)
+                    print(dir_path)
+                    rel_path = os.path.relpath(dir_path, start=mdFolder)
+                    print(rel_path)
+                    res = self.create_note(
+                        parentNoteId=current_parent_note_id,
+                        title=name,
+                        type="text",
+                        content=name,
+                    )
+                    res['note']['noteId']
+                    note_tree[rel_path] = res['note']['noteId']
+
+        return True

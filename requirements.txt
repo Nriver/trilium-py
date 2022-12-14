@@ -2,3 +2,4 @@ requests
 BeautifulSoup4
 python-magic
 markdown2[all]
+natsort

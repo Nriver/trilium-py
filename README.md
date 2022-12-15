@@ -239,7 +239,7 @@ Say, upload all the notes from [VNote](https://github.com/vnotex/vnote), simply 
 res = ea.upload_md_folder(
     parentNoteId="root",
     mdFolder="~/data/vnotebook/",
-    ignoreFolder=['vx_notebook', 'vx_recycle_bin', '_v_images'],
+    ignoreFolder=['vx_notebook', 'vx_recycle_bin', 'vx_images', '_v_images'],
 )
 ```
 

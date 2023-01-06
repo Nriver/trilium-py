@@ -10,7 +10,8 @@ Python client for ETAPI of Trilium Note.
 * [Toc](#toc)
 * [Installation](#installation)
 * [(Basic) Usage](#basic-usage)
-    * [initialize](#initialize)
+    * [Initialization](#initialization)
+    * [Application Information](#application-information)
     * [Search note](#search-note)
     * [Create Note](#create-note)
         * [Create Image note](#create-image-note)
@@ -42,7 +43,7 @@ python3 -m pip install trilium-py --user
 
 These are basic function that Trilium's ETAPI provides. Down below are some simple example code to use this package.
 
-## initialize
+## Initialization
 
 If you have a ETAPI token, change the `server_url` and `token` to yours.
 
@@ -68,6 +69,16 @@ print(token)
 ```
 
 After initialization, you can use Trilium ETAPI with python now. The following are some examples.
+
+## Application Information
+
+To start with, you can get the application information like this.
+
+```
+print(ea.app_info())
+```
+
+It should give you the version of your server application and some extra information.
 
 ## Search note
 

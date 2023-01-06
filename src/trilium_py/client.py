@@ -59,6 +59,17 @@ class ETAPI:
             return True
         return False
 
+    def app_info(self) -> dict:
+        """
+
+        :return:
+        """
+        result = []
+
+        url = f'{self.server_url}/etapi/app-info'
+        res = requests.get(url, headers=self.get_header())
+        return res.json()
+
     def search_note(self, search: str, **params) -> dict:
         """
 

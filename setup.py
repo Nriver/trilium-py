@@ -155,9 +155,9 @@ setup(
         'BeautifulSoup4',
         'requests',
         'python-magic',
-        "python-magic-bin;platform_system=='Windows'"
+        "python-magic-bin;platform_system=='Windows'",
         'markdown2[all]',
-        'natsort'
+        'natsort',
     ],
     # Optional
 

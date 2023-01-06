@@ -567,6 +567,11 @@ class ETAPI:
         # convert md to html
         with open(md_file, 'r', encoding='utf-8') as f:
             content = f.read()
+
+            # fix logseq image size format
+            logseq_image_pat = r'(\!\[.*\]\(.*\))\{.*?:height.*width.*}'
+            content = re.sub(logseq_image_pat, r'\1', content)
+
             # extra format support
             # https://github.com/trentm/python-markdown2/wiki/Extras
             html = markdown2.markdown(content, extras=['fenced-code-blocks', 'strike', 'tables', 'task_list'])
@@ -661,7 +666,7 @@ class ETAPI:
     def upload_md_folder(self, parentNoteId: str, mdFolder: str, includePattern=[],
                          ignoreFolder=[], ignoreFile=[]):
         if not includePattern:
-            includePattern = ['*md', ]
+            includePattern = ['.md', ]
 
         # note tree
         # record for noteId

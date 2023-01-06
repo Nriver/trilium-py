@@ -2,9 +2,11 @@
 
 Python client for ETAPI of Trilium Note.
 
-# Toc
+# Table of Contents
 
 <!--ts-->
+
+=================
 
 * [trilium-py](#trilium-py)
 * [Toc](#toc)
@@ -28,6 +30,9 @@ Python client for ETAPI of Trilium Note.
 * [(Advanced Usage) Upload Markdown files](#advanced-usage-upload-markdown-files)
     * [Upload single Markdown file with images](#upload-single-markdown-file-with-images)
     * [Bulk upload Markdown files in a folder!](#bulk-upload-markdown-files-in-a-folder)
+        * [Import from VNote](#import-from-vnote)
+        * [Import from Logseq](#import-from-logseq)
+        * [Import from other markdown software](#import-from-other-markdown-software)
 * [Develop](#develop)
 * [Original OpenAPI Documentation](#original-openapi-documentation)
 
@@ -244,6 +249,8 @@ res = ea.upload_md_file(
 
 You can upload a folder with lots of Markdown files to Trilium and preserve the folder structure!
 
+### Import from VNote
+
 Say, upload all the notes from [VNote](https://github.com/vnotex/vnote), simply do this:
 
 ```
@@ -253,6 +260,29 @@ res = ea.upload_md_folder(
     ignoreFolder=['vx_notebook', 'vx_recycle_bin', 'vx_images', '_v_images'],
 )
 ```
+
+### Import from Logseq
+
+```
+res = ea.upload_md_folder(
+    parentNoteId="root",
+    mdFolder="/home/nate/data/logseq_data/",
+    ignoreFolder=['assets', 'logseq'],
+)
+```
+
+### Import from other markdown software
+
+In general, markdown files have variety of standards. You can always try import them with
+
+```
+res = ea.upload_md_folder(
+    parentNoteId="root",
+    mdFolder="/home/nate/data/your_markdown_files/",
+)
+```
+
+If there is any problem, please feel free to create an [issue](https://github.com/Nriver/trilium-py/issues/new).
 
 # Develop
 

@@ -1,5 +1,6 @@
 requests
 BeautifulSoup4
 python-magic
+python-magic-bin; platform_system=='Windows'
 markdown2[all]
 natsort

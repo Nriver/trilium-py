@@ -43,7 +43,7 @@ setup(
     # For a discussion on single-sourcing the version across setup.py and the
     # project code, see
     # https://packaging.python.org/guides/single-sourcing-package-version/
-    version='0.6.5',  # Required
+    version='0.6.6',  # Required
 
     # This is a one-line description or tagline of what your project does. This
     # corresponds to the "Summary" metadata field:
@@ -94,7 +94,7 @@ setup(
         #   3 - Alpha
         #   4 - Beta
         #   5 - Production/Stable
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
 
         # Indicate who your project is intended for
         'Intended Audience :: Developers',
@@ -112,6 +112,7 @@ setup(
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
         'Programming Language :: Python :: 3 :: Only',
     ],
 
@@ -150,7 +151,14 @@ setup(
     #
     # For an analysis of "install_requires" vs pip's requirements files see:
     # https://packaging.python.org/discussions/install-requires-vs-requirements/
-    install_requires=['BeautifulSoup4', 'requests', 'python-magic', 'markdown2[all]', 'natsort'],
+    install_requires=[
+        'BeautifulSoup4',
+        'requests',
+        'python-magic',
+        "python-magic-bin;platform_system=='Windows'"
+        'markdown2[all]',
+        'natsort'
+    ],
     # Optional
 
     # List additional groups of dependencies here (e.g. development

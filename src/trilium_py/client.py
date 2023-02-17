@@ -542,7 +542,8 @@ class ETAPI:
                     # skip empty todos
                     continue
                 todo_indexes.append(i)
-                todo_descriptions.append(description)
+                # keep the internal link, text format or what so ever, avoid lost valuable info
+                todo_descriptions.append(str(x))
 
         if not todo_descriptions:
             return

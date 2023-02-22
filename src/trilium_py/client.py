@@ -434,18 +434,26 @@ class ETAPI:
             # special case 1: no todo available, add it to the beginning of document
             # special case 2: if last todo item is empty, update it
 
-            todo_item_html = f'''<li><label class="todo-list__label"><input disabled="disabled" type="checkbox"/><span class="todo-list__label__description">{todo_description}</span></label></li>'''
+            if "todo-list__label" in todo_description:
+                todo_item_html = f'''<li>{todo_description}</li>'''
+            else:
+                todo_item_html = f'''<li><label class="todo-list__label"><input disabled="disabled" type="checkbox"/ > <span class = "todo-list__label__description">{todo_description}</span></label></li>'''
 
             if not todo_labels:
+                print('new empty page')
                 todo_item_html = f'''<p>TODO:</p><ul class="todo-list">{todo_item_html}</ul>'''
                 todo_item = BeautifulSoup(todo_item_html, 'html.parser')
                 soup.insert(0, todo_item)
             else:
                 last_todo_label = todo_labels[-1]
                 if not last_todo_label.text.strip():
-                    target_span = last_todo_label.find_next("span", {"class": "todo-list__label__description"})
-                    target_span.string = todo_description
+                    # replace last empty todo item
+                    todo_item = BeautifulSoup(todo_item_html, 'html.parser')
+                    todo_list_label = soup.find_all("ul", {"class": "todo-list"})[0]
+                    empty_li = todo_list_label.find_all("li")[-1]
+                    empty_li.replace_with(todo_item)
                 else:
+                    # if todo item list exists, append to the end
                     todo_item = BeautifulSoup(todo_item_html, 'html.parser')
                     todo_list_label = soup.find_all("ul", {"class": "todo-list"})[0]
                     todo_list_label.append(todo_item)

@@ -277,6 +277,27 @@ res = ea.upload_md_folder(
 )
 ```
 
+### Import from Obsidian
+
+Obsidian has a very unique linking system for files. You should use [obsidian-export
+](https://github.com/zoni/obsidian-export) to convert a Obsidian vault to regular Markdown files. Then you should be
+able to import the note into Trilium with trilium-py.
+
+Convert it first.
+
+```
+obsidian-export /path/to/your/vault /out
+```
+
+Then import just like a normal markdown, trilium-py will handle the images for you.
+
+```
+res = ea.upload_md_folder(
+    parentNoteId="root",
+    mdFolder="E:/data/out",
+)
+```
+
 ### Import from other markdown software
 
 In general, markdown files have variety of standards. You can always try import them with

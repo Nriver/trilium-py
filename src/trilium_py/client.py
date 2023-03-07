@@ -665,7 +665,8 @@ class ETAPI:
                 )
                 # print(res)
                 image_note_id = res['note']['noteId']
-                image_url = f"api/images/{image_note_id}/{res['note']['title']}"
+                # fix path with `/` in it, the param should be quoted. e.g. relative url from obsidian
+                image_url = f"api/images/{image_note_id}/{urllib.parse.quote(res['note']['title'], safe='')}"
                 print(image_url)
 
                 html = html.replace(image_path, image_url)

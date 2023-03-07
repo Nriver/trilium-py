@@ -12,10 +12,8 @@ Python client for ETAPI of Trilium Note.
 
 <!--ts-->
 
-=================
-
 * [trilium-py](#trilium-py)
-* [Toc](#toc)
+* [Table of Contents](#table-of-contents)
 * [Installation](#installation)
 * [(Basic) Usage](#basic-usage)
     * [Initialization](#initialization)
@@ -38,6 +36,7 @@ Python client for ETAPI of Trilium Note.
     * [Bulk upload Markdown files in a folder!](#bulk-upload-markdown-files-in-a-folder)
         * [Import from VNote](#import-from-vnote)
         * [Import from Logseq](#import-from-logseq)
+        * [Import from Obsidian](#import-from-obsidian)
         * [Import from other markdown software](#import-from-other-markdown-software)
 * [Develop](#develop)
 * [Original OpenAPI Documentation](#original-openapi-documentation)

@@ -29,7 +29,7 @@ Python client for ETAPI of Trilium Note.
     * [Add TODO item](#add-todo-item)
     * [Check/Uncheck a TODO item](#checkuncheck-a-todo-item)
     * [Update a TODO item](#update-a-todo-item)
-    * [Delete a TDOO item](#delete-a-tdoo-item)
+    * [Delete a TODO item](#delete-a-todo-item)
     * [Move yesterday's unfinished todo to today](#move-yesterdays-unfinished-todo-to-today)
 * [(Advanced Usage) Upload Markdown files](#advanced-usage-upload-markdown-files)
     * [Upload single Markdown file with images](#upload-single-markdown-file-with-images)

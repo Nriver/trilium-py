@@ -219,7 +219,7 @@ Use `update_todo` to update a TODO item description at certain index.
 ea.update_todo(0, "去码头整点薯条")
 ```
 
-## Delete a TDOO item
+## Delete a TODO item
 
 Remove a TODO item by its index.
 

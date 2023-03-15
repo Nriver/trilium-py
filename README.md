@@ -8,6 +8,8 @@ Python client for ETAPI of Trilium Note.
 [![PyPI license](https://img.shields.io/pypi/l/trilium-py.svg)](https://pypi.python.org/pypi/trilium-py/)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity)
 
+<a href="https://github.com/Nriver"><img align="center" src="https://moe-counter--nriver1.repl.co/get/@Nriver_trilium-py"></a><br>
+
 # Table of Contents
 
 <!--ts-->
@@ -29,7 +31,7 @@ Python client for ETAPI of Trilium Note.
     * [Add TODO item](#add-todo-item)
     * [Check/Uncheck a TODO item](#checkuncheck-a-todo-item)
     * [Update a TODO item](#update-a-todo-item)
-    * [Delete a TODO item](#delete-a-todo-item)
+    * [Delete a TDOO item](#delete-a-tdoo-item)
     * [Move yesterday's unfinished todo to today](#move-yesterdays-unfinished-todo-to-today)
 * [(Advanced Usage) Upload Markdown files](#advanced-usage-upload-markdown-files)
     * [Upload single Markdown file with images](#upload-single-markdown-file-with-images)
@@ -220,7 +222,7 @@ Use `update_todo` to update a TODO item description at certain index.
 ea.update_todo(0, "去码头整点薯条")
 ```
 
-## Delete a TODO item
+## Delete a TDOO item
 
 Remove a TODO item by its index.
 

@@ -37,6 +37,7 @@ Python client for ETAPI of Trilium Note.
         * [Import from VNote](#import-from-vnote)
         * [Import from Logseq](#import-from-logseq)
         * [Import from Obsidian](#import-from-obsidian)
+        * [Import from Youdao Note/有道云笔记](#import-from-youdao-note有道云笔记)
         * [Import from other markdown software](#import-from-other-markdown-software)
 * [Develop](#develop)
 * [Original OpenAPI Documentation](#original-openapi-documentation)
@@ -294,6 +295,18 @@ Then import just like a normal markdown, trilium-py will handle the images for y
 res = ea.upload_md_folder(
     parentNoteId="root",
     mdFolder="E:/data/out",
+)
+```
+
+### Import from Youdao Note/有道云笔记
+
+Youdao does not provide an export feature anymore. Luckily, you can use https://github.com/DeppWang/youdaonote-pull to
+download your notes and convert them into markdown files. After that, trilium-py should be able to help you import them.
+
+```
+res = ea.upload_md_folder(
+    parentNoteId="root",
+    mdFolder="/home/nate/gitRepo/youdaonote-pull/out/",
 )
 ```
 

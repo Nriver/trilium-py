@@ -193,6 +193,18 @@ Then set/update a day note with `set_day_note`. The content should be a (html) s
 self.set_day_note(date, new_content)
 ```
 
+## Export note
+
+Export note comes in two formats `html` or `markdown`/`md`.
+
+```
+res = ea.export_note(
+    noteId='sK5fn4T6yZRI',
+    format='md',
+    savePath='/home/nate/data/1/test.zip',
+)
+```
+
 # (Advanced Usage) TODO List
 
 With the power of Python, I have expanded the basic usage of ETAPI. You can do something with todo list now.

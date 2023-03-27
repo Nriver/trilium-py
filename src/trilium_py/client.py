@@ -341,6 +341,31 @@ class ETAPI:
         res = requests.get(url, headers=self.get_header())
         return res.json()
 
+    def export_note(self, noteId: str, format: str, savePath: str, chunk_size=128):
+        """
+        Export note by id. Please note that protected notes are not allowed to be exported by ETAPI.
+
+        :param noteId: note id
+        :param format: format should be "html" or "markdown" or "md" for short
+        :savePath: path for exported file
+        :chunk_size: download chunk size, default to 128
+        :return:
+        """
+        url = f'{self.server_url}/etapi/notes/{noteId}/export'
+        if format in ['md', 'markdown']:
+            format = 'markdown'
+        else:
+            format = 'html'
+        params = {
+            "format": format,
+        }
+        r = requests.get(url, params=clean_param(params), headers=self.get_header())
+        print(r.status_code)
+        with open(savePath, 'wb') as fd:
+            for chunk in r.iter_content(chunk_size=chunk_size):
+                fd.write(chunk)
+        return True
+
     def get_today_note_content(self):
         date = get_today()
         return self.get_day_note(date)

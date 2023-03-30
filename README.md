@@ -1,4 +1,4 @@
-# trilium-py
+# 🐍 trilium-py
 
 Python client for ETAPI of Trilium Note.
 
@@ -10,30 +10,31 @@ Python client for ETAPI of Trilium Note.
 
 <a href="https://github.com/Nriver"><img align="center" src="https://moe-counter--nriver1.repl.co/get/@Nriver_trilium-py"></a><br>
 
-# Table of Contents
+# 🦮 Table of Contents
 
 <!--ts-->
 
-* [trilium-py](#trilium-py)
-* [Table of Contents](#table-of-contents)
-* [Installation](#installation)
-* [(Basic) Usage](#basic-usage)
-    * [Initialization](#initialization)
-    * [Application Information](#application-information)
-    * [Search note](#search-note)
-    * [Create Note](#create-note)
-        * [Create Image note](#create-image-note)
-    * [Get note](#get-note)
-    * [Update note](#update-note)
-    * [Delete note](#delete-note)
-    * [Day note](#day-note)
-* [(Advanced Usage) TODO List](#advanced-usage-todo-list)
+* [trilium-py](#-trilium-py)
+* [Table of Contents](#-table-of-contents)
+* [Installation](#-installation)
+* [(Basic) Usage](#-basic-usage)
+    * [Initialization](#-initialization)
+    * [Application Information](#-application-information)
+    * [Search note](#-search-note)
+    * [Create Note](#-create-note)
+        * [Create Image note](#️-create-image-note)
+    * [Get note](#-get-note)
+    * [Update note](#-update-note)
+    * [Delete note](#️-delete-note)
+    * [Day note](#-day-note)
+    * [Export note](#-export-note)
+* [(Advanced Usage) TODO List](#advanced-usage--todo-list)
     * [Add TODO item](#add-todo-item)
     * [Check/Uncheck a TODO item](#checkuncheck-a-todo-item)
     * [Update a TODO item](#update-a-todo-item)
     * [Delete a TDOO item](#delete-a-tdoo-item)
     * [Move yesterday's unfinished todo to today](#move-yesterdays-unfinished-todo-to-today)
-* [(Advanced Usage) Upload Markdown files](#advanced-usage-upload-markdown-files)
+* [(Advanced Usage) Upload Markdown files](#advanced-usage--upload-markdown-files)
     * [Upload single Markdown file with images](#upload-single-markdown-file-with-images)
     * [Bulk upload Markdown files in a folder!](#bulk-upload-markdown-files-in-a-folder)
         * [Import from VNote](#import-from-vnote)
@@ -41,22 +42,22 @@ Python client for ETAPI of Trilium Note.
         * [Import from Obsidian](#import-from-obsidian)
         * [Import from Youdao Note/有道云笔记](#import-from-youdao-note有道云笔记)
         * [Import from other markdown software](#import-from-other-markdown-software)
-* [Develop](#develop)
-* [Original OpenAPI Documentation](#original-openapi-documentation)
+* [Develop](#️-develop)
+* [Original OpenAPI Documentation](#-original-openapi-documentation)
 
 <!--te-->
 
-# Installation
+# 🔧 Installation
 
 ```
 python3 -m pip install trilium-py --user
 ```
 
-# (Basic) Usage
+# 📖 (Basic) Usage
 
 These are basic function that Trilium's ETAPI provides. Down below are some simple example code to use this package.
 
-## Initialization
+## 🚀 Initialization
 
 If you have a ETAPI token, change the `server_url` and `token` to yours.
 
@@ -83,7 +84,7 @@ print(token)
 
 After initialization, you can use Trilium ETAPI with python now. The following are some examples.
 
-## Application Information
+## 📊 Application Information
 
 To start with, you can get the application information like this.
 
@@ -93,7 +94,7 @@ print(ea.app_info())
 
 It should give you the version of your server application and some extra information.
 
-## Search note
+## 🔍 Search note
 
 Search note with keyword.
 
@@ -106,7 +107,7 @@ for x in res['results']:
     print(x['noteId'], x['title'])
 ```
 
-## Create Note
+## 🏭 Create Note
 
 You can create a simple note like this.
 
@@ -126,7 +127,7 @@ The `noteId` is not mandatory, if not provided, Trilium will generate a random o
 noteId = res['note']['noteId']
 ```
 
-### Create Image note
+### 🖼️ Create Image note
 
 Image note is a special kind of note. You can create an image note with minimal information like this. The `image_file`
 refers to the path of image.
@@ -139,7 +140,7 @@ res = ea.create_image_note(
 )
 ```
 
-## Get note
+## 👀 Get note
 
 To retrieve the note's content.
 
@@ -153,7 +154,7 @@ You can get a note metadata by its id.
 ea.get_note(note_id)
 ```
 
-## Update note
+## 🔄 Update note
 
 Update note content
 
@@ -170,7 +171,7 @@ ea.patch_note(
 )
 ```
 
-## Delete note
+## 🗑️ Delete note
 
 Simply delete a note by id.
 
@@ -178,7 +179,7 @@ Simply delete a note by id.
 ea.delete_note("note1")
 ```
 
-## Day note
+## 📅 Day note
 
 You can get the content of a certain date with `get_day_note`. The date string should be in format of "%Y-%m-%d", e.g. "
 2022-02-25".
@@ -193,7 +194,7 @@ Then set/update a day note with `set_day_note`. The content should be a (html) s
 self.set_day_note(date, new_content)
 ```
 
-## Export note
+## 📤 Export note
 
 Export note comes in two formats `html` or `markdown`/`md`.
 
@@ -205,7 +206,7 @@ res = ea.export_note(
 )
 ```
 
-# (Advanced Usage) TODO List
+# (Advanced Usage) ✅ TODO List
 
 With the power of Python, I have expanded the basic usage of ETAPI. You can do something with todo list now.
 
@@ -251,7 +252,7 @@ yesterday's note.
 ea.move_yesterday_unfinished_todo_to_today()
 ```
 
-# (Advanced Usage) Upload Markdown files
+# (Advanced Usage) 🚚 Upload Markdown files
 
 ## Upload single Markdown file with images
 
@@ -337,7 +338,7 @@ res = ea.upload_md_folder(
 
 If there is any problem, please feel free to create an [issue](https://github.com/Nriver/trilium-py/issues/new).
 
-# Develop
+# 🛠️ Develop
 
 Install with pip egg link to make package change without reinstall.
 
@@ -345,7 +346,7 @@ Install with pip egg link to make package change without reinstall.
 python -m pip install --user -e .
 ```
 
-# Original OpenAPI Documentation
+# 🔗 Original OpenAPI Documentation
 
 The original OpenAPI document is [here](https://github.com/zadam/trilium/blob/master/src/etapi/etapi.openapi.yaml). You
 can open it with [swagger editor](https://editor.swagger.io/).

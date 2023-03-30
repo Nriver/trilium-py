@@ -1,3 +1,5 @@
+.idea
+
 # general things to ignore
 build/
 dist/

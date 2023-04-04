@@ -10,7 +10,7 @@ from natsort import natsort
 
 from .utils.param_util import format_query_string, clean_param
 from .utils.time_util import get_yesterday, get_today
-
+from .utils.markdown_math import sanitizeInput, reconstructMath
 
 class ETAPI:
 
@@ -606,11 +606,17 @@ class ETAPI:
             # fix logseq image size format
             logseq_image_pat = r'(\!\[.*\]\(.*\))\{.*?:height.*width.*}'
             content = re.sub(logseq_image_pat, r'\1', content)
-
-            # extra format support
-            # https://github.com/trentm/python-markdown2/wiki/Extras
-            html = markdown2.markdown(content, extras=['fenced-code-blocks', 'strike', 'tables', 'task_list'])
-            # print(html)
+            
+            if not re.search(re.escape("$"),content):
+                # extra format support
+                # https://github.com/trentm/python-markdown2/wiki/Extras
+                html = markdown2.markdown(content, extras=['fenced-code-blocks', 'strike', 'tables', 'task_list'])
+                # print(html)
+            else:
+                no_latex_part, latex_code_part = sanitizeInput(content)
+                html = reconstructMath(markdown2.markdown(no_latex_part, 
+                                                          extras=['fenced-code-blocks', 'strike', 'tables', 'task_list']),
+                                      latex_code_part)
 
         # detect images
         pat = '<img (.*?) />'

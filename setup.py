@@ -43,7 +43,7 @@ setup(
     # For a discussion on single-sourcing the version across setup.py and the
     # project code, see
     # https://packaging.python.org/guides/single-sourcing-package-version/
-    version='0.7.3',  # Required
+    version='0.7.4',  # Required
 
     # This is a one-line description or tagline of what your project does. This
     # corresponds to the "Summary" metadata field:
@@ -154,7 +154,8 @@ setup(
     install_requires=[
         'BeautifulSoup4',
         'requests',
-        'python-magic',
+        "python-magic;sys_platform=='darwin'",
+        "python-magic;sys_platform=='linux'",
         "python-magic-bin;platform_system=='Windows'",
         'markdown2[all]',
         'natsort',

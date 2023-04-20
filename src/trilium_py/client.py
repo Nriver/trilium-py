@@ -132,6 +132,83 @@ class ETAPI:
         res = requests.post(url, json=clean_param(params), headers=self.get_header())
 
         return res.json()
+    
+    def create_file_note(self, parentNoteId: str, title: str, file_data: str, content_file: str,
+                         type: str = 'file', mime: str = None,
+                         content=None, notePosition: int = None, prefix: str = None,
+                         isExpanded: str = None, noteId: str = None,
+                         branchId: str = None):
+        '''
+        Create a note
+        set file name attribute
+        Update its content with image binary content
+        :param parentNoteId:
+        :param title:
+        :param file_data: file object from buffer.
+        :param content_file: file path in file system.
+        :param type:
+        :param mime:
+        :param content:
+        :param notePosition:
+        :param prefix:
+        :param isExpanded:
+        :param noteId:
+        :param branchId:
+        :return:
+        '''
+
+        url = f'{self.server_url}/etapi/create-note'
+
+        if not mime:
+            # if mime not specified, get mime info by python-magic package
+            if file_data:
+                mime = magic.from_buffer(file_data, mime=True)
+            elif content_file:
+                mime = magic.from_file(file_data, mime=True)
+
+        if not mime:
+            # just in case python-magic not working, give a default mime
+            mime = "image/png"
+
+        params = {
+            "parentNoteId": parentNoteId,
+            "title": title,
+            "type": type,
+            "mime": mime,
+            "content": content,
+            "notePosition": notePosition,
+            "prefix": prefix,
+            "isExpanded": isExpanded,
+            "noteId": noteId,
+            "branchId": branchId
+        }
+
+        res_file = requests.post(url, json=clean_param(params),
+                                 headers={'content-type': 'application/json', 'Authorization': self.token, })
+        res_file_json = res_file.json()
+        new_noteId = res_file_json['note']['noteId']
+
+        # set file name
+        content_file_name = os.path.basename(content_file)
+        self.create_attribute(attributeId=None, noteId=new_noteId, type='label', name='originalFileName',
+                              value=content_file_name, isInheritable=False)
+
+        # upload file, set note content
+        url = f'{self.server_url}/etapi/notes/{new_noteId}/content'
+        # content-type here will affect the result
+        # not working, encoding issue? automated force encoding to utf-8 and lost data
+        if not file_data:
+            file_data = open(content_file, 'rb').read()
+        res = requests.put(url, data=file_data,
+                           # headers={'content-type': 'text/plain', 'Authorization': self.token, })
+                           headers={
+                               'content-type': 'application/octet-stream',
+                               'Content-Transfer-Encoding': 'binary',
+                               'Authorization': self.token,
+                           })
+        if res.status_code == 204:
+            return res_file_json
+        return
 
     def create_image_note(self, parentNoteId: str, title: str, image_file: str, type: str = 'image', mime: str = None,
                           content=None,

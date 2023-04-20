@@ -1,6 +1,7 @@
 requests
 BeautifulSoup4
-python-magic
-python-magic-bin; platform_system=='Windows'
+python-magic; sys_platform == 'darwin'
+python-magic; sys_platform == 'linux'
+python-magic-bin; sys_platform == 'win32'
 markdown2[all]
 natsort

@@ -18,30 +18,31 @@ Python client for ETAPI of Trilium Note.
 - [🦮 Table of Contents](#-table-of-contents)
 - [🔧 Installation](#-installation)
 - [📖 (Basic) Usage](#-basic-usage)
-  - [🚀 Initialization](#-initialization)
-  - [📊 Application Information](#-application-information)
-  - [🔍 Search note](#-search-note)
-  - [🏭 Create Note](#-create-note)
-    - [🖼️ Create Image note](#️-create-image-note)
-  - [👀 Get note](#-get-note)
-  - [🔄 Update note](#-update-note)
-  - [🗑️ Delete note](#️-delete-note)
-  - [📅 Day note](#-day-note)
-  - [📤 Export note](#-export-note)
+    - [🚀 Initialization](#-initialization)
+    - [📊 Application Information](#-application-information)
+    - [🔍 Search note](#-search-note)
+    - [🏭 Create Note](#-create-note)
+        - [🖼️ Create Image note](#️-create-image-note)
+    - [👀 Get note](#-get-note)
+    - [🔄 Update note](#-update-note)
+    - [🗑️ Delete note](#️-delete-note)
+    - [📅 Day note](#-day-note)
+    - [📤 Export note](#-export-note)
 - [(Advanced Usage) ✅ TODO List](#advanced-usage--todo-list)
-  - [Add TODO item](#add-todo-item)
-  - [Check/Uncheck a TODO item](#checkuncheck-a-todo-item)
-  - [Update a TODO item](#update-a-todo-item)
-  - [Delete a TDOO item](#delete-a-tdoo-item)
-  - [Move yesterday's unfinished todo to today](#move-yesterdays-unfinished-todo-to-today)
+    - [Add TODO item](#add-todo-item)
+    - [Check/Uncheck a TODO item](#checkuncheck-a-todo-item)
+    - [Update a TODO item](#update-a-todo-item)
+    - [Delete a TDOO item](#delete-a-tdoo-item)
+    - [Move yesterday's unfinished todo to today](#move-yesterdays-unfinished-todo-to-today)
 - [(Advanced Usage) 🚚 Upload Markdown files](#advanced-usage--upload-markdown-files)
-  - [Upload single Markdown file with images](#upload-single-markdown-file-with-images)
-  - [Bulk upload Markdown files in a folder](#bulk-upload-markdown-files-in-a-folder)
-    - [Import from VNote](#import-from-vnote)
-    - [Import from Logseq](#import-from-logseq)
-    - [Import from Obsidian](#import-from-obsidian)
-    - [Import from Youdao Note/有道云笔记](#import-from-youdao-note有道云笔记)
-    - [Import from other markdown software](#import-from-other-markdown-software)
+    - [Upload single Markdown file with images](#upload-single-markdown-file-with-images)
+    - [Bulk upload Markdown files in a folder](#bulk-upload-markdown-files-in-a-folder)
+        - [Import from VNote](#import-from-vnote)
+        - [Import from Joplin](#import-from-joplin)
+        - [Import from Logseq](#import-from-logseq)
+        - [Import from Obsidian](#import-from-obsidian)
+        - [Import from Youdao Note/有道云笔记](#import-from-youdao-note有道云笔记)
+        - [Import from other markdown software](#import-from-other-markdown-software)
 - [🛠️ Develop](#️-develop)
 - [🔗 Original OpenAPI Documentation](#-original-openapi-documentation)
 
@@ -279,6 +280,18 @@ res = ea.upload_md_folder(
     parentNoteId="root",
     mdFolder="~/data/vnotebook/",
     ignoreFolder=['vx_notebook', 'vx_recycle_bin', 'vx_images', '_v_images'],
+)
+```
+
+### Import from Joplin
+
+Joplin can be imported effortlessly.
+
+```python
+res = ea.upload_md_folder(
+    parentNoteId="root",
+    mdFolder="/home/nate/data/joplin_data/",
+    ignoreFolder=['_resources', ],
 )
 ```
 

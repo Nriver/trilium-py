@@ -8,9 +8,10 @@ import requests
 from bs4 import BeautifulSoup
 from natsort import natsort
 
+from .utils.markdown_math import sanitizeInput, reconstructMath
 from .utils.param_util import format_query_string, clean_param
 from .utils.time_util import get_yesterday, get_today
-from .utils.markdown_math import sanitizeInput, reconstructMath
+
 
 class ETAPI:
 
@@ -132,7 +133,7 @@ class ETAPI:
         res = requests.post(url, json=clean_param(params), headers=self.get_header())
 
         return res.json()
-    
+
     def create_file_note(self, parentNoteId: str, title: str, file_data: str, content_file: str,
                          type: str = 'file', mime: str = None,
                          content=None, notePosition: int = None, prefix: str = None,
@@ -683,17 +684,18 @@ class ETAPI:
             # fix logseq image size format
             logseq_image_pat = r'(\!\[.*\]\(.*\))\{.*?:height.*width.*}'
             content = re.sub(logseq_image_pat, r'\1', content)
-            
-            if not re.search(re.escape("$"),content):
+
+            if not re.search(re.escape("$"), content):
                 # extra format support
                 # https://github.com/trentm/python-markdown2/wiki/Extras
                 html = markdown2.markdown(content, extras=['fenced-code-blocks', 'strike', 'tables', 'task_list'])
                 # print(html)
             else:
                 no_latex_part, latex_code_part = sanitizeInput(content)
-                html = reconstructMath(markdown2.markdown(no_latex_part, 
-                                                          extras=['fenced-code-blocks', 'strike', 'tables', 'task_list']),
-                                      latex_code_part)
+                html = reconstructMath(markdown2.markdown(no_latex_part,
+                                                          extras=['fenced-code-blocks', 'strike', 'tables',
+                                                                  'task_list']),
+                                       latex_code_part)
 
         # detect images
         pat = '<img (.*?) />'
@@ -843,3 +845,12 @@ class ETAPI:
                     note_tree[rel_path] = res['note']['noteId']
 
         return True
+
+    def backup(self, backup_name):
+        url = f'{self.server_url}/etapi/backup/{backup_name}'
+
+        res = requests.put(url, headers=self.get_header())
+        if res.status_code == 204:
+            print('backup successfully')
+            return True
+        return False

@@ -28,6 +28,7 @@ Python client for ETAPI of Trilium Note.
     - [🗑️ Delete note](#️-delete-note)
     - [📅 Day note](#-day-note)
     - [📤 Export note](#-export-note)
+    - [💾Create data backup](#-create-data-backup)
 - [(Advanced Usage) ✅ TODO List](#advanced-usage--todo-list)
     - [Add TODO item](#add-todo-item)
     - [Check/Uncheck a TODO item](#checkuncheck-a-todo-item)
@@ -205,6 +206,14 @@ res = ea.export_note(
     format='md',
     savePath='/home/nate/data/1/test.zip',
 )
+```
+
+## 💾 Create data backup
+
+This example will create a database backup file like this `trilium-data/backup/backup-test.db`.
+
+```python
+res = ea.backup("test")
 ```
 
 # (Advanced Usage) ✅ TODO List

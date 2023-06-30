@@ -159,6 +159,7 @@ setup(
         "python-magic-bin;platform_system=='Windows'",
         'markdown2[all]',
         'natsort',
+        'loguru',
     ],
     # Optional
 

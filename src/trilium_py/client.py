@@ -6,6 +6,7 @@ import magic
 import markdown2
 import requests
 from bs4 import BeautifulSoup
+from loguru import logger
 from natsort import natsort
 
 from .utils.markdown_math import sanitizeInput, reconstructMath
@@ -37,7 +38,7 @@ class ETAPI:
             self.token = res.json()['authToken']
             return self.token
         else:
-            print(res.json()['message'])
+            logger.info(res.json()['message'])
             return None
 
     def logout(self, token_to_destroy: str = None) -> bool:
@@ -57,7 +58,7 @@ class ETAPI:
         }
         res = requests.post(url, headers=headers)
         if res.status_code == 204:
-            print('logout successfully')
+            logger.info('logout successfully')
             return True
         return False
 
@@ -134,19 +135,20 @@ class ETAPI:
 
         return res.json()
 
-    def create_file_note(self, parentNoteId: str, title: str, file_data: str, content_file: str,
-                         type: str = 'file', mime: str = None,
-                         content=None, notePosition: int = None, prefix: str = None,
+    def create_file_note(self, parentNoteId: str, title: str, file_path: str,
+                         type: str = 'file', mime: str = "application/octet-stream",
+                         content='<p></p>', notePosition: int = None, prefix: str = None,
                          isExpanded: str = None, noteId: str = None,
                          branchId: str = None):
         '''
+        Upload ordinary file as a sub-note
+
         Create a note
         set file name attribute
-        Update its content with image binary content
+        Update its content with raw file binary content
         :param parentNoteId:
         :param title:
-        :param file_data: file object from buffer.
-        :param content_file: file path in file system.
+        :param file_path: file path in file system.
         :param type:
         :param mime:
         :param content:
@@ -159,17 +161,6 @@ class ETAPI:
         '''
 
         url = f'{self.server_url}/etapi/create-note'
-
-        if not mime:
-            # if mime not specified, get mime info by python-magic package
-            if file_data:
-                mime = magic.from_buffer(file_data, mime=True)
-            elif content_file:
-                mime = magic.from_file(file_data, mime=True)
-
-        if not mime:
-            # just in case python-magic not working, give a default mime
-            mime = "image/png"
 
         params = {
             "parentNoteId": parentNoteId,
@@ -190,18 +181,14 @@ class ETAPI:
         new_noteId = res_file_json['note']['noteId']
 
         # set file name
-        content_file_name = os.path.basename(content_file)
+        file_path_name = os.path.basename(file_path)
         self.create_attribute(attributeId=None, noteId=new_noteId, type='label', name='originalFileName',
-                              value=content_file_name, isInheritable=False)
+                              value=file_path_name, isInheritable=False)
 
         # upload file, set note content
         url = f'{self.server_url}/etapi/notes/{new_noteId}/content'
-        # content-type here will affect the result
-        # not working, encoding issue? automated force encoding to utf-8 and lost data
-        if not file_data:
-            file_data = open(content_file, 'rb').read()
+        file_data = open(file_path, 'rb').read()
         res = requests.put(url, data=file_data,
-                           # headers={'content-type': 'text/plain', 'Authorization': self.token, })
                            headers={
                                'content-type': 'application/octet-stream',
                                'Content-Transfer-Encoding': 'binary',
@@ -218,6 +205,8 @@ class ETAPI:
                           branchId: str = None):
 
         '''
+        Upload image as a sub-note
+
         Create a note
         set file name attribute
         Update its content with image binary content
@@ -438,7 +427,7 @@ class ETAPI:
             "format": format,
         }
         r = requests.get(url, params=clean_param(params), headers=self.get_header())
-        print(r.status_code)
+        logger.info(r.status_code)
         with open(savePath, 'wb') as fd:
             for chunk in r.iter_content(chunk_size=chunk_size):
                 fd.write(chunk)
@@ -544,7 +533,7 @@ class ETAPI:
                 todo_item_html = f'''<li><label class="todo-list__label"><input disabled="disabled" type="checkbox"/ > <span class = "todo-list__label__description">{todo_description}</span></label></li>'''
 
             if not todo_labels:
-                print('new empty page')
+                logger.info('new empty page')
                 todo_item_html = f'''<p>TODO:</p><ul class="todo-list">{todo_item_html}</ul>'''
                 todo_item = BeautifulSoup(todo_item_html, 'html.parser')
                 soup.insert(0, todo_item)
@@ -569,7 +558,7 @@ class ETAPI:
             return self.set_today_note_content(new_content)
 
         except Exception as e:
-            print(e)
+            logger.info(e)
             return False
 
     def update_todo(self, todo_index, todo_description):
@@ -673,9 +662,9 @@ class ETAPI:
         md_full_name = os.path.basename(md_file)
         md_name = md_full_name[:-3]
         md_folder = os.path.dirname(md_file)
-        print(md_file)
-        # print(md_name)
-        # print(md_folder)
+        logger.info(md_file)
+        # logger.info(md_name)
+        # logger.info(md_folder)
 
         # convert md to html
         with open(md_file, 'r', encoding='utf-8') as f:
@@ -689,42 +678,32 @@ class ETAPI:
                 # extra format support
                 # https://github.com/trentm/python-markdown2/wiki/Extras
                 html = markdown2.markdown(content, extras=['fenced-code-blocks', 'strike', 'tables', 'task_list'])
-                # print(html)
+                # logger.info(html)
             else:
                 no_latex_part, latex_code_part = sanitizeInput(content)
                 html = reconstructMath(markdown2.markdown(no_latex_part,
                                                           extras=['fenced-code-blocks', 'strike', 'tables',
                                                                   'task_list']),
                                        latex_code_part)
+        note_id = ''
 
         # detect images
         pat = '<img (.*?) />'
         images = re.findall(pat, html)
 
-        if not images:
-            res = self.create_note(
-                parentNoteId=parentNoteId,
-                title=md_name,
-                type="text",
-                content=html,
-            )
+        res = self.create_note(
+            parentNoteId=parentNoteId,
+            title=md_name,
+            type="text",
+            content=html,
+        )
+        note_id = res['note']['noteId']
+        # logger.info(note_id)
 
-        else:
+        if images:
             # images require manually upload and url need to be replaced
-            print('found images:')
-            print(images)
-
-            # create empty note, replace it later
-            res = self.create_note(
-                parentNoteId=parentNoteId,
-                title=md_name,
-                type="text",
-                content='importing...',
-            )
-            # print(res)
-
-            note_id = res['note']['noteId']
-            # print(note_id)
+            logger.info('found images:')
+            logger.info(images)
 
             # process images
             for match in images:
@@ -773,11 +752,11 @@ class ETAPI:
                     title=image_name,
                     image_file=image_file_path,
                 )
-                # print(res)
+                # logger.info(res)
                 image_note_id = res['note']['noteId']
                 # fix path with `/` in it, the param should be quoted. e.g. relative url from obsidian
                 image_url = f"api/images/{image_note_id}/{urllib.parse.quote(res['note']['title'], safe='')}"
-                print(image_url)
+                logger.info(image_url)
 
                 html = html.replace(image_path, image_url)
 
@@ -787,9 +766,57 @@ class ETAPI:
 
             # replace note content
             res = self.update_note_content(note_id, html)
-            # print(res)
+            # logger.info(res)
 
-            return res
+        # detect files
+        pat = '<a href="(.*?)">(.*)</a>'
+        a_links = re.findall(pat, html)
+        logger.info(a_links)
+        for link, link_name in a_links:
+
+            # fix file path
+            file_path = ''
+            if link.startswith(('http:', 'https:')):
+                # skip online link
+                continue
+            if os.path.exists(link):
+                # absolute file path
+                file_path = link
+            else:
+                file_path = os.path.join(md_folder, link).replace('\\', '/')
+                # unquote path, incase the url is quoted
+                file_path_unquote = urllib.parse.unquote(file_path)
+
+                # skip if path does not point to a valid file
+                if os.path.isdir(file_path) or os.path.isdir(file_path_unquote):
+                    continue
+
+                # try both raw path and unquoted path
+                if os.path.exists(file_path_unquote):
+                    file_path = file_path_unquote
+
+            # upload file
+            if os.path.exists(file_path):
+                logger.info(file_path)
+
+                res = self.create_file_note(
+                    parentNoteId=note_id,
+                    title=link_name,
+                    file_path=file_path,
+                )
+                logger.info(res)
+
+                # update file link
+                file_note_id = res['note']['noteId']
+                # fix path with `/` in it, the param should be quoted. e.g. relative url from obsidian
+                file_url = f"#root/{note_id}/{file_note_id}"
+
+                html = html.replace(link, file_url)
+
+            # replace note content
+            res = self.update_note_content(note_id, html)
+
+        return res
 
     def upload_md_folder(self, parentNoteId: str, mdFolder: str, includePattern=[],
                          ignoreFolder=[], ignoreFile=[]):
@@ -799,7 +826,7 @@ class ETAPI:
         # note tree
         # record for noteId
         note_tree = {'.': parentNoteId}
-        print(mdFolder)
+        logger.info(mdFolder)
 
         mdFolder = os.path.expandvars(os.path.expanduser(mdFolder))
 
@@ -810,14 +837,14 @@ class ETAPI:
             if any(x in rel_path for x in ignoreFolder):
                 continue
 
-            print('==============')
-            print(f'root {root}')
-            print(f'root_folder_name {root_folder_name}')
-            print(f'rel_path {rel_path}')
+            logger.info('==============')
+            logger.info(f'root {root}')
+            logger.info(f'root_folder_name {root_folder_name}')
+            logger.info(f'rel_path {rel_path}')
 
             current_parent_note_id = note_tree[rel_path]
 
-            print(f'files')
+            logger.info(f'files')
             for name in natsort.natsorted(files):
                 # only include markdown files
                 if any(x == name for x in ignoreFile):
@@ -825,16 +852,16 @@ class ETAPI:
 
                 if any(x in name for x in includePattern):
                     file_path = os.path.join(root, name)
-                    print(file_path)
+                    logger.info(file_path)
                     self.upload_md_file(file=file_path, parentNoteId=current_parent_note_id)
 
-            print(f'dirs')
+            logger.info(f'dirs')
             for name in natsort.natsorted(dirs):
                 if all(x not in name for x in ignoreFolder):
                     dir_path = os.path.join(root, name)
-                    print(dir_path)
+                    logger.info(dir_path)
                     rel_path = os.path.relpath(dir_path, start=mdFolder)
-                    print(rel_path)
+                    logger.info(rel_path)
                     res = self.create_note(
                         parentNoteId=current_parent_note_id,
                         title=name,
@@ -851,6 +878,6 @@ class ETAPI:
 
         res = requests.put(url, headers=self.get_header())
         if res.status_code == 204:
-            print('backup successfully')
+            logger.info('backup successfully')
             return True
         return False

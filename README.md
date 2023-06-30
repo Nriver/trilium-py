@@ -43,6 +43,7 @@ Python client for ETAPI of Trilium Note.
         - [Import from Logseq](#import-from-logseq)
         - [Import from Obsidian](#import-from-obsidian)
         - [Import from Youdao Note/有道云笔记](#import-from-youdao-note有道云笔记)
+        - [Import from Turtl](#import-from-turtl)
         - [Import from other markdown software](#import-from-other-markdown-software)
 - [🛠️ Develop](#️-develop)
 - [🔗 Original OpenAPI Documentation](#-original-openapi-documentation)
@@ -344,6 +345,21 @@ download your notes and convert them into markdown files. After that, trilium-py
 res = ea.upload_md_folder(
     parentNoteId="root",
     mdFolder="/home/nate/gitRepo/youdaonote-pull/out/",
+)
+```
+
+### Import from Turtl
+
+You need to convert Turtl from json to markdown first.
+See [turtl-to-markdown](https://github.com/Nriver/trilium-py/tree/main/examples/turtl-to-markdown) for details.
+
+Then you can import with trilium-py like this:
+
+```python
+res = ea.upload_md_folder(
+    parentNoteId="root",
+    mdFolder="/home/nate/gitRepo/turtl-to-markdown/out/",
+    ignoreFolder=['_resources'],
 )
 ```
 

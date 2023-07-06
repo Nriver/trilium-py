@@ -10,6 +10,7 @@ from loguru import logger
 from natsort import natsort
 
 from .utils.markdown_math import sanitizeInput, reconstructMath
+from .utils.note_util import beautify_content
 from .utils.param_util import format_query_string, clean_param
 from .utils.time_util import get_yesterday, get_today
 
@@ -881,3 +882,15 @@ class ETAPI:
             logger.info('backup successfully')
             return True
         return False
+
+    def beautify_note(self, noteId: str) -> str:
+        """
+        beautify note content, add new lines and remove redundant lines
+
+        :param noteId:
+        :return:
+        """
+        content = self.get_note_content(noteId)
+        new_content = beautify_content(content)
+        res = self.update_note_content(noteId, new_content)
+        return res

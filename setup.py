@@ -160,6 +160,7 @@ setup(
         'markdown2[all]',
         'natsort',
         'loguru',
+        'minify-html',
     ],
     # Optional
 

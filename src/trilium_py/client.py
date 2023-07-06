@@ -885,7 +885,7 @@ class ETAPI:
 
     def beautify_note(self, noteId: str) -> str:
         """
-        beautify note content, add new lines and remove redundant lines
+        beautify note content, add new lines and remove redundant lines, etc.
 
         :param noteId:
         :return:
@@ -894,3 +894,20 @@ class ETAPI:
         new_content = beautify_content(content)
         res = self.update_note_content(noteId, new_content)
         return res
+
+    def beautify_sub_notes(self, noteId: str):
+        """
+        beautify note and its child notes
+
+        :param noteId:
+        :return:
+        """
+        note = self.get_note(noteId)
+        logger.info(f"{noteId} {note['type']} {note['title']}")
+
+        if note['type'] == 'text':
+            self.beautify_note(noteId)
+
+        for x in note['childNoteIds']:
+            # logger.info(x)
+            self.beautify_sub_notes(x)

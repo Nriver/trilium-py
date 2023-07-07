@@ -45,6 +45,9 @@ Python client for ETAPI of Trilium Note.
         - [Import from Youdao Note/有道云笔记](#import-from-youdao-note有道云笔记)
         - [Import from Turtl](#import-from-turtl)
         - [Import from other markdown software](#import-from-other-markdown-software)
+- [(Advanced Usage) 🎨 Beautify notes](#advanced-usage--beautify-notes)
+    - [Beautify a note](#beautify-a-note)
+    - [Beautify a note and its child notes](#beautify-a-note-and-its-child-notes)
 - [🛠️ Develop](#️-develop)
 - [🔗 Original OpenAPI Documentation](#-original-openapi-documentation)
 
@@ -375,6 +378,29 @@ res = ea.upload_md_folder(
 ```
 
 If there is any problem, please feel free to create an [issue](https://github.com/Nriver/trilium-py/issues/new).
+
+## (Advanced Usage) 🎨 Beautify notes
+
+Because of the constraints imposed by the library utilized by Trilium, imported notes may experience minor formatting
+problems. These issues include an additional line appearing at the end of code blocks, images becoming integrated with
+the note content, and the absence of line breaks between headings, resulting in a cramped appearance of the note
+content.
+
+Here is what you can do to beautify your note.
+
+### Beautify a note
+
+Specify a note id to beautify note content.
+
+```
+ea.beautify_note('krm8B9JthNfi')
+```
+
+### Beautify a note and its child notes
+
+```
+ea.beautify_sub_notes('tlPuzU2szLJh')
+```
 
 # 🛠️ Develop
 

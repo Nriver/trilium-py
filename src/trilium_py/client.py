@@ -1,6 +1,7 @@
 import os
 import re
 import urllib.parse
+from typing import Optional
 
 import magic
 import markdown2
@@ -9,24 +10,23 @@ from bs4 import BeautifulSoup
 from loguru import logger
 from natsort import natsort
 
-from .utils.markdown_math import sanitizeInput, reconstructMath
+from .utils.markdown_math import reconstructMath, sanitizeInput
 from .utils.note_util import beautify_content
-from .utils.param_util import format_query_string, clean_param
-from .utils.time_util import get_yesterday, get_today
+from .utils.param_util import clean_param, format_query_string
+from .utils.time_util import get_today, get_yesterday
 
 
 class ETAPI:
-
-    def __init__(self, server_url: str, token: str = None):
+    def __init__(self, server_url: str, token: Optional[str] = None):
         self.server_url = server_url
-        self.token = token
+        self.token: str = token  # type: ignore
 
     def get_header(self) -> dict:
         return {
             'Authorization': self.token,
         }
 
-    def login(self, password: str) -> str:
+    def login(self, password: str) -> Optional[str]:
         """
         generate token with password
         """
@@ -42,7 +42,7 @@ class ETAPI:
             logger.info(res.json()['message'])
             return None
 
-    def logout(self, token_to_destroy: str = None) -> bool:
+    def logout(self, token_to_destroy: Optional[str] = None) -> bool:
         """
         destroy token
         """
@@ -68,8 +68,6 @@ class ETAPI:
 
         :return:
         """
-        result = []
-
         url = f'{self.server_url}/etapi/app-info'
         res = requests.get(url, headers=self.get_header())
         return res.json()
@@ -81,8 +79,6 @@ class ETAPI:
         :param params:
         :return:
         """
-        result = []
-
         url = f'{self.server_url}/etapi/notes'
         params['search'] = search
         res = requests.get(url, params=format_query_string(params), headers=self.get_header())
@@ -100,10 +96,19 @@ class ETAPI:
         res = requests.get(url, headers=self.get_header())
         return res.json()
 
-    def create_note(self, parentNoteId: str, title: str, type: str, mime: str = None, content=None,
-                    notePosition: int = None, prefix: str = None,
-                    isExpanded: str = None, noteId: str = None,
-                    branchId: str = None) -> dict:
+    def create_note(
+        self,
+        parentNoteId: str,
+        title: str,
+        type: str,
+        mime: Optional[str] = None,
+        content=None,
+        notePosition: Optional[int] = None,
+        prefix: Optional[str] = None,
+        isExpanded: Optional[str] = None,
+        noteId: Optional[str] = None,
+        branchId: Optional[str] = None,
+    ) -> dict:
         """
         Actually it's create or update, if noteId already exists, the corresponding note will be updated
         :param parentNoteId:
@@ -130,17 +135,26 @@ class ETAPI:
             "prefix": prefix,
             "isExpanded": isExpanded,
             "noteId": noteId,
-            "branchId": branchId
+            "branchId": branchId,
         }
         res = requests.post(url, json=clean_param(params), headers=self.get_header())
 
         return res.json()
 
-    def create_file_note(self, parentNoteId: str, title: str, file_path: str,
-                         type: str = 'file', mime: str = "application/octet-stream",
-                         content='<p></p>', notePosition: int = None, prefix: str = None,
-                         isExpanded: str = None, noteId: str = None,
-                         branchId: str = None):
+    def create_file_note(
+        self,
+        parentNoteId: str,
+        title: str,
+        file_path: str,
+        type: str = 'file',
+        mime: str = "application/octet-stream",
+        content='<p></p>',
+        notePosition: Optional[int] = None,
+        prefix: Optional[str] = None,
+        isExpanded: Optional[str] = None,
+        noteId: Optional[str] = None,
+        branchId: Optional[str] = None,
+    ):
         '''
         Upload ordinary file as a sub-note
 
@@ -173,37 +187,61 @@ class ETAPI:
             "prefix": prefix,
             "isExpanded": isExpanded,
             "noteId": noteId,
-            "branchId": branchId
+            "branchId": branchId,
         }
 
-        res_file = requests.post(url, json=clean_param(params),
-                                 headers={'content-type': 'application/json', 'Authorization': self.token, })
+        res_file = requests.post(
+            url,
+            json=clean_param(params),
+            headers={
+                'content-type': 'application/json',
+                'Authorization': self.token,
+            },
+        )
         res_file_json = res_file.json()
         new_noteId = res_file_json['note']['noteId']
 
         # set file name
         file_path_name = os.path.basename(file_path)
-        self.create_attribute(attributeId=None, noteId=new_noteId, type='label', name='originalFileName',
-                              value=file_path_name, isInheritable=False)
+        self.create_attribute(
+            attributeId=None,
+            noteId=new_noteId,
+            type='label',
+            name='originalFileName',
+            value=file_path_name,
+            isInheritable=False,
+        )
 
         # upload file, set note content
         url = f'{self.server_url}/etapi/notes/{new_noteId}/content'
         file_data = open(file_path, 'rb').read()
-        res = requests.put(url, data=file_data,
-                           headers={
-                               'content-type': 'application/octet-stream',
-                               'Content-Transfer-Encoding': 'binary',
-                               'Authorization': self.token,
-                           })
+        res = requests.put(
+            url,
+            data=file_data,
+            headers={
+                'content-type': 'application/octet-stream',
+                'Content-Transfer-Encoding': 'binary',
+                'Authorization': self.token,
+            },
+        )
         if res.status_code == 204:
             return res_file_json
         return
 
-    def create_image_note(self, parentNoteId: str, title: str, image_file: str, type: str = 'image', mime: str = None,
-                          content=None,
-                          notePosition: int = None, prefix: str = None,
-                          isExpanded: str = None, noteId: str = None,
-                          branchId: str = None):
+    def create_image_note(
+        self,
+        parentNoteId: str,
+        title: str,
+        image_file: str,
+        type: str = 'image',
+        mime: Optional[str] = None,
+        content=None,
+        notePosition: Optional[int] = None,
+        prefix: Optional[str] = None,
+        isExpanded: Optional[str] = None,
+        noteId: Optional[str] = None,
+        branchId: Optional[str] = None,
+    ):
 
         '''
         Upload image as a sub-note
@@ -246,35 +284,56 @@ class ETAPI:
             "prefix": prefix,
             "isExpanded": isExpanded,
             "noteId": noteId,
-            "branchId": branchId
+            "branchId": branchId,
         }
-        res_image = requests.post(url, json=clean_param(params),
-                                  headers={'content-type': 'application/json', 'Authorization': self.token, })
+        res_image = requests.post(
+            url,
+            json=clean_param(params),
+            headers={
+                'content-type': 'application/json',
+                'Authorization': self.token,
+            },
+        )
         res_image_json = res_image.json()
         new_noteId = res_image_json['note']['noteId']
 
         # set file name
         image_file_name = os.path.basename(image_file)
-        self.create_attribute(attributeId=None, noteId=new_noteId, type='label', name='originalFileName',
-                              value=image_file_name, isInheritable=False)
+        self.create_attribute(
+            attributeId=None,
+            noteId=new_noteId,
+            type='label',
+            name='originalFileName',
+            value=image_file_name,
+            isInheritable=False,
+        )
 
         # upload image, set note content
         url = f'{self.server_url}/etapi/notes/{new_noteId}/content'
         image_data = open(image_file, 'rb').read()
         # content-type here will affect the result
         # not working, encoding issue? automated force encoding to utf-8 and lost data
-        res = requests.put(url, data=image_data,
-                           # headers={'content-type': 'text/plain', 'Authorization': self.token, })
-                           headers={
-                               'content-type': 'application/octet-stream',
-                               'Content-Transfer-Encoding': 'binary',
-                               'Authorization': self.token,
-                           })
+        res = requests.put(
+            url,
+            data=image_data,
+            # headers={'content-type': 'text/plain', 'Authorization': self.token, })
+            headers={
+                'content-type': 'application/octet-stream',
+                'Content-Transfer-Encoding': 'binary',
+                'Authorization': self.token,
+            },
+        )
         if res.status_code == 204:
             return res_image_json
         return
 
-    def patch_note(self, noteId: str, title: str = None, type: str = None, mime: str = None) -> dict:
+    def patch_note(
+        self,
+        noteId: str,
+        title: Optional[str] = None,
+        type: Optional[str] = None,
+        mime: Optional[str] = None,
+    ) -> dict:
         url = f'{self.server_url}/etapi/notes/{noteId}'
         params = {
             "title": title,
@@ -299,8 +358,11 @@ class ETAPI:
     def update_note_content(self, noteId: str, content: str) -> bool:
         """update note content"""
         url = f'{self.server_url}/etapi/notes/{noteId}/content'
-        res = requests.put(url, data=content.encode('utf-8'),
-                           headers={'content-type': 'text/plain', 'Authorization': self.token})
+        res = requests.put(
+            url,
+            data=content.encode('utf-8'),
+            headers={'content-type': 'text/plain', 'Authorization': self.token},
+        )
         if res.status_code == 204:
             return True
         return False
@@ -310,8 +372,16 @@ class ETAPI:
         res = requests.get(url, headers=self.get_header())
         return res.json()
 
-    def create_branch(self, branchId: str, noteId: str, parentNoteId: str, prefix: str, notePosition: int,
-                      isExpanded: bool, utcDateModified) -> dict:
+    def create_branch(
+        self,
+        branchId: str,
+        noteId: str,
+        parentNoteId: str,
+        prefix: str,
+        notePosition: int,
+        isExpanded: bool,
+        utcDateModified,
+    ) -> dict:
         # url = f'{self.server_url}/etapi/branches/{branchId}'
         url = f'{self.server_url}/etapi/branches/'
         params = {
@@ -321,7 +391,7 @@ class ETAPI:
             "prefix": prefix,
             "notePosition": notePosition,
             "isExpanded": isExpanded,
-            "utcDateModified": utcDateModified
+            "utcDateModified": utcDateModified,
         }
         res = requests.post(url, json=clean_param(params), headers=self.get_header())
         return res.json()
@@ -348,8 +418,15 @@ class ETAPI:
         res = requests.get(url, headers=self.get_header())
         return res.json()
 
-    def create_attribute(self, attributeId: str, noteId: str, type: str, name: str, value: str,
-                         isInheritable: bool) -> dict:
+    def create_attribute(
+        self,
+        attributeId: Optional[str],
+        noteId: str,
+        type: str,
+        name: str,
+        value: str,
+        isInheritable: bool,
+    ) -> dict:
         url = f'{self.server_url}/etapi/attributes/'
         params = {
             "attributeId": attributeId,
@@ -678,14 +755,19 @@ class ETAPI:
             if not re.search(re.escape("$"), content):
                 # extra format support
                 # https://github.com/trentm/python-markdown2/wiki/Extras
-                html = markdown2.markdown(content, extras=['fenced-code-blocks', 'strike', 'tables', 'task_list'])
+                html = markdown2.markdown(
+                    content, extras=['fenced-code-blocks', 'strike', 'tables', 'task_list']
+                )
                 # logger.info(html)
             else:
                 no_latex_part, latex_code_part = sanitizeInput(content)
-                html = reconstructMath(markdown2.markdown(no_latex_part,
-                                                          extras=['fenced-code-blocks', 'strike', 'tables',
-                                                                  'task_list']),
-                                       latex_code_part)
+                html = reconstructMath(
+                    markdown2.markdown(
+                        no_latex_part,
+                        extras=['fenced-code-blocks', 'strike', 'tables', 'task_list'],
+                    ),
+                    latex_code_part,
+                )
         note_id = ''
 
         # detect images
@@ -762,8 +844,14 @@ class ETAPI:
                 html = html.replace(image_path, image_url)
 
                 # add relation for image
-                self.create_attribute(attributeId=None, noteId=note_id, type='relation', name='imageLink',
-                                      value=image_note_id, isInheritable=False)
+                self.create_attribute(
+                    attributeId=None,
+                    noteId=note_id,
+                    type='relation',
+                    name='imageLink',
+                    value=image_note_id,
+                    isInheritable=False,
+                )
 
             # replace note content
             res = self.update_note_content(note_id, html)
@@ -819,10 +907,18 @@ class ETAPI:
 
         return res
 
-    def upload_md_folder(self, parentNoteId: str, mdFolder: str, includePattern=[],
-                         ignoreFolder=[], ignoreFile=[]):
+    def upload_md_folder(
+        self,
+        parentNoteId: str,
+        mdFolder: str,
+        includePattern=[],
+        ignoreFolder=[],
+        ignoreFile=[],
+    ):
         if not includePattern:
-            includePattern = ['.md', ]
+            includePattern = [
+                '.md',
+            ]
 
         # note tree
         # record for noteId
@@ -845,7 +941,7 @@ class ETAPI:
 
             current_parent_note_id = note_tree[rel_path]
 
-            logger.info(f'files')
+            logger.info('files')
             for name in natsort.natsorted(files):
                 # only include markdown files
                 if any(x == name for x in ignoreFile):
@@ -856,7 +952,7 @@ class ETAPI:
                     logger.info(file_path)
                     self.upload_md_file(file=file_path, parentNoteId=current_parent_note_id)
 
-            logger.info(f'dirs')
+            logger.info('dirs')
             for name in natsort.natsorted(dirs):
                 if all(x not in name for x in ignoreFolder):
                     dir_path = os.path.join(root, name)
@@ -883,7 +979,7 @@ class ETAPI:
             return True
         return False
 
-    def beautify_note(self, noteId: str) -> str:
+    def beautify_note(self, noteId: str) -> bool:
         """
         beautify note content, add new lines and remove redundant lines, etc.
 

@@ -1007,3 +1007,19 @@ class ETAPI:
         for x in note['childNoteIds']:
             # logger.info(x)
             self.beautify_sub_notes(x)
+
+    def close(self):
+        """
+        Force sync from server
+
+        .. Code:: python
+
+        with closing(client.get_note(noteId)) as note:
+            pass
+
+        :return:
+        """
+        url = f"{self.server_url}/etapi/sync/now"
+        res = requests.post(url, headers=self.get_header())
+        if res.status_code == 200:
+            logger.info("sync successfully")

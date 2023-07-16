@@ -1,7 +1,7 @@
 import os
 import re
 import urllib.parse
-from typing import Optional
+from typing import List, Optional
 
 import magic
 import markdown2
@@ -242,7 +242,6 @@ class ETAPI:
         noteId: Optional[str] = None,
         branchId: Optional[str] = None,
     ):
-
         '''
         Upload image as a sub-note
 
@@ -862,7 +861,6 @@ class ETAPI:
         a_links = re.findall(pat, html)
         logger.info(a_links)
         for link, link_name in a_links:
-
             # fix file path
             file_path = ''
             if link.startswith(('http:', 'https:')):
@@ -911,14 +909,13 @@ class ETAPI:
         self,
         parentNoteId: str,
         mdFolder: str,
-        includePattern=[],
-        ignoreFolder=[],
-        ignoreFile=[],
+        includePattern: Optional[List[str]] = None,
+        ignoreFolder: Optional[List[str]] = None,
+        ignoreFile: Optional[List[str]] = None,
     ):
-        if not includePattern:
-            includePattern = [
-                '.md',
-            ]
+        includePattern = includePattern or ['.md']
+        ignoreFolder = ignoreFolder or []
+        ignoreFile = ignoreFile or []
 
         # note tree
         # record for noteId

@@ -1,0 +1,4 @@
+include *.txt
+include tox.ini
+recursive-include examples *.md
+recursive-include examples *.py

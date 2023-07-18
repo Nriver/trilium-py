@@ -3,15 +3,18 @@ from typing import List, Optional
 
 from markdown2 import markdown
 
-# It's part of https://github.com/constantAmateur/markdown2Mathjax/blob/master/lib/markdown2Mathjax.py
+# It's part of
+#     https://github.com/constantAmateur/markdown2Mathjax/blob/master/lib/markdown2Mathjax.py
 
 
 def break_tie(inline, equation):
-    """If one of the delimiters is a substring of the other (e.g., $ and $$) it is possible that the two will begin at the same location.
-    In this case we need some criteria to break the tie and decide which operation takes precedence.
-    I've gone with the longer of the two delimiters takes priority (for example, $$ over $).
-    This function should return a 2 for the equation block taking precedence, a 1 for the inline block.
-    The magic looking return statement is to map 0->2 and 1->1."""
+    """If one of the delimiters is a substring of the other (e.g., $ and $$) it is possible that
+    the two will begin at the same location. In this case we need some criteria to break the tie
+    and decide which operation takes precedence. I've gone with the longer of the two delimiters
+    takes priority (for example, $$ over $). This function should return a 2 for the equation
+    block taking precedence, a 1 for the inline block. The magic looking return statement is
+    to map 0->2 and 1->1.
+    """
     tmp = inline.end() - inline.start() > equation.end() - equation.start()
     return (tmp * 3 + 2) % 4
 
@@ -32,14 +35,21 @@ def sanitizeInput(
     equation_delims: Optional[List[str]] = None,
     placeholder="$0$",
 ):
-    """Given a string that will be passed to markdown, the content of the different math blocks is stripped out and replaced by a placeholder which MUST be ignored by markdown.  A list is returned containing the text with placeholders and a list of the stripped out equations.  Note that any pre-existing instances of the placeholder are "replaced" with themselves and a corresponding dummy entry is placed in the returned codeblock.  The sanitized string can then be passed safetly through markdown and then reconstructed with reconstructMath.
+    """Given a string that will be passed to markdown, the content of the different math blocks
+    is stripped out and replaced by a placeholder which MUST be ignored by markdown.  A list
+    is returned containing the text with placeholders and a list of the stripped out equations.
+    Note that any pre-existing instances of the placeholder are "replaced" with themselves
+    and a corresponding dummy entry is placed in the returned codeblock.  The sanitized string
+    can then be passed safety through markdown and then reconstructed with reconstructMath.
 
-    There are potential four delimiters that can be specified.  The left and right delimiters for inline and equation mode math.  These can potentially be anything that isn't already used by markdown and is compatible with mathjax (see documentation for both).
+    There are potential four delimiters that can be specified.  The left and right delimiters
+    for inline and equation mode math.  These can potentially be anything that isn't already
+    used by markdown and is compatible with mathjax (see documentation for both).
     """
     inline_delims = inline_delims or ["$", "$"]
     equation_delims = equation_delims or ["$$", "$$"]
 
-    # Check placeholder is valid.
+    #Check placeholder is valid.
     if not markdown_safe(placeholder):
         raise ValueError("Placeholder %s altered by markdown processing." % placeholder)
     # really what we want is a reverse markdown function, but as that's too much work, this will do
@@ -52,8 +62,8 @@ def sanitizeInput(
     ilscanner = [inline_left.scanner(string), inline_right.scanner(string)]
     eqscanner = [equation_left.scanner(string), equation_right.scanner(string)]
     scanners = [placeholder_scan, ilscanner, eqscanner]
-    # There are 3 types of blocks, inline math, equation math and occurances of the placeholder in the text
-    # inBlack is 0 for a placeholder, 1 for inline block, 2 for equation
+    # There are 3 types of blocks, inline math, equation math and occurrences of the
+    # placeholder in the text inBlack is 0 for a placeholder, 1 for inline block, 2 for equation
     inBlock = 0
     post = -1
     stlen = len(string)
@@ -129,11 +139,17 @@ def reconstructMath(
     equation_delims: Optional[List[str]] = None,
     placeholder="$0$",
 ):
-    """This is usually the output of sanitizeInput, after having passed the output string through markdown.  The delimiters given to this function should match those used to construct the string to begin with.
+    """This is usually the output of sanitizeInput, after having passed the output string through
+    markdown.  The delimiters given to this function should match those used to construct the
+    string to begin with.
 
     This will output a string containing html suitable to use with mathjax.
 
-    "<" and ">" "&" symbols in math can confuse the html interpreter because they mark the begining and end of definition blocks.  To avoid issues, if htmlSafe is set to True these symbols will be replaced by ascii codes in the math blocks. The downside to this is that if anyone is already doing this, there already niced text might be mangled (I think I've taken steps to make sure it won't but not extensively tested...)
+    "<" and ">" "&" symbols in math can confuse the html interpreter because they mark the
+    beginning and end of definition blocks.  To avoid issues, if htmlSafe is set to True these
+    symbols will be replaced by ascii codes in the math blocks. The downside to this is that if
+    anyone is already doing this, there already formatted text might be mangled (I think I've taken
+    steps to make sure it won't but not extensively tested...)
     """
     inline_delims = inline_delims or ['<span class="math-tex">\(', '\)</span>']
     equation_delims = equation_delims or ['<span class="math-tex">\[', '\]</span>']
@@ -148,7 +164,8 @@ def reconstructMath(
     #        codeblocks[i]=safeAmp.sub("&amp;",codeblocks[i])
     #        codeblocks[i]=codeblocks[i].replace("<","&lt;")
     #        codeblocks[i]=codeblocks[i].replace(">","&gt;")
-    # Step through the codeblocks one at a time and replace the next occurance of the placeholder.  Extra placeholders are invalid math blocks and ignored...
+    # Step through the codeblocks one at a time and replace the next occurrence of the placeholder.
+    # Extra placeholders are invalid math blocks and ignored...
     outString = ''
     scan = placeholder_re.scanner(processedString)
     post = 0

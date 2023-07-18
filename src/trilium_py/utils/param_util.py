@@ -13,7 +13,11 @@ def format_query_string(params):
     :param params:
     :return:
     """
-    json_str = str(json.dumps(params, ensure_ascii=False)).replace(': false', ': "false"').replace(': true', ': "true"')
+    json_str = (
+        str(json.dumps(params, ensure_ascii=False))
+        .replace(': false', ': "false"')
+        .replace(': true', ': "true"')
+    )
     params = json.loads(json_str)
     return params
 

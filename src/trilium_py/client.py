@@ -1,5 +1,6 @@
 import os
 import re
+import sys
 import urllib.parse
 from typing import List, Optional
 
@@ -18,6 +19,15 @@ from .utils.time_util import get_today, get_yesterday
 
 class ETAPI:
     def __init__(self, server_url: str, token: Optional[str] = None):
+        if sys.version_info < (3, 9):
+            print(
+                (
+                    f'You are using Python {sys.version_info.major}.{sys.version_info.minor}'
+                    ', 3.9+ is required.'
+                ),
+                file=sys.stderr,
+            )
+
         self.server_url = server_url
         self.token: str = token  # type: ignore
 
@@ -110,7 +120,9 @@ class ETAPI:
         branchId: Optional[str] = None,
     ) -> dict:
         """
-        Actually it's create or update, if noteId already exists, the corresponding note will be updated
+        Actually it's create or update,
+        if noteId already exists, the corresponding note will be updated
+
         :param parentNoteId:
         :param title:
         :param type:
@@ -580,14 +592,14 @@ class ETAPI:
             new_content = str(soup)
             # free mem
             soup.decompose()
-            del soup
 
             return self.set_today_note_content(new_content)
         except IndexError:
             # free mem
             soup.decompose()
-            del soup
             return False
+        finally:
+            del soup
 
     def todo_uncheck(self, todo_index):
         """uncheck a todo"""
@@ -607,7 +619,12 @@ class ETAPI:
             if "todo-list__label" in todo_description:
                 todo_item_html = f'''<li>{todo_description}</li>'''
             else:
-                todo_item_html = f'''<li><label class="todo-list__label"><input disabled="disabled" type="checkbox"/ > <span class = "todo-list__label__description">{todo_description}</span></label></li>'''
+                todo_item_html = (
+                    f'''<li><label class="todo-list__label">'''
+                    f'''<input disabled="disabled" type="checkbox"/>'''
+                    f'''<span class = "todo-list__label__description">'''
+                    f'''{todo_description}</span></label></li>'''
+                )
 
             if not todo_labels:
                 logger.info('new empty page')
@@ -651,14 +668,14 @@ class ETAPI:
             new_content = str(soup)
             # free mem
             soup.decompose()
-            del soup
             return self.set_today_note_content(new_content)
 
         except IndexError:
             # free mem
             soup.decompose()
-            del soup
             return False
+        finally:
+            del soup
 
     def delete_todo(self, todo_index):
         """delete a todo item"""
@@ -682,14 +699,13 @@ class ETAPI:
 
             # free mem
             soup.decompose()
-            del soup
             return self.set_day_note(date, new_content)
-
         except IndexError:
             # free mem
             soup.decompose()
-            del soup
             return False
+        finally:
+            del soup
 
     def get_yesterday_unfinished_todo(self):
         content = self.get_yesterday_note_content()
@@ -836,8 +852,12 @@ class ETAPI:
                 )
                 # logger.info(res)
                 image_note_id = res['note']['noteId']
-                # fix path with `/` in it, the param should be quoted. e.g. relative url from obsidian
-                image_url = f"api/images/{image_note_id}/{urllib.parse.quote(res['note']['title'], safe='')}"
+                # fix path with `/` in it, the param should be quoted.
+                # e.g. relative url from obsidian
+                image_url = (
+                    f"api/images/{image_note_id}/"
+                    f"{urllib.parse.quote(res['note']['title'], safe='')}"
+                )
                 logger.info(image_url)
 
                 html = html.replace(image_path, image_url)
@@ -895,7 +915,8 @@ class ETAPI:
 
                 # update file link
                 file_note_id = res['note']['noteId']
-                # fix path with `/` in it, the param should be quoted. e.g. relative url from obsidian
+                # fix path with `/` in it, the param should be quoted.
+                # e.g. relative url from obsidian
                 file_url = f"#root/{note_id}/{file_note_id}"
 
                 html = html.replace(link, file_url)

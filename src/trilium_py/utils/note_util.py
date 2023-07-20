@@ -38,8 +38,10 @@ def beautify_content(content):
                 # logger.info(f'pos1 {content[back_pos1:pos]}')
                 # logger.info(f'pos2 {content[back_pos2:pos]}')
 
-                if not ((back_pos1 >= 0 and content[back_pos1:pos] == key1) or (
-                        back_pos2 >= 0 and content[back_pos2:pos] == key2)):
+                if not (
+                    (back_pos1 >= 0 and content[back_pos1:pos] == key1)
+                    or (back_pos2 >= 0 and content[back_pos2:pos] == key2)
+                ):
                     content = content[:pos] + '<p></p>' + content[pos:]
 
     # remove redundant new line in code block

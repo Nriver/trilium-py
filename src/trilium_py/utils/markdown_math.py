@@ -49,7 +49,7 @@ def sanitizeInput(
     inline_delims = inline_delims or ["$", "$"]
     equation_delims = equation_delims or ["$$", "$$"]
 
-    #Check placeholder is valid.
+    # Check placeholder is valid.
     if not markdown_safe(placeholder):
         raise ValueError("Placeholder %s altered by markdown processing." % placeholder)
     # really what we want is a reverse markdown function, but as that's too much work, this will do
@@ -151,8 +151,8 @@ def reconstructMath(
     anyone is already doing this, there already formatted text might be mangled (I think I've taken
     steps to make sure it won't but not extensively tested...)
     """
-    inline_delims = inline_delims or ['<span class="math-tex">\(', '\)</span>']
-    equation_delims = equation_delims or ['<span class="math-tex">\[', '\]</span>']
+    inline_delims = inline_delims or ['<span class="math-tex">\\(', '\\)</span>']
+    equation_delims = equation_delims or ['<span class="math-tex">\\[', '\\]</span>']
 
     delims = [['', ''], inline_delims, equation_delims]
     placeholder_re = re.compile("(?<!\\\\)" + re.escape(placeholder))

@@ -605,8 +605,9 @@ class ETAPI:
         """uncheck a todo"""
         return self.todo_check(todo_index, check=False)
 
-    def add_todo(self, todo_description):
+    def add_todo(self, todo_description: str, todo_caption: str = r'<p>TODO:</p>') -> bool:
         """append item to todo list"""
+
         todo_description = todo_description.strip()
         try:
             content = self.get_today_note_content()
@@ -628,7 +629,7 @@ class ETAPI:
 
             if not todo_labels:
                 logger.info('new empty page')
-                todo_item_html = f'''<p>TODO:</p><ul class="todo-list">{todo_item_html}</ul>'''
+                todo_item_html = todo_caption + f'<ul class="todo-list">{todo_item_html}</ul>'
                 todo_item = BeautifulSoup(todo_item_html, 'html.parser')
                 soup.insert(0, todo_item)
             else:

@@ -1,7 +1,9 @@
 import os
 import re
+import string
 import sys
 import urllib.parse
+from collections.abc import Mapping
 from typing import Optional, Union
 
 import magic
@@ -624,7 +626,6 @@ class ETAPI:
         :return: True if success, False if failed
         """
         todo_description = todo_description.strip()
-
         soup: Optional[BeautifulSoup] = None
         try:
             content = self.get_today_note_content()
@@ -637,16 +638,11 @@ class ETAPI:
             if "todo-list__label" in todo_description:
                 todo_item_html = f'''<li>{todo_description}</li>'''
             else:
-                todo_item_html = (
-                    f'''<li><label class="todo-list__label">'''
-                    f'''<input disabled="disabled" type="checkbox"/>'''
-                    f'''<span class = "todo-list__label__description">'''
-                    f'''{todo_description}</span></label></li>'''
-                )
+                todo_item_html = ItemTemplate(todo_description).substitute()
 
             if not todo_labels:
                 logger.info('new empty page')
-                todo_item_html = todo_caption + f'<ul class="todo-list">{todo_item_html}</ul>'
+                todo_item_html = ListTemplate(todo_caption).substitute(items=todo_item_html)
                 todo_item = BeautifulSoup(todo_item_html, 'html.parser')
                 soup.insert(0, todo_item)
             else:
@@ -1087,3 +1083,45 @@ class ETAPI:
         res = requests.post(url, headers=self.get_header())
         if res.status_code == 200:
             logger.info("sync successfully")
+
+
+class ListTemplate(string.Template):
+    """Encapsulate To Do List HTML details
+
+    :param caption: Text to be presented as the To Do list caption. Default: <p>TODO:</p>
+    """
+
+    def __init__(self, caption: str = '<p>TODO:</p>') -> None:
+        self._defaults: dict[str, object] = {
+            'caption': caption,
+        }
+        super().__init__('${caption}<ul class="todo-list">${items}</ul>')
+
+    def substitute(self, mapping: Optional[Mapping[str, object]] = None, **kwds: object) -> str:
+        d = self._defaults.copy()
+        d.update(mapping or {})
+        return super().substitute(d, **kwds)
+
+
+class ItemTemplate(string.Template):
+    """Encapsulate To Do Item HTML details
+
+    :param description: Optional text to be presented as the To Do item
+    :param checked: If True To Do item is presented will filled in check box. Default is False.
+    """
+
+    def __init__(self, description: Optional[str] = None, checked: bool = False) -> None:
+        super().__init__(
+            '<li><label class="todo-list__label">'
+            '<input${checked} disabled="disabled" type="checkbox"/>'
+            '<span class="todo-list__label__description">$description</span></label></li>'
+        )
+        self._defaults: dict[str, object] = {
+            'description': description,
+            'checked': ' checked="checked"' if checked else '',
+        }
+
+    def substitute(self, mapping: Optional[Mapping[str, object]] = None, **kwds: object) -> str:
+        d = self._defaults.copy()
+        d.update(mapping or {})
+        return super().substitute(d, **kwds)

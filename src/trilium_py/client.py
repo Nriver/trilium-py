@@ -1,8 +1,10 @@
 import os
 import re
+import string
 import sys
 import urllib.parse
-from typing import List, Optional
+from collections.abc import Mapping
+from typing import Optional, Union
 
 import magic
 import markdown2
@@ -75,6 +77,7 @@ class ETAPI:
 
     def app_info(self) -> dict:
         """
+        basic info about running Trilium version.
 
         :return:
         """
@@ -556,28 +559,37 @@ class ETAPI:
         noteId = res.json()['noteId']
         return self.update_note_content(noteId, content)
 
-    def get_todo(self):
-        """get today's todo list"""
+    def get_todo(self) -> list[list[Union[bool, str]]]:
+        """get today's todo list.
 
+        :return: list of todo items, each item is a list of [status, description]
+        """
         content = self.get_today_note_content()
         soup = BeautifulSoup(content, 'html.parser')
-        todo_labels = soup.find_all("label", {"class": "todo-list__label"})
-        todo_list = []
-        for x in todo_labels:
-            description = x.text.strip()
-            checked = x.find("input").get("checked")
-            if checked:
-                status = True
-            else:
-                status = False
-            todo_list.append([status, description])
-        # free mem
-        soup.decompose()
-        del soup
+        try:
+            todo_labels = soup.find_all("label", {"class": "todo-list__label"})
+            todo_list: list[list[Union[bool, str]]] = []
+            for x in todo_labels:
+                description = x.text.strip()
+                checked = x.find("input").get("checked")
+                if checked:
+                    status = True
+                else:
+                    status = False
+                todo_list.append([status, description])
+        finally:
+            # free mem
+            soup.decompose()
+            del soup
         return todo_list
 
-    def todo_check(self, todo_index, check=True):
-        """check/uncheck a todo"""
+    def todo_check(self, todo_index: int, check: bool = True) -> bool:
+        """check/uncheck a todo item by index.
+
+        :param todo_index: index starts from 0
+        :param check: True to check, False to uncheck
+        :return: True if success, False if failed
+        """
         content = self.get_today_note_content()
         soup = BeautifulSoup(content, 'html.parser')
         todo_labels = soup.find_all("label", {"class": "todo-list__label"})
@@ -590,25 +602,31 @@ class ETAPI:
                 del check_input['checked']
 
             new_content = str(soup)
-            # free mem
-            soup.decompose()
-
             return self.set_today_note_content(new_content)
         except IndexError:
-            # free mem
-            soup.decompose()
             return False
         finally:
+            # free mem
+            soup.decompose()
             del soup
 
-    def todo_uncheck(self, todo_index):
-        """uncheck a todo"""
+    def todo_uncheck(self, todo_index: int) -> bool:
+        """uncheck a todo item by index.
+
+        :param todo_index: index starts from 0
+        :return: True if success, False if failed
+        """
         return self.todo_check(todo_index, check=False)
 
     def add_todo(self, todo_description: str, todo_caption: str = r'<p>TODO:</p>') -> bool:
-        """append item to todo list"""
+        """append item to todo list.
 
+        :param todo_description: todo item
+        :param todo_caption: caption added to new todo lists, default to '<p>TODO:</p>'
+        :return: True if success, False if failed
+        """
         todo_description = todo_description.strip()
+        soup: Optional[BeautifulSoup] = None
         try:
             content = self.get_today_note_content()
             soup = BeautifulSoup(content, 'html.parser')
@@ -620,16 +638,11 @@ class ETAPI:
             if "todo-list__label" in todo_description:
                 todo_item_html = f'''<li>{todo_description}</li>'''
             else:
-                todo_item_html = (
-                    f'''<li><label class="todo-list__label">'''
-                    f'''<input disabled="disabled" type="checkbox"/>'''
-                    f'''<span class = "todo-list__label__description">'''
-                    f'''{todo_description}</span></label></li>'''
-                )
+                todo_item_html = ItemTemplate(todo_description).substitute()
 
             if not todo_labels:
                 logger.info('new empty page')
-                todo_item_html = todo_caption + f'<ul class="todo-list">{todo_item_html}</ul>'
+                todo_item_html = ListTemplate(todo_caption).substitute(items=todo_item_html)
                 todo_item = BeautifulSoup(todo_item_html, 'html.parser')
                 soup.insert(0, todo_item)
             else:
@@ -646,19 +659,25 @@ class ETAPI:
                     todo_list_label = soup.find_all("ul", {"class": "todo-list"})[0]
                     todo_list_label.append(todo_item)
             new_content = str(soup)
-            # free mem
-            soup.decompose()
-            del soup
 
             return self.set_today_note_content(new_content)
-
         except Exception as e:
             logger.info(e)
             return False
+        finally:
+            # free mem
+            if soup:
+                soup.decompose()
+                del soup
 
-    def update_todo(self, todo_index, todo_description):
-        """update a todo item description"""
+    def update_todo(self, todo_index: int, todo_description: str) -> bool:
+        """update a todo item by index.
+
+        :param todo_index: index starts from 0
+        :param todo_description: new todo item
+        :return: True if success, False if failed"""
         todo_description = todo_description.strip()
+
         content = self.get_today_note_content()
         soup = BeautifulSoup(content, 'html.parser')
         todo_labels = soup.find_all("label", {"class": "todo-list__label"})
@@ -667,89 +686,111 @@ class ETAPI:
             target_span = todo_label.find_next("span", {"class": "todo-list__label__description"})
             target_span.string = todo_description
             new_content = str(soup)
-            # free mem
-            soup.decompose()
             return self.set_today_note_content(new_content)
-
         except IndexError:
-            # free mem
-            soup.decompose()
             return False
         finally:
+            # free mem
+            soup.decompose()
             del soup
 
-    def delete_todo(self, todo_index):
-        """delete a todo item"""
+    def delete_todo(self, todo_index: int) -> bool:
+        """delete a todo item by index.
+
+        :param todo_index: index starts from 0
+        :return: True if success, False if failed
+        """
         date = get_today()
-        self.delete_date_todo(date, todo_index)
+        return self.delete_date_todo(date, todo_index)
 
-    def delete_yesterday_todo(self, todo_index):
+    def delete_yesterday_todo(self, todo_index: int) -> bool:
+        """delete todo item by index from yesterday's note.
+
+        :param todo_index: index starts from 0
+        :return: True if success, False if failed
+        """
         date = get_yesterday()
-        self.delete_date_todo(date, todo_index)
+        return self.delete_date_todo(date, todo_index)
 
-    def delete_date_todo(self, date, todo_index):
+    def delete_date_todo(self, date: str, todo_index: int) -> bool:
+        """delete todo item by index from a specific date's note.
+
+        :param date: date in format of "%Y-%m-%d", e.g. "2022-02-25"
+        :param todo_index: index starts from 0
+        :return: True if success, False if failed
+        """
         content = self.get_day_note(date)
+
         soup = BeautifulSoup(content, 'html.parser')
         todo_labels = soup.find_all("label", {"class": "todo-list__label"})
-
         try:
             todo_label = todo_labels[todo_index]
             # decompose parent <li> tag
             todo_label.parent.decompose()
-            new_content = str(soup)
 
-            # free mem
-            soup.decompose()
+            new_content = str(soup)
             return self.set_day_note(date, new_content)
         except IndexError:
-            # free mem
-            soup.decompose()
             return False
         finally:
+            # free mem
+            soup.decompose()
             del soup
 
-    def get_yesterday_unfinished_todo(self):
+    def get_yesterday_unfinished_todo(self) -> list[list[Union[bool, str]]]:
+        """get yesterday's unfinished todo list.
+
+        :return: list of todo items, each item is a list of [status, description]
+        """
         content = self.get_yesterday_note_content()
-        soup = BeautifulSoup(content, 'html.parser')
-        todo_labels = soup.find_all("label", {"class": "todo-list__label"})
+
         unfinished_todo_list = []
-        for x in todo_labels:
-            checked = x.find("input").get("checked")
-            if not checked:
-                description = x.text.strip()
-                unfinished_todo_list.append([False, description])
-        # free mem
-        soup.decompose()
-        del soup
+        soup = BeautifulSoup(content, 'html.parser')
+        try:
+            todo_labels = soup.find_all("label", {"class": "todo-list__label"})
+            for x in todo_labels:
+                checked = x.find("input").get("checked")
+                if not checked:
+                    description = x.text.strip()
+                    unfinished_todo_list.append([False, description])
+        finally:
+            # free mem
+            soup.decompose()
+            del soup
         return unfinished_todo_list
 
-    def move_yesterday_unfinished_todo_to_today(self):
+    def move_yesterday_unfinished_todo_to_today(self) -> None:
+        """move yesterday's unfinished todo list to today's note."""
         content = self.get_yesterday_note_content()
         soup = BeautifulSoup(content, 'html.parser')
-        todo_labels = soup.find_all("label", {"class": "todo-list__label"})
-        todo_indexes = []
-        todo_descriptions = []
-        for i, x in enumerate(todo_labels):
-            checked = x.find("input").get("checked")
-            if not checked:
-                description = x.text.strip()
-                if not description:
-                    # skip empty todos
-                    continue
-                todo_indexes.append(i)
-                # keep the internal link, text format or what so ever, avoid lost valuable info
-                todo_descriptions.append(str(x))
+        try:
+            todo_labels = soup.find_all("label", {"class": "todo-list__label"})
+            todo_indexes = []
+            todo_descriptions = []
+            for i, x in enumerate(todo_labels):
+                checked = x.find("input").get("checked")
+                if not checked:
+                    description = x.text.strip()
+                    if not description:
+                        # skip empty todos
+                        continue
+                    todo_indexes.append(i)
+                    # keep the internal link, text format or what so ever, avoid lost valuable info
+                    todo_descriptions.append(str(x))
 
-        if not todo_descriptions:
-            return
+            if not todo_descriptions:
+                return
 
-        # add todos to today
-        for description in todo_descriptions:
-            self.add_todo(description)
+            # add todos to today
+            for description in todo_descriptions:
+                self.add_todo(description)
 
-        # remove todos from yesterday
-        for i in reversed(sorted(todo_indexes)):
-            self.delete_yesterday_todo(i)
+            # remove todos from yesterday
+            for i in reversed(sorted(todo_indexes)):
+                self.delete_yesterday_todo(i)
+        finally:
+            soup.decompose()
+            del soup
 
     def upload_md_file(self, file: str, parentNoteId: str):
         md_file = os.path.abspath(file).replace('\\', '/').replace('//', '/')
@@ -931,9 +972,9 @@ class ETAPI:
         self,
         parentNoteId: str,
         mdFolder: str,
-        includePattern: Optional[List[str]] = None,
-        ignoreFolder: Optional[List[str]] = None,
-        ignoreFile: Optional[List[str]] = None,
+        includePattern: Optional[list[str]] = None,
+        ignoreFolder: Optional[list[str]] = None,
+        ignoreFile: Optional[list[str]] = None,
     ):
         includePattern = includePattern or ['.md']
         ignoreFolder = ignoreFolder or []
@@ -1042,3 +1083,45 @@ class ETAPI:
         res = requests.post(url, headers=self.get_header())
         if res.status_code == 200:
             logger.info("sync successfully")
+
+
+class ListTemplate(string.Template):
+    """Encapsulate To Do List HTML details
+
+    :param caption: Text to be presented as the To Do list caption. Default: <p>TODO:</p>
+    """
+
+    def __init__(self, caption: str = '<p>TODO:</p>') -> None:
+        self._defaults: dict[str, object] = {
+            'caption': caption,
+        }
+        super().__init__('${caption}<ul class="todo-list">${items}</ul>')
+
+    def substitute(self, mapping: Optional[Mapping[str, object]] = None, **kwds: object) -> str:
+        d = self._defaults.copy()
+        d.update(mapping or {})
+        return super().substitute(d, **kwds)
+
+
+class ItemTemplate(string.Template):
+    """Encapsulate To Do Item HTML details
+
+    :param description: Optional text to be presented as the To Do item
+    :param checked: If True To Do item is presented will filled in check box. Default is False.
+    """
+
+    def __init__(self, description: Optional[str] = None, checked: bool = False) -> None:
+        super().__init__(
+            '<li><label class="todo-list__label">'
+            '<input${checked} disabled="disabled" type="checkbox"/>'
+            '<span class="todo-list__label__description">$description</span></label></li>'
+        )
+        self._defaults: dict[str, object] = {
+            'description': description,
+            'checked': ' checked="checked"' if checked else '',
+        }
+
+    def substitute(self, mapping: Optional[Mapping[str, object]] = None, **kwds: object) -> str:
+        d = self._defaults.copy()
+        d.update(mapping or {})
+        return super().substitute(d, **kwds)

@@ -10,60 +10,60 @@ Python client for ETAPI of Trilium Note.
 
 <a href="https://github.com/Nriver"><img align="center" src="https://moe-counter--nriver1.repl.co/get/@Nriver_trilium-py"></a><br>
 
-# 🦮 Table of Contents
+## 🦮 Table of Contents
 
 <!--ts-->
 
 - [🐍 trilium-py](#-trilium-py)
-- [🦮 Table of Contents](#-table-of-contents)
-- [🔧 Installation](#-installation)
-- [📖 (Basic) Usage](#-basic-usage)
+  - [🦮 Table of Contents](#-table-of-contents)
+  - [🔧 Installation](#-installation)
+  - [📖 (Basic) Usage](#-basic-usage)
     - [🚀 Initialization](#-initialization)
     - [📊 Application Information](#-application-information)
     - [🔍 Search note](#-search-note)
     - [🏭 Create Note](#-create-note)
-        - [🖼️ Create Image note](#️-create-image-note)
+      - [🖼️ Create Image note](#️-create-image-note)
     - [👀 Get note](#-get-note)
     - [🔄 Update note](#-update-note)
     - [🗑️ Delete note](#️-delete-note)
     - [📅 Day note](#-day-note)
     - [📤 Export note](#-export-note)
-    - [💾Create data backup](#-create-data-backup)
-- [(Advanced Usage) ✅ TODO List](#advanced-usage--todo-list)
+    - [💾 Create data backup](#-create-data-backup)
+  - [(Advanced Usage) ✅ TODO List](#advanced-usage--todo-list)
     - [Add TODO item](#add-todo-item)
     - [Check/Uncheck a TODO item](#checkuncheck-a-todo-item)
     - [Update a TODO item](#update-a-todo-item)
-    - [Delete a TDOO item](#delete-a-tdoo-item)
+    - [Delete a TODO item](#delete-a-todo-item)
     - [Move yesterday's unfinished todo to today](#move-yesterdays-unfinished-todo-to-today)
-- [(Advanced Usage) 🚚 Upload Markdown files](#advanced-usage--upload-markdown-files)
+  - [(Advanced Usage) 🚚 Upload Markdown files](#advanced-usage--upload-markdown-files)
     - [Upload single Markdown file with images](#upload-single-markdown-file-with-images)
     - [Bulk upload Markdown files in a folder](#bulk-upload-markdown-files-in-a-folder)
-        - [Import from VNote](#import-from-vnote)
-        - [Import from Joplin](#import-from-joplin)
-        - [Import from Logseq](#import-from-logseq)
-        - [Import from Obsidian](#import-from-obsidian)
-        - [Import from Youdao Note/有道云笔记](#import-from-youdao-note有道云笔记)
-        - [Import from Turtl](#import-from-turtl)
-        - [Import from other markdown software](#import-from-other-markdown-software)
-- [(Advanced Usage) 🎨 Beautify notes](#advanced-usage--beautify-notes)
+      - [Import from VNote](#import-from-vnote)
+      - [Import from Joplin](#import-from-joplin)
+      - [Import from Logseq](#import-from-logseq)
+      - [Import from Obsidian](#import-from-obsidian)
+      - [Import from Youdao Note/有道云笔记](#import-from-youdao-note有道云笔记)
+      - [Import from Turtl](#import-from-turtl)
+      - [Import from other markdown software](#import-from-other-markdown-software)
+  - [(Advanced Usage) 🎨 Beautify notes](#advanced-usage--beautify-notes)
     - [Beautify a note](#beautify-a-note)
     - [Beautify a note and its child notes](#beautify-a-note-and-its-child-notes)
-- [🛠️ Develop](#️-develop)
-- [🔗 Original OpenAPI Documentation](#-original-openapi-documentation)
+  - [🛠️ Develop](#️-develop)
+  - [🔗 Original OpenAPI Documentation](#-original-openapi-documentation)
 
 <!--te-->
 
-# 🔧 Installation
+## 🔧 Installation
 
 ```bash
 python3 -m pip install trilium-py --user
 ```
 
-# 📖 (Basic) Usage
+## 📖 (Basic) Usage
 
 These are basic function that Trilium's ETAPI provides. Down below are some simple example code to use this package.
 
-## 🚀 Initialization
+### 🚀 Initialization
 
 If you have a ETAPI token, change the `server_url` and `token` to yours.
 
@@ -90,7 +90,7 @@ print(token)
 
 After initialization, you can use Trilium ETAPI with python now. The following are some examples.
 
-## 📊 Application Information
+### 📊 Application Information
 
 To start with, you can get the application information like this.
 
@@ -100,7 +100,7 @@ print(ea.app_info())
 
 It should give you the version of your server application and some extra information.
 
-## 🔍 Search note
+### 🔍 Search note
 
 Search note with keyword.
 
@@ -113,7 +113,7 @@ for x in res['results']:
     print(x['noteId'], x['title'])
 ```
 
-## 🏭 Create Note
+### 🏭 Create Note
 
 You can create a simple note like this.
 
@@ -133,7 +133,7 @@ The `noteId` is not mandatory, if not provided, Trilium will generate a random o
 noteId = res['note']['noteId']
 ```
 
-### 🖼️ Create Image note
+#### 🖼️ Create Image note
 
 Image note is a special kind of note. You can create an image note with minimal information like this. The `image_file`
 refers to the path of image.
@@ -146,7 +146,7 @@ res = ea.create_image_note(
 )
 ```
 
-## 👀 Get note
+### 👀 Get note
 
 To retrieve the note's content.
 
@@ -160,7 +160,7 @@ You can get a note metadata by its id.
 ea.get_note(note_id)
 ```
 
-## 🔄 Update note
+### 🔄 Update note
 
 Update note content
 
@@ -177,7 +177,7 @@ ea.patch_note(
 )
 ```
 
-## 🗑️ Delete note
+### 🗑️ Delete note
 
 Simply delete a note by id.
 
@@ -185,7 +185,7 @@ Simply delete a note by id.
 ea.delete_note("note1")
 ```
 
-## 📅 Day note
+### 📅 Day note
 
 You can get the content of a certain date with `get_day_note`. The date string should be in format of "%Y-%m-%d", e.g. "
 2022-02-25".
@@ -200,7 +200,7 @@ Then set/update a day note with `set_day_note`. The content should be a (html) s
 self.set_day_note(date, new_content)
 ```
 
-## 📤 Export note
+### 📤 Export note
 
 Export note comes in two formats `html` or `markdown`/`md`.
 
@@ -212,7 +212,7 @@ res = ea.export_note(
 )
 ```
 
-## 💾 Create data backup
+### 💾 Create data backup
 
 This example will create a database backup file like this `trilium-data/backup/backup-test.db`.
 
@@ -220,11 +220,11 @@ This example will create a database backup file like this `trilium-data/backup/b
 res = ea.backup("test")
 ```
 
-# (Advanced Usage) ✅ TODO List
+## (Advanced Usage) ✅ TODO List
 
 With the power of Python, I have expanded the basic usage of ETAPI. You can do something with todo list now.
 
-## Add TODO item
+### Add TODO item
 
 You can use `add_todo` to add a TODO item, param is the TODO description
 
@@ -232,7 +232,7 @@ You can use `add_todo` to add a TODO item, param is the TODO description
 ea.add_todo("买暖宝宝")
 ```
 
-## Check/Uncheck a TODO item
+### Check/Uncheck a TODO item
 
 param is the index of the TODO item
 
@@ -241,7 +241,7 @@ ea.todo_check(0)
 ea.todo_uncheck(1)
 ```
 
-## Update a TODO item
+### Update a TODO item
 
 Use `update_todo` to update a TODO item description at certain index.
 
@@ -249,7 +249,7 @@ Use `update_todo` to update a TODO item description at certain index.
 ea.update_todo(0, "去码头整点薯条")
 ```
 
-## Delete a TDOO item
+### Delete a TODO item
 
 Remove a TODO item by its index.
 
@@ -257,18 +257,18 @@ Remove a TODO item by its index.
 ea.delete_todo(1)
 ```
 
-## Move yesterday's unfinished todo to today
+### Move yesterday's unfinished todo to today
 
-As the title suggests, you can move yesterday's unfinished things to today. Unfinished todos will be deleted from
+As the title suggests, you can move yesterday's unfinished things to today. Unfinished todo's will be deleted from
 yesterday's note.
 
 ```python
 ea.move_yesterday_unfinished_todo_to_today()
 ```
 
-# (Advanced Usage) 🚚 Upload Markdown files
+## (Advanced Usage) 🚚 Upload Markdown files
 
-## Upload single Markdown file with images
+### Upload single Markdown file with images
 
 You can import Markdown file with images into Trilium now! Trilium-py will help you to upload the images and fix the
 links for you!
@@ -280,11 +280,11 @@ res = ea.upload_md_file(
 )
 ```
 
-## Bulk upload Markdown files in a folder
+### Bulk upload Markdown files in a folder
 
 You can upload a folder with lots of Markdown files to Trilium and preserve the folder structure!
 
-### Import from VNote
+#### Import from VNote
 
 Say, upload all the notes from [VNote](https://github.com/vnotex/vnote), simply do this:
 
@@ -296,7 +296,7 @@ res = ea.upload_md_folder(
 )
 ```
 
-### Import from Joplin
+#### Import from Joplin
 
 Joplin can be imported effortlessly.
 
@@ -308,7 +308,7 @@ res = ea.upload_md_folder(
 )
 ```
 
-### Import from Logseq
+#### Import from Logseq
 
 ```python
 res = ea.upload_md_folder(
@@ -318,7 +318,7 @@ res = ea.upload_md_folder(
 )
 ```
 
-### Import from Obsidian
+#### Import from Obsidian
 
 Obsidian has a very unique linking system for files. You should use [obsidian-export
 ](https://github.com/zoni/obsidian-export) to convert a Obsidian vault to regular Markdown files. Then you should be
@@ -339,7 +339,7 @@ res = ea.upload_md_folder(
 )
 ```
 
-### Import from Youdao Note/有道云笔记
+#### Import from Youdao Note/有道云笔记
 
 Youdao does not provide an export feature anymore. Luckily, you can use <https://github.com/DeppWang/youdaonote-pull> to
 download your notes and convert them into markdown files. After that, trilium-py should be able to help you import them.
@@ -351,7 +351,7 @@ res = ea.upload_md_folder(
 )
 ```
 
-### Import from Turtl
+#### Import from Turtl
 
 You need to convert Turtl from json to markdown first.
 See [turtl-to-markdown](https://github.com/Nriver/trilium-py/tree/main/examples/turtl-to-markdown) for details.
@@ -366,7 +366,7 @@ res = ea.upload_md_folder(
 )
 ```
 
-### Import from other markdown software
+#### Import from other markdown software
 
 In general, markdown files have variety of standards. You can always try import them with
 
@@ -392,17 +392,17 @@ Here is what you can do to beautify your note.
 
 Specify a note id to beautify note content.
 
-```
+```python
 ea.beautify_note('krm8B9JthNfi')
 ```
 
 ### Beautify a note and its child notes
 
-```
+```python
 ea.beautify_sub_notes('tlPuzU2szLJh')
 ```
 
-# 🛠️ Develop
+## 🛠️ Develop
 
 Install with pip egg link to make package change without reinstall.
 
@@ -410,7 +410,7 @@ Install with pip egg link to make package change without reinstall.
 python -m pip install --user -e .
 ```
 
-# 🔗 Original OpenAPI Documentation
+## 🔗 Original OpenAPI Documentation
 
 The original OpenAPI document is [here](https://github.com/zadam/trilium/blob/master/src/etapi/etapi.openapi.yaml). You
 can open it with [swagger editor](https://editor.swagger.io/).

@@ -1,3 +1,4 @@
+import base64
 import os
 import re
 import string
@@ -1083,6 +1084,135 @@ class ETAPI:
         res = requests.post(url, headers=self.get_header())
         if res.status_code == 200:
             logger.info("sync successfully")
+
+    def get_attachment(self, attachmentId: str) -> dict:
+        """
+        get attachment by id
+
+        :param attachmentId:
+        :return:
+        """
+        url = f'{self.server_url}/etapi/attachments/{attachmentId}'
+        res = requests.get(url, headers=self.get_header())
+        return res.json()
+
+    def create_attachment(
+        self,
+        ownerId: str,
+        file_path: str,
+        title: str = None,
+        role: str = None,
+        mime: str = None,
+        position: int = 0,
+    ) -> dict:
+        """
+        create or update a attachment
+
+        :param ownerId:
+        :param file_path:
+        :param title:
+        :param role: should be 'image' or 'file'
+        :param mime: e.g. 'image/png'
+        :param position:
+        :param content:
+        :return:
+        """
+        url = f'{self.server_url}/etapi/attachments'
+
+        if not title:
+            title = os.path.basename(file_path)
+
+        if not mime:
+            # if mime not specified, get mime info by python-magic package
+            mime = magic.from_file(file_path, mime=True)
+
+        if not mime:
+            # just in case python-magic not working, give a default mime
+            mime = 'image/png'
+
+        if not role:
+            if 'image' in mime:
+                role = 'image'
+            else:
+                role = 'file'
+
+        # image upload does not work
+        # server side code
+        # https://github.com/zadam/trilium/blob/074e13a889a71405ab5825330c251f0099e03471/src/services/notes.js#L607
+        with open(file_path, 'rb') as f:
+            base64_data = base64.b64encode(f.read()).decode('utf-8')
+        data_uri = f'data:{mime};base64,{base64_data}'
+        html_a_tag = f'<a href="{data_uri}"></a>'
+
+        params = {
+            "ownerId": ownerId,
+            "role": role,
+            "mime": mime,
+            "title": title,
+            "position": position,
+            "content": html_a_tag,
+        }
+        res = requests.post(url, json=clean_param(params), headers=self.get_header())
+
+        return res.json()
+
+    def update_attachment(
+        self,
+        attachmentId: str,
+        title: str,
+        role: str,
+        mime: str,
+        position: int = 0,
+    ) -> dict:
+        """
+        update a attachment
+
+        :param role: should be 'image' or 'file'
+        :param mime: e.g. 'image/png'
+        :param title:
+        :param position:
+        :return:
+        """
+        url = f'{self.server_url}/etapi/attachments/{attachmentId}'
+
+        params = {
+            "role": role,
+            "mime": mime,
+            "title": title,
+            "position": position,
+        }
+        res = requests.patch(url, json=clean_param(params), headers=self.get_header())
+
+        return res.json()
+
+    def get_attachment_content(self, attachmentId: str) -> bytes:
+        url = f'{self.server_url}/etapi/attachments/{attachmentId}/content'
+        res = requests.get(url, headers=self.get_header())
+        return res.content
+
+    def update_attachemnt_content(self, attachmentId: str, file_path: str) -> bool:
+        # upload file, set content
+        url = f'{self.server_url}/etapi/attachments/{attachmentId}/content'
+        file_data = open(file_path, 'rb').read()
+        res = requests.put(
+            url,
+            data=file_data,
+            headers={
+                'content-type': 'application/octet-stream',
+                'Content-Transfer-Encoding': 'binary',
+                'Authorization': self.token,
+            },
+        )
+        if res.status_code == 204:
+            return True
+        return False
+
+    def delete_attachment(self, attachmentId: str) -> bool:
+        url = f'{self.server_url}/etapi/attachments/{attachmentId}'
+        res = requests.delete(url, headers=self.get_header())
+        if res.status_code == 204:
+            return True
+        return False
 
 
 class ListTemplate(string.Template):

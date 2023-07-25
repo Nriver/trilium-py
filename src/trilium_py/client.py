@@ -1,4 +1,3 @@
-import base64
 import os
 import re
 import string
@@ -1108,13 +1107,20 @@ class ETAPI:
         """
         create or update a attachment
 
+        the meta data and the content are uploaded with separate requests
+        due to:
+        1. tried to directly upload `content` with `/etapi/attachments` endpoint without luck.
+        tried json, ordinary form, base64 encoding, string conversion, etc. But only results in broken images :(
+        2. there is a size limit if the content is too large which will throw `PayloadTooLargeError`
+
+        update_attachemnt_content work fine with file uploads.
+
         :param ownerId:
         :param file_path:
         :param title:
         :param role: should be 'image' or 'file'
         :param mime: e.g. 'image/png'
         :param position:
-        :param content:
         :return:
         """
         url = f'{self.server_url}/etapi/attachments'
@@ -1136,25 +1142,19 @@ class ETAPI:
             else:
                 role = 'file'
 
-        # image upload does not work
-        # server side code
-        # https://github.com/zadam/trilium/blob/074e13a889a71405ab5825330c251f0099e03471/src/services/notes.js#L607
-        with open(file_path, 'rb') as f:
-            base64_data = base64.b64encode(f.read()).decode('utf-8')
-        data_uri = f'data:{mime};base64,{base64_data}'
-        html_a_tag = f'<a href="{data_uri}"></a>'
-
         params = {
             "ownerId": ownerId,
             "role": role,
             "mime": mime,
             "title": title,
             "position": position,
-            "content": html_a_tag,
+            "content": '',
         }
-        res = requests.post(url, json=clean_param(params), headers=self.get_header())
+        res = requests.post(url, data=clean_param(params), headers=self.get_header()).json()
 
-        return res.json()
+        self.update_attachemnt_content(res['attachmentId'], file_path)
+
+        return res
 
     def update_attachment(
         self,

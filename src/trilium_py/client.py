@@ -1,3 +1,4 @@
+import locale
 import os
 import re
 import string
@@ -14,7 +15,7 @@ from loguru import logger
 from natsort import natsort
 
 from .utils.markdown_math import reconstructMath, sanitizeInput
-from .utils.note_util import beautify_content
+from .utils.note_util import beautify_content, sort_note_by_headings
 from .utils.param_util import clean_param, format_query_string
 from .utils.time_util import get_today, get_yesterday
 
@@ -1213,6 +1214,18 @@ class ETAPI:
         if res.status_code == 204:
             return True
         return False
+
+    def sort_note_content(self, noteId: str, locale_str: str = 'zh_CN.UTF-8'):
+        """
+        Sort note content by headings
+        You can set locale to sort with respect to your local language.
+
+        :param noteId:
+        :param locale_str:  should be something like 'zh_CN.UTF-8'
+        """
+        html_content = self.get_note_content(noteId)
+        sorted_html_content = sort_note_by_headings(html_content, locale_str)
+        self.update_note_content(noteId, sorted_html_content)
 
 
 class ListTemplate(string.Template):

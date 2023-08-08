@@ -4,7 +4,7 @@ import re
 import minify_html
 from bs4 import BeautifulSoup
 
-from trilium_py.src.trilium_py.utils.html_util import sort_h_tags_with_hierarchy
+from .html_util import sort_h_tags_with_hierarchy
 
 
 def beautify_content(content):

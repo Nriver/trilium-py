@@ -15,41 +15,47 @@ Python client for ETAPI of Trilium Note.
 <!--ts-->
 
 - [🐍 trilium-py](#-trilium-py)
-  - [🦮 Table of Contents](#-table-of-contents)
-  - [🔧 Installation](#-installation)
-  - [📖 (Basic) Usage](#-basic-usage)
-    - [🚀 Initialization](#-initialization)
-    - [📊 Application Information](#-application-information)
-    - [🔍 Search note](#-search-note)
-    - [🏭 Create Note](#-create-note)
-      - [🖼️ Create Image note](#️-create-image-note)
-    - [👀 Get note](#-get-note)
-    - [🔄 Update note](#-update-note)
-    - [🗑️ Delete note](#️-delete-note)
-    - [📅 Day note](#-day-note)
-    - [📤 Export note](#-export-note)
-    - [💾 Create data backup](#-create-data-backup)
-  - [(Advanced Usage) ✅ TODO List](#advanced-usage--todo-list)
-    - [Add TODO item](#add-todo-item)
-    - [Check/Uncheck a TODO item](#checkuncheck-a-todo-item)
-    - [Update a TODO item](#update-a-todo-item)
-    - [Delete a TODO item](#delete-a-todo-item)
-    - [Move yesterday's unfinished todo to today](#move-yesterdays-unfinished-todo-to-today)
-  - [(Advanced Usage) 🚚 Upload Markdown files](#advanced-usage--upload-markdown-files)
-    - [Upload single Markdown file with images](#upload-single-markdown-file-with-images)
-    - [Bulk upload Markdown files in a folder](#bulk-upload-markdown-files-in-a-folder)
-      - [Import from VNote](#import-from-vnote)
-      - [Import from Joplin](#import-from-joplin)
-      - [Import from Logseq](#import-from-logseq)
-      - [Import from Obsidian](#import-from-obsidian)
-      - [Import from Youdao Note/有道云笔记](#import-from-youdao-note有道云笔记)
-      - [Import from Turtl](#import-from-turtl)
-      - [Import from other markdown software](#import-from-other-markdown-software)
-  - [(Advanced Usage) 🎨 Beautify notes](#advanced-usage--beautify-notes)
-    - [Beautify a note](#beautify-a-note)
-    - [Beautify a note and its child notes](#beautify-a-note-and-its-child-notes)
-  - [🛠️ Develop](#️-develop)
-  - [🔗 Original OpenAPI Documentation](#-original-openapi-documentation)
+    - [🦮 Table of Contents](#-table-of-contents)
+    - [🔧 Installation](#-installation)
+    - [📖 (Basic) Usage](#-basic-usage)
+        - [🚀 Initialization](#-initialization)
+        - [📊 Application Information](#-application-information)
+        - [🔍 Search note](#-search-note)
+        - [🏭 Create Note](#-create-note)
+            - [🖼️ Create Image note](#️-create-image-note)
+        - [👀 Get note](#-get-note)
+        - [🔄 Update note](#-update-note)
+        - [🗑️ Delete note](#️-delete-note)
+        - [📅 Day note](#-day-note)
+        - [📤 Export note](#-export-note)
+        - [💾 Create data backup](#-create-data-backup)
+        - [Get attachment info](#get-attachment-info)
+        - [Update attachment info](#update-attachment-info)
+        - [Get attachment content](#get-attachment-content)
+        - [Update attachement content](#update-attachement-content)
+        - [Create attachment](#create-attachment)
+    - [(Advanced Usage) ✅ TODO List](#advanced-usage--todo-list)
+        - [Add TODO item](#add-todo-item)
+        - [Check/Uncheck a TODO item](#checkuncheck-a-todo-item)
+        - [Update a TODO item](#update-a-todo-item)
+        - [Delete a TODO item](#delete-a-todo-item)
+        - [Move yesterday's unfinished todo to today](#move-yesterdays-unfinished-todo-to-today)
+    - [(Advanced Usage) 🚚 Upload Markdown files](#advanced-usage--upload-markdown-files)
+        - [Upload single Markdown file with images](#upload-single-markdown-file-with-images)
+        - [Bulk upload Markdown files in a folder](#bulk-upload-markdown-files-in-a-folder)
+            - [Import from VNote](#import-from-vnote)
+            - [Import from Joplin](#import-from-joplin)
+            - [Import from Logseq](#import-from-logseq)
+            - [Import from Obsidian](#import-from-obsidian)
+            - [Import from Youdao Note/有道云笔记](#import-from-youdao-note有道云笔记)
+            - [Import from Turtl](#import-from-turtl)
+            - [Import from other markdown software](#import-from-other-markdown-software)
+    - [(Advanced Usage) 🎨 Beautify notes](#advanced-usage--beautify-notes)
+        - [Beautify a note](#beautify-a-note)
+        - [Beautify a note and its child notes](#beautify-a-note-and-its-child-notes)
+    - [(Advanced Usage) Sort note content](#advanced-usage--sort-note-content)
+    - [🛠️ Develop](#️-develop)
+    - [🔗 Original OpenAPI Documentation](#-original-openapi-documentation)
 
 <!--te-->
 
@@ -151,7 +157,7 @@ res = ea.create_image_note(
 To retrieve the note's content.
 
 ```python
-ea.get_note_content("note1")
+ea.get_note_content("noteid")
 ```
 
 You can get a note metadata by its id.
@@ -165,14 +171,14 @@ ea.get_note(note_id)
 Update note content
 
 ```python
-ea.update_note_content("note1", "updated by python")
+ea.update_note_content("noteid", "updated by python")
 ```
 
 Modify note title
 
 ```python
 ea.patch_note(
-    noteId="note1",
+    noteId="noteid",
     title="Python client moded",
 )
 ```
@@ -182,7 +188,7 @@ ea.patch_note(
 Simply delete a note by id.
 
 ```python
-ea.delete_note("note1")
+ea.delete_note("noteid")
 ```
 
 ### 📅 Day note
@@ -218,6 +224,53 @@ This example will create a database backup file like this `trilium-data/backup/b
 
 ```python
 res = ea.backup("test")
+```
+
+### Get attachment info
+
+Get image title and etc.
+
+```
+res = ea.get_attachment('Y5V6pYq6nwXo')
+```
+
+### Update attachment info
+
+Change image title and etc.
+
+```
+res = ea.update_attachment(
+    attachmentId='2b7pPzqocS1s', title='hello etapi', role='image', mime='image/png'
+)
+```
+
+### Get attachment content
+
+Get the real image file
+
+```
+res = ea.get_attachment_content('icpDE4orQxlI')
+with open('1.png', 'wb') as f:
+    f.write(res)
+```
+
+### Update attachement content
+
+Replace the image with new one
+
+```
+res = ea.update_attachemnt_content('icWqV6zFtE0V', '/home/nate/data/1.png')
+```
+
+### Create attachment
+
+Upload a image file as attachment of a note.
+
+```
+res = ea.create_attachment(
+    ownerId='8m8luXym5LxT',
+    file_path='/home/nate/data/ksnip_20230630-103509.png',
+)
 ```
 
 ## (Advanced Usage) ✅ TODO List
@@ -400,6 +453,19 @@ ea.beautify_note('krm8B9JthNfi')
 
 ```python
 ea.beautify_sub_notes('tlPuzU2szLJh')
+```
+
+## (Advanced Usage) 🧹 Sort note content
+
+Sort a note by the heading names. This feature could prove invaluable for notes containing extensive lists, such as book
+titles sorted into various genres. It's equally useful for managing browser bookmarks or collecting links.
+
+Additionally, you have the option to specify a language code for sorting based on your local language. This enhances the
+sorting process and tailors it to your linguistic preferences.
+
+```
+res = ea.sort_note_content('lPxtkknjR2bJ')
+res = ea.sort_note_content('y6hROhWjNmHQ', 'zh_CN.UTF-8')
 ```
 
 ## 🛠️ Develop

@@ -814,7 +814,8 @@ class ETAPI:
                 # extra format support
                 # https://github.com/trentm/python-markdown2/wiki/Extras
                 html = markdown2.markdown(
-                    content, extras=['fenced-code-blocks', 'strike', 'tables', 'task_list']
+                    content,
+                    extras=['fenced-code-blocks', 'strike', 'tables', 'task_list', 'code-friendly'],
                 )
                 # logger.info(html)
             else:

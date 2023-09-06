@@ -32,7 +32,7 @@ Python client for ETAPI of Trilium Note.
         - [Get attachment info](#get-attachment-info)
         - [Update attachment info](#update-attachment-info)
         - [Get attachment content](#get-attachment-content)
-        - [Update attachement content](#update-attachement-content)
+        - [Update attachement content](#update-attachment-content)
         - [Create attachment](#create-attachment)
     - [(Advanced Usage) ✅ TODO List](#advanced-usage--todo-list)
         - [Add TODO item](#add-todo-item)
@@ -259,7 +259,7 @@ with open('1.png', 'wb') as f:
 Replace the image with new one
 
 ```
-res = ea.update_attachemnt_content('icWqV6zFtE0V', '/home/nate/data/1.png')
+res = ea.update_attachment_content('icWqV6zFtE0V', '/home/nate/data/1.png')
 ```
 
 ### Create attachment

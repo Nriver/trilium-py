@@ -1115,7 +1115,7 @@ class ETAPI:
         tried json, ordinary form, base64 encoding, string conversion, etc. But only results in broken images :(
         2. there is a size limit if the content is too large which will throw `PayloadTooLargeError`
 
-        update_attachemnt_content work fine with file uploads.
+        update_attachment_content work fine with file uploads.
 
         :param ownerId:
         :param file_path:
@@ -1154,7 +1154,7 @@ class ETAPI:
         }
         res = requests.post(url, data=clean_param(params), headers=self.get_header()).json()
 
-        self.update_attachemnt_content(res['attachmentId'], file_path)
+        self.update_attachment_content(res['attachmentId'], file_path)
 
         return res
 
@@ -1192,7 +1192,7 @@ class ETAPI:
         res = requests.get(url, headers=self.get_header())
         return res.content
 
-    def update_attachemnt_content(self, attachmentId: str, file_path: str) -> bool:
+    def update_attachment_content(self, attachmentId: str, file_path: str) -> bool:
         # upload file, set content
         url = f'{self.server_url}/etapi/attachments/{attachmentId}/content'
         file_data = open(file_path, 'rb').read()

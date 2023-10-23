@@ -226,6 +226,13 @@ This example will create a database backup file like this `trilium-data/backup/b
 res = ea.backup("test")
 ```
 
+You can use the cron utility in Linux to schedule regular automatic backups. For example, to set up a daily backup at 3:
+00 AM, you would use the following cron expression:
+
+```
+0 3 * * * python /path/to/backup-script.py
+```
+
 ### Get attachment info
 
 Get image title and etc.

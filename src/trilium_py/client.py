@@ -825,7 +825,7 @@ class ETAPI:
                         no_latex_part,
                         extras=['fenced-code-blocks', 'strike', 'tables', 'task_list'],
                     ),
-                    latex_code_part,
+                    list(map(lambda x : x.replace("<"," \lt ").replace(">"," \gt "),latex_code_part))
                 )
         note_id = ''
 

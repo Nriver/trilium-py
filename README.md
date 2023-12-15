@@ -203,7 +203,7 @@ es.get_day_note("2022-02-25")
 Then set/update a day note with `set_day_note`. The content should be a (html) string.
 
 ```python
-self.set_day_note(date, new_content)
+es.set_day_note(date, new_content)
 ```
 
 ### 📤 Export note

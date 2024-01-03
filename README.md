@@ -1,5 +1,6 @@
 # 🐍 trilium-py
 
+[中文说明](README_CN.md)
 Python client for ETAPI of Trilium Note.
 
 [![Downloads](https://static.pepy.tech/badge/trilium-py)](https://pepy.tech/project/trilium-py)

@@ -1,5 +1,12 @@
 # 🐍 trilium-py
 
+<p align="center">
+<a href="README.md">English</a> | 简体中文
+</p>
+
+> [!IMPORTANT]
+> 中文文档可能落后于英文文档，如果有问题请先查看英文文档。
+
 Trilium Note的ETAPI的Python客户端。
 
 [![Downloads](https://static.pepy.tech/badge/trilium-py)](https://pepy.tech/project/trilium-py)

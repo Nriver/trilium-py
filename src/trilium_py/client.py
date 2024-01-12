@@ -435,7 +435,7 @@ class ETAPI:
 
     def create_attribute(
         self,
-        attributeId: Optional[str],
+        attributeId: Optional[str] = None,
         noteId: str,
         type: str,
         name: str,
@@ -871,7 +871,7 @@ class ETAPI:
                     image_path = image_path.split(' ')[0]
 
                 image_file_path = os.path.join(md_folder, image_path).replace('\\', '/')
-                # unquote path, incase the url is quoted
+                # unquote path, in case the url is quoted
                 image_file_path_unquote = urllib.parse.unquote(image_file_path)
 
                 # skip if path does not point to a valid file
@@ -935,7 +935,7 @@ class ETAPI:
                 file_path = link
             else:
                 file_path = os.path.join(md_folder, link).replace('\\', '/')
-                # unquote path, incase the url is quoted
+                # unquote path, in case the url is quoted
                 file_path_unquote = urllib.parse.unquote(file_path)
 
                 # skip if path does not point to a valid file

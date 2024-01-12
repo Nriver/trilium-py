@@ -435,21 +435,21 @@ class ETAPI:
 
     def create_attribute(
         self,
-        attributeId: Optional[str] = None,
         noteId: str,
         type: str,
         name: str,
         value: str,
         isInheritable: bool,
+        attributeId: Optional[str] = None,
     ) -> dict:
         url = f'{self.server_url}/etapi/attributes/'
         params = {
-            "attributeId": attributeId,
             "noteId": noteId,
             "type": type,
             "name": name,
             "value": value,
             "isInheritable": isInheritable,
+            "attributeId": attributeId,
         }
         res = requests.post(url, json=clean_param(params), headers=self.get_header())
         return res.json()
@@ -825,7 +825,11 @@ class ETAPI:
                         no_latex_part,
                         extras=['fenced-code-blocks', 'strike', 'tables', 'task_list'],
                     ),
-                    list(map(lambda x : x.replace("<"," \lt ").replace(">"," \gt "),latex_code_part))
+                    list(
+                        map(
+                            lambda x: x.replace("<", " \lt ").replace(">", " \gt "), latex_code_part
+                        )
+                    ),
                 )
         note_id = ''
 

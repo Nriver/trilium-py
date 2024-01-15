@@ -33,10 +33,11 @@ Python client for ETAPI of Trilium Note.
         - [📅 Day note](#-day-note)
         - [📤 Export note](#-export-note)
         - [💾 Create data backup](#-create-data-backup)
+        - [🏷 Create Attribute](#-create-attribute)
         - [Get attachment info](#get-attachment-info)
         - [Update attachment info](#update-attachment-info)
         - [Get attachment content](#get-attachment-content)
-        - [Update attachement content](#update-attachment-content)
+        - [Update attachment content](#update-attachment-content)
         - [Create attachment](#create-attachment)
     - [(Advanced Usage) ✅ TODO List](#advanced-usage--todo-list)
         - [Add TODO item](#add-todo-item)
@@ -237,6 +238,24 @@ You can use the cron utility in Linux to schedule regular automatic backups. For
 0 3 * * * python /path/to/backup-script.py
 ```
 
+### 🏷 Create attribute
+
+You can create a tag for a note
+
+```python
+res = ea.create_attribute(
+    noteId='noteid',
+    type='label',
+    name='name_of_the_tag',
+    value='value_of_the_tag',
+    isInheritable=True
+)
+```
+The `noteId` is not mandatory, if not provided, Trilium will generate a random one. You can retrieve it in the return.
+```python
+noteId = res['note']['noteId']
+```
+
 ### Get attachment info
 
 Get image title and etc.
@@ -265,7 +284,7 @@ with open('1.png', 'wb') as f:
     f.write(res)
 ```
 
-### Update attachement content
+### Update attachment content
 
 Replace the image with new one
 

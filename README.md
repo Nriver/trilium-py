@@ -124,6 +124,19 @@ for x in res['results']:
     print(x['noteId'], x['title'])
 ```
 
+Search with regular expression. For example, search and get all child notes under certain note:
+
+```
+res = ea.search_note(
+    # regular expression search for note title
+    search="note.title %= '.*'",
+    ancestorNoteId="Parent Note ID",
+    fastSearch=False,
+    limit=1000,
+)
+```
+
+
 ### 🏭 Create Note
 
 You can create a simple note like this.

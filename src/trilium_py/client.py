@@ -834,7 +834,7 @@ class ETAPI:
         note_id = ''
 
         # detect images
-        pat = '<img (.*?) />'
+        pat = '<img (.*?)/>'
         images = re.findall(pat, html)
 
         res = self.create_note(

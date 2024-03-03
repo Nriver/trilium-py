@@ -520,10 +520,13 @@ class ETAPI:
             "format": format,
         }
         r = requests.get(url, params=clean_param(params), headers=self.get_header())
-        logger.info(r.status_code)
-        with open(savePath, 'wb') as fd:
-            for chunk in r.iter_content(chunk_size=chunk_size):
-                fd.write(chunk)
+        if r:
+            logger.info(r.status_code)
+            with open(savePath, 'wb') as fd:
+                for chunk in r.iter_content(chunk_size=chunk_size):
+                    fd.write(chunk)
+        else:
+            logger.error(r.status_code)
         return True
 
     def get_today_note_content(self):

@@ -126,7 +126,7 @@ for x in res['results']:
 
 Search with regular expression. For example, search and get all child notes under certain note:
 
-```
+```python
 res = ea.search_note(
     # regular expression search for note title
     search="note.title %= '.*'",
@@ -247,7 +247,7 @@ res = ea.backup("test")
 You can use the cron utility in Linux to schedule regular automatic backups. For example, to set up a daily backup at 3:
 00 AM, you would use the following cron expression:
 
-```
+```bash
 0 3 * * * python /path/to/backup-script.py
 ```
 
@@ -273,7 +273,7 @@ noteId = res['note']['noteId']
 
 Get image title and etc.
 
-```
+```python
 res = ea.get_attachment('Y5V6pYq6nwXo')
 ```
 
@@ -281,7 +281,7 @@ res = ea.get_attachment('Y5V6pYq6nwXo')
 
 Change image title and etc.
 
-```
+```python
 res = ea.update_attachment(
     attachmentId='2b7pPzqocS1s', title='hello etapi', role='image', mime='image/png'
 )
@@ -291,7 +291,7 @@ res = ea.update_attachment(
 
 Get the real image file
 
-```
+```python
 res = ea.get_attachment_content('icpDE4orQxlI')
 with open('1.png', 'wb') as f:
     f.write(res)
@@ -301,7 +301,7 @@ with open('1.png', 'wb') as f:
 
 Replace the image with new one
 
-```
+```python
 res = ea.update_attachment_content('icWqV6zFtE0V', '/home/nate/data/1.png')
 ```
 
@@ -309,7 +309,7 @@ res = ea.update_attachment_content('icWqV6zFtE0V', '/home/nate/data/1.png')
 
 Upload a image file as attachment of a note.
 
-```
+```python
 res = ea.create_attachment(
     ownerId='8m8luXym5LxT',
     file_path='/home/nate/data/ksnip_20230630-103509.png',
@@ -506,7 +506,7 @@ titles sorted into various genres. It's equally useful for managing browser book
 Additionally, you have the option to specify a language code for sorting based on your local language. This enhances the
 sorting process and tailors it to your linguistic preferences.
 
-```
+```python
 res = ea.sort_note_content('lPxtkknjR2bJ')
 res = ea.sort_note_content('y6hROhWjNmHQ', 'zh_CN.UTF-8')
 ```

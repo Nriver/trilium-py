@@ -125,6 +125,18 @@ for x in res['results']:
     print(x['noteId'], x['title'])
 ```
 
+使用正则表达式进行搜索。例如，搜索并获取特定笔记下的所有子笔记：
+
+```python
+res = ea.search_note(
+    # 通过笔记标题进行正则表达式搜索
+    search="note.title %= '.*'",
+    ancestorNoteId="父笔记ID",
+    fastSearch=False,
+    limit=1000,
+)
+```
+
 ### 🏭 创建笔记
 
 你可以像这样创建一个简单的笔记。
@@ -231,7 +243,7 @@ res = ea.backup("test")
 
 你可以使用Linux中的cron实用程序来安排定期自动备份。例如，要在每天上午3:00进行一次备份，你可以使用以下cron表达式：
 
-```
+```bash
 0 3 * * * python /path/to/backup-script.py
 ```
 
@@ -239,7 +251,7 @@ res = ea.backup("test")
 
 获取图片标题等。
 
-```
+```python
 res = ea.get_attachment('Y5V6pYq6nwXo')
 ```
 
@@ -247,7 +259,7 @@ res = ea.get_attachment('Y5V6pYq6nwXo')
 
 更改图片标题等。
 
-```
+```python
 res = ea.update_attachment(
     attachmentId='2b7pPzqocS1s', title='你好ETAPI', role='image', mime='image/png'
 )
@@ -257,7 +269,7 @@ res = ea.update_attachment(
 
 获取真实的图片文件。
 
-```
+```python
 res = ea.get_attachment_content('icpDE4orQxlI')
 with open('1.png', 'wb') as f:
     f.write(res)
@@ -267,7 +279,7 @@ with open('1.png', 'wb') as f:
 
 用新的图片替换旧的。
 
-```
+```python
 res = ea.update_attachment_content('icWqV6zFtE0V', '/home/nate/data/1.png')
 ```
 
@@ -275,7 +287,7 @@ res = ea.update_attachment_content('icWqV6zFtE0V', '/home/nate/data/1.png')
 
 上传一个图片文件作为笔记的附件。
 
-```
+```python
 res = ea.create_attachment(
     ownerId='8m8luXym5LxT',
     file_path='/home/nate/data/ksnip_20230630-103509.png',

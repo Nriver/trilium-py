@@ -555,6 +555,12 @@ class ETAPI:
         return content
 
     def set_day_note(self, date, content):
+        """
+        set note content by date
+        :param date: date string in format of "%Y-%m-%d", e.g. "2022-02-25"
+        :param content: note content
+        :return:
+        """
         url = f'{self.server_url}/etapi/calendar/days/{date}'
         res = requests.get(url, headers=self.get_header())
         noteId = res.json()['noteId']
@@ -619,17 +625,22 @@ class ETAPI:
         """
         return self.todo_check(todo_index, check=False)
 
-    def add_todo(self, todo_description: str, todo_caption: str = r'<p>TODO:</p>') -> bool:
+    def add_todo(
+        self, todo_description: str, todo_caption: str = r'<p>TODO:</p>', date: str = None
+    ) -> bool:
         """append item to todo list.
 
         :param todo_description: todo item
         :param todo_caption: caption added to new todo lists, default to '<p>TODO:</p>'
+        :param date: date string in format of "%Y-%m-%d", e.g. "2022-02-25"
         :return: True if success, False if failed
         """
         todo_description = todo_description.strip()
         soup: Optional[BeautifulSoup] = None
         try:
-            content = self.get_today_note_content()
+            if not date:
+                date = get_today()
+            content = self.get_day_note(date)
             soup = BeautifulSoup(content, 'html.parser')
             todo_labels = soup.find_all("label", {"class": "todo-list__label"})
             # append todo item after last todo item
@@ -660,8 +671,7 @@ class ETAPI:
                     todo_list_label = soup.find_all("ul", {"class": "todo-list"})[0]
                     todo_list_label.append(todo_item)
             new_content = str(soup)
-
-            return self.set_today_note_content(new_content)
+            return self.set_day_note(date, new_content)
         except Exception as e:
             logger.info(e)
             return False

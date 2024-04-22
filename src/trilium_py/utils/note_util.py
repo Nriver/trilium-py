@@ -1,4 +1,3 @@
-import locale
 import re
 
 import minify_html

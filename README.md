@@ -136,7 +136,6 @@ res = ea.search_note(
 )
 ```
 
-
 ### 🏭 Create Note
 
 You can create a simple note like this.
@@ -264,7 +263,9 @@ res = ea.create_attribute(
     isInheritable=True
 )
 ```
+
 The `noteId` is not mandatory, if not provided, Trilium will generate a random one. You can retrieve it in the return.
+
 ```python
 noteId = res['note']['noteId']
 ```
@@ -509,6 +510,16 @@ sorting process and tailors it to your linguistic preferences.
 ```python
 res = ea.sort_note_content('lPxtkknjR2bJ')
 res = ea.sort_note_content('y6hROhWjNmHQ', 'zh_CN.UTF-8')
+```
+
+## ## (Advanced Usage) 🧹 Delete empty `new note`
+
+I inadvertently create numerous "new notes" which remain undeleted within my note tree. These "new notes" clutter my
+workspace, scattered across various locations. I made this bulk deletion of these empty "new notes." Additionally, it
+generates warning messages for "new notes" that contain content, maybe we should change the title for those notes.
+
+```python
+ea.delete_empty_note()
 ```
 
 ## 🛠️ Develop

@@ -1,4 +1,3 @@
-import locale
 import os
 import re
 import string
@@ -1242,6 +1241,27 @@ class ETAPI:
         html_content = self.get_note_content(noteId)
         sorted_html_content = sort_note_by_headings(html_content, locale_str)
         self.update_note_content(noteId, sorted_html_content)
+
+    def delete_empty_note(self, note_title=None, verbose=False):
+        """
+        delete empty `new note` which are created accidentally
+        :return:
+        """
+        if not note_title:
+            note_title = 'new note'
+        res = self.search_note(
+            search=f'note.title = "{note_title}"',
+        )
+        logger.info(f'found {len(res["results"])} notes with title "{note_title}"')
+        for x in res['results']:
+            content = self.get_note_content(x['noteId'])
+            if not content:
+                logger.info(f'delete note {x["noteId"]}')
+                self.delete_note(x["noteId"])
+            else:
+                logger.warning(f'note {x["noteId"]} is not empty')
+                if verbose:
+                    logger.info(content)
 
 
 class ListTemplate(string.Template):

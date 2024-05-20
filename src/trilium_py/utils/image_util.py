@@ -2,7 +2,7 @@ from PIL import Image
 from io import BytesIO
 
 
-def compress_image_bytes(image_bytes, extension):
+def compress_image_bytes(image_bytes, extension, quality=90):
     """
     Compress image binary data
 
@@ -16,8 +16,10 @@ def compress_image_bytes(image_bytes, extension):
         with BytesIO(image_bytes) as img_buffer:
             with Image.open(img_buffer) as img:
                 output_buffer = BytesIO()
-                # jpg image does not work here
-                img.save(output_buffer, format=extension, optimize=True)
+                # PIL/pillow can only recognize JPEG, it does not know JPG...
+                if extension == 'jpg':
+                    extension = 'jpeg'
+                img.save(output_buffer, format=extension, optimize=True, quality=quality)
                 compressed_image_bytes = output_buffer.getvalue()
                 return compressed_image_bytes
     except Exception as e:

@@ -1281,7 +1281,7 @@ class ETAPI:
             return True
         return False
 
-    def optimize_image_attachments(self, noteId: str):
+    def optimize_image_attachments(self, noteId: str, quality: int = 90):
         """
         comporess image attachments
         :param noteId:
@@ -1296,10 +1296,7 @@ class ETAPI:
                     continue
                 image_data = self.get_attachment_content(attachment['attachmentId'])
                 extension = get_extension_from_image_mime(attachment['mime'])
-                if extension == 'jpg':
-                    # jpg can not be processed yet
-                    continue
-                compressed_data = compress_image_bytes(image_data, extension)
+                compressed_data = compress_image_bytes(image_data, extension, quality)
                 size_before = len(image_data)
                 size_after = len(compressed_data)
                 logger.info(f"Size before compression: {size_before} bytes")

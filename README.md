@@ -557,6 +557,8 @@ ea.delete_empty_note()
 Try to reduce image size by using PIL's optimize feature. If the image in your note is not compressed, you can try this.
 I've successfully convert a note of 44MB to 9.9MB after this process. Backup your data before try this.
 
+The default quality is set to 90.
+
 ```
 ea.optimize_image_attachments('uMJt0Ajr1CuC')
 ```

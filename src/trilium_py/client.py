@@ -525,6 +525,27 @@ class ETAPI:
                 fd.write(chunk)
         return True
 
+    def import_note(self, noteId: str, file_path: str):
+        """
+        import zip format note
+        """
+        url = f'{self.server_url}/etapi/notes/{noteId}/import'
+        file_data = open(file_path, 'rb').read()
+        res = requests.post(
+            url,
+            data=file_data,
+            headers={
+                'content-type': 'application/octet-stream',
+                'Content-Transfer-Encoding': 'binary',
+                'Authorization': self.token,
+            },
+        )
+        logger.info(res)
+        if res.status_code == 201:
+            return True
+        else:
+            return False
+
     def get_today_note_content(self):
         date = get_today()
         return self.get_day_note(date)

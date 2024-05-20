@@ -288,6 +288,14 @@ The `noteId` is not mandatory, if not provided, Trilium will generate a random o
 noteId = res['note']['noteId']
 ```
 
+### Get attachment list
+
+Get all attachments of a single note.
+
+```
+res = ea.get_attachmants('uMJt0Ajr1CuC')
+```
+
 ### Get attachment info
 
 Get image title and etc.

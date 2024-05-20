@@ -1134,6 +1134,17 @@ class ETAPI:
         if res.status_code == 200:
             logger.info("sync successfully")
 
+    def get_attachmants(self, noteId: str):
+        """
+        get attachment list of a note
+        :param noteId:
+        :return:
+        """
+        url = f'{self.server_url}/etapi/notes/{noteId}/attachments'
+
+        res = requests.get(url, headers=self.get_header())
+        return res.json()
+
     def get_attachment(self, attachmentId: str) -> dict:
         """
         get attachment by id

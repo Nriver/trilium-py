@@ -42,7 +42,7 @@ setup(
     # For a discussion on single-sourcing the version across setup.py and the
     # project code, see
     # https://packaging.python.org/guides/single-sourcing-package-version/
-    version='0.9.0',  # Required
+    version='0.9.1',  # Required
     # This is a one-line description or tagline of what your project does. This
     # corresponds to the "Summary" metadata field:
     # https://packaging.python.org/specifications/core-metadata/#summary
@@ -102,6 +102,7 @@ setup(
         'Programming Language :: Python :: 3.9',
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
         'Programming Language :: Python :: 3 :: Only',
     ],
     # This field adds keywords for your project which will appear on the
@@ -145,6 +146,7 @@ setup(
         'natsort',
         'loguru',
         'minify-html',
+        'pillow',
     ],
     # Optional
     # List additional groups of dependencies here (e.g. development

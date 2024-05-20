@@ -500,13 +500,13 @@ class ETAPI:
         res = requests.get(url, headers=self.get_header())
         return res.json()
 
-    def export_note(self, noteId: str, format: str, savePath: str, chunk_size=128):
+    def export_note(self, noteId: str, format: str, save_path: str, chunk_size=128):
         """
         Export note by id. Please note that protected notes are not allowed to be exported by ETAPI.
 
         :param noteId: note id
         :param format: format should be "html" or "markdown" or "md" for short
-        :savePath: path for exported file
+        :save_path: path for exported file
         :chunk_size: download chunk size, default to 128
         :return:
         """
@@ -520,7 +520,7 @@ class ETAPI:
         }
         r = requests.get(url, params=clean_param(params), headers=self.get_header())
         logger.info(r.status_code)
-        with open(savePath, 'wb') as fd:
+        with open(save_path, 'wb') as fd:
             for chunk in r.iter_content(chunk_size=chunk_size):
                 fd.write(chunk)
         return True
@@ -545,6 +545,19 @@ class ETAPI:
             return True
         else:
             return False
+
+    def save_revision(self, noteId: str):
+        """
+        force save note revision
+        :param noteId:
+        :return:
+        """
+
+        url = f'{self.server_url}/etapi/notes/{noteId}/revision'
+        res = requests.post(url, headers=self.get_header())
+        if res.status_code == 204:
+            return True
+        return False
 
     def get_today_note_content(self):
         date = get_today()

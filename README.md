@@ -228,7 +228,28 @@ Export note comes in two formats `html` or `markdown`/`md`.
 res = ea.export_note(
     noteId='sK5fn4T6yZRI',
     format='md',
-    savePath='/home/nate/data/1/test.zip',
+    save_path='/home/nate/data/1/test.zip',
+)
+```
+
+### 📥 import note
+
+This is the built-in feature in trilium. The input file should be a zip file.
+
+```python
+res = ea.export_note(
+    noteId='sK5fn4T6yZRI',
+    file_path='/home/nate/data/1/test.zip',
+)
+```
+
+### 💾 Save revision
+
+Save note revision manually.
+
+```
+res = ea.save_revision(
+    noteId='MJzyFRXAVaC9',
 )
 ```
 

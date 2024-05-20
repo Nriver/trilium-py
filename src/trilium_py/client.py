@@ -17,6 +17,7 @@ from .utils.markdown_math import reconstructMath, sanitizeInput
 from .utils.note_util import beautify_content, sort_note_by_headings
 from .utils.param_util import clean_param, format_query_string
 from .utils.time_util import get_today, get_yesterday
+from .utils.image_util import compress_image_bytes, get_extension_from_image_mime
 
 
 class ETAPI:
@@ -1134,7 +1135,7 @@ class ETAPI:
         if res.status_code == 200:
             logger.info("sync successfully")
 
-    def get_attachmants(self, noteId: str):
+    def get_attachments(self, noteId: str):
         """
         get attachment list of a note
         :param noteId:
@@ -1251,10 +1252,15 @@ class ETAPI:
         res = requests.get(url, headers=self.get_header())
         return res.content
 
-    def update_attachment_content(self, attachmentId: str, file_path: str) -> bool:
+    def update_attachment_content(
+        self, attachmentId: str, data_source: str, is_file: bool = True
+    ) -> bool:
         # upload file, set content
         url = f'{self.server_url}/etapi/attachments/{attachmentId}/content'
-        file_data = open(file_path, 'rb').read()
+        if is_file:
+            file_data = open(data_source, 'rb').read()
+        else:
+            file_data = data_source
         res = requests.put(
             url,
             data=file_data,
@@ -1274,6 +1280,39 @@ class ETAPI:
         if res.status_code == 204:
             return True
         return False
+
+    def optimize_image_attachments(self, noteId: str):
+        """
+        comporess image attachments
+        :param noteId:
+        :return:
+        """
+
+        attachments = self.get_attachments(noteId)
+        for attachment in attachments:
+            try:
+                logger.info(attachment)
+                if not attachment['role'] == 'image' and attachment['contentLength'] > 0:
+                    continue
+                image_data = self.get_attachment_content(attachment['attachmentId'])
+                extension = get_extension_from_image_mime(attachment['mime'])
+                if extension == 'jpg':
+                    # jpg can not be processed yet
+                    continue
+                compressed_data = compress_image_bytes(image_data, extension)
+                size_before = len(image_data)
+                size_after = len(compressed_data)
+                logger.info(f"Size before compression: {size_before} bytes")
+                logger.info(f"Size after compression: {size_after} bytes")
+                if size_after < size_before:
+                    logger.info('replace image')
+                    self.update_attachment_content(
+                        attachment['attachmentId'], compressed_data, is_file=False
+                    )
+                else:
+                    logger.info('skip image')
+            except:
+                pass
 
     def sort_note_content(self, noteId: str, locale_str: str = 'zh_CN.UTF-8'):
         """

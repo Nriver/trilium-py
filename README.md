@@ -60,6 +60,7 @@ Python client for ETAPI of Trilium Note.
       * [Beautify a note and its child notes](#beautify-a-note-and-its-child-notes)
    * [(Advanced Usage) 🧹 Sort note content](#advanced-usage--sort-note-content)
    * [(Advanced Usage) 🧹 Delete empty new note](#advanced-usage--delete-empty-new-note)
+   * [(Advanced Usage) 🗜️ Optimize image size](#advanced-usage-️-optimize-image-size)
    * [🛠️ Develop](#️-develop)
    * [🔗 Original OpenAPI Documentation](#-original-openapi-documentation)
 <!--te-->
@@ -296,7 +297,7 @@ noteId = res['note']['noteId']
 Get all attachments of a single note.
 
 ```
-res = ea.get_attachmants('uMJt0Ajr1CuC')
+res = ea.get_attachments('uMJt0Ajr1CuC')
 ```
 
 ### Get attachment info
@@ -549,6 +550,15 @@ generates warning messages for "new notes" that contain content, maybe we should
 
 ```python
 ea.delete_empty_note()
+```
+
+## (Advanced Usage) 🗜️ Optimize image size
+
+Try to reduce image size by using PIL's optimize feature. If the image in your note is not compressed, you can try this.
+I've successfully convert a note of 44MB to 9.9MB after this process. Backup your data before try this.
+
+```
+ea.optimize_image_attachments('uMJt0Ajr1CuC')
 ```
 
 ## 🛠️ Develop

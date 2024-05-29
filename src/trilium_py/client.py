@@ -871,7 +871,8 @@ class ETAPI:
                     ),
                     list(
                         map(
-                            lambda x: x.replace("<", " \lt ").replace(">", " \gt "), latex_code_part
+                            lambda x: x.replace("<", " \\lt ").replace(">", " \\gt "),
+                            latex_code_part,
                         )
                     ),
                 )

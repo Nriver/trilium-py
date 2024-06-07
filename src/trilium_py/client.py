@@ -13,6 +13,7 @@ from bs4 import BeautifulSoup
 from loguru import logger
 from natsort import natsort
 
+from .utils.file_util import replace_extension
 from .utils.markdown_math import reconstructMath, sanitizeInput
 from .utils.note_util import beautify_content, sort_note_by_headings
 from .utils.param_util import clean_param, format_query_string
@@ -1284,8 +1285,9 @@ class ETAPI:
 
     def optimize_image_attachments(self, noteId: str, quality: int = 90):
         """
-        comporess image attachments
+        comporess image attachments, this keeps the original format
         :param noteId:
+        :param quality:
         :return:
         """
 
@@ -1311,6 +1313,48 @@ class ETAPI:
                     logger.info('skip image')
             except:
                 pass
+
+    def optimize_image_attachments_to_webp(self, noteId: str, quality: int = 90):
+        """
+        comporess image attachments, this tries to convert the original image to webp
+        :param noteId:
+        :param quality:
+        :return:
+        """
+
+        attachments = self.get_attachments(noteId)
+        for attachment in attachments:
+            try:
+                logger.info(attachment)
+                if not attachment['role'] == 'image' and attachment['contentLength'] > 0:
+                    continue
+                image_data = self.get_attachment_content(attachment['attachmentId'])
+                # try to convert to webp
+                extension = 'webp'
+                compressed_data = compress_image_bytes(image_data, extension, quality)
+                size_before = len(image_data)
+                size_after = len(compressed_data)
+                logger.info(f"Size before compression: {size_before} bytes")
+                logger.info(f"Size after compression: {size_after} bytes")
+                if size_after < size_before:
+                    logger.info('replace image')
+                    # update image content data
+                    res = self.update_attachment_content(
+                        attachment['attachmentId'], compressed_data, is_file=False
+                    )
+                    logger.info(res)
+                    # update image file name and mime
+                    res = self.update_attachment(
+                        attachmentId=attachment['attachmentId'],
+                        title=replace_extension(attachment['title'], 'webp'),
+                        role='image',
+                        mime='image/webp',
+                    )
+                    logger.info(res)
+                else:
+                    logger.info('skip image')
+            except Exception as e:
+                logger.error(e)
 
     def sort_note_content(self, noteId: str, locale_str: str = 'zh_CN.UTF-8'):
         """

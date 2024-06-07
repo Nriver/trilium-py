@@ -1314,7 +1314,7 @@ class ETAPI:
             except:
                 pass
 
-    def optimize_image_attachments_to_webp(self, noteId: str, quality: int = 90):
+    def optimize_image_attachments_to_webp(self, noteId: str, quality: int = 90, skip_webp=True):
         """
         comporess image attachments, this tries to convert the original image to webp
         :param noteId:
@@ -1327,6 +1327,9 @@ class ETAPI:
             try:
                 logger.info(attachment)
                 if not attachment['role'] == 'image' and attachment['contentLength'] > 0:
+                    continue
+                # skip webp conversion if it's already webp
+                if skip_webp and attachment['mime'] == 'image/webp':
                     continue
                 image_data = self.get_attachment_content(attachment['attachmentId'])
                 # try to convert to webp

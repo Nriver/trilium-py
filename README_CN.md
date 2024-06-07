@@ -482,6 +482,29 @@ res = ea.sort_note_content('y6hROhWjNmHQ', 'zh_CN.UTF-8')
 ea.delete_empty_note()
 ```
 
+## （高级用法）🗜️ 优化图片大小
+
+尝试使用PIL的优化功能来减少图片大小。如果你笔记中的图片没有压缩过，可以试试这个方法。
+在执行这个过程后，我成功地将一个44MB的笔记转换为9.9MB。尝试之前请备份数据。
+
+默认质量设置为90。
+
+`optimize_image_attachments` 会保留原始图像格式并尝试压缩它。
+
+```
+ea.optimize_image_attachments('uMJt0Ajr1CuC')
+```
+
+为了进一步节省空间，可以尝试以下方法。
+
+`optimize_image_attachments_to_webp` 函数将图像转换为 `WebP` 格式，显著减少文件大小。根据我的经验，`WebP` 图像的大小可能只有 `PNG` 图像的25%到50%。
+
+```
+ea.optimize_image_attachments_to_webp('H2q3901uFDCH')
+```
+
+如果你有很多剪辑的页面，这个操作可以节省大量空间。发明 `WebP` 的人真是个天才。
+
 ## 🛠️ 开发
 
 使用pip egg link进行安装，以便在不重新安装的情况下进行包更改。

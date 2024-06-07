@@ -15,54 +15,56 @@ Python client for ETAPI of Trilium Note.
 ## 🦮 Table of Contents
 
 <!--ts-->
+
 * [🐍 trilium-py](#-trilium-py)
-   * [🦮 Table of Contents](#-table-of-contents)
-   * [🔧 Installation](#-installation)
-   * [📖 (Basic) Usage](#-basic-usage)
-      * [🚀 Initialization](#-initialization)
-      * [📊 Application Information](#-application-information)
-      * [🔍 Search note](#-search-note)
-      * [🏭 Create Note](#-create-note)
-         * [🖼️ Create Image note](#️-create-image-note)
-      * [👀 Get note](#-get-note)
-      * [🔄 Update note](#-update-note)
-      * [🗑️ Delete note](#️-delete-note)
-      * [📅 Day note](#-day-note)
-      * [📤 Export note](#-export-note)
-      * [📥 import note](#-import-note)
-      * [💾 Save revision](#-save-revision)
-      * [💾 Create data backup](#-create-data-backup)
-      * [🏷 Create attribute](#-create-attribute)
-      * [Get attachment list](#get-attachment-list)
-      * [Get attachment info](#get-attachment-info)
-      * [Update attachment info](#update-attachment-info)
-      * [Get attachment content](#get-attachment-content)
-      * [Update attachment content](#update-attachment-content)
-      * [Create attachment](#create-attachment)
-   * [(Advanced Usage) ✅ TODO List](#advanced-usage--todo-list)
-      * [Add TODO item](#add-todo-item)
-      * [Check/Uncheck a TODO item](#checkuncheck-a-todo-item)
-      * [Update a TODO item](#update-a-todo-item)
-      * [Delete a TODO item](#delete-a-todo-item)
-      * [Move yesterday's unfinished todo to today](#move-yesterdays-unfinished-todo-to-today)
-   * [(Advanced Usage) 🚚 Upload Markdown files](#advanced-usage--upload-markdown-files)
-      * [Upload single Markdown file with images](#upload-single-markdown-file-with-images)
-      * [Bulk upload Markdown files in a folder](#bulk-upload-markdown-files-in-a-folder)
-         * [Import from VNote](#import-from-vnote)
-         * [Import from Joplin](#import-from-joplin)
-         * [Import from Logseq](#import-from-logseq)
-         * [Import from Obsidian](#import-from-obsidian)
-         * [Import from Youdao Note/有道云笔记](#import-from-youdao-note有道云笔记)
-         * [Import from Turtl](#import-from-turtl)
-         * [Import from other markdown software](#import-from-other-markdown-software)
-   * [(Advanced Usage) 🎨 Beautify notes](#advanced-usage--beautify-notes)
-      * [Beautify a note](#beautify-a-note)
-      * [Beautify a note and its child notes](#beautify-a-note-and-its-child-notes)
-   * [(Advanced Usage) 🧹 Sort note content](#advanced-usage--sort-note-content)
-   * [(Advanced Usage) 🧹 Delete empty new note](#advanced-usage--delete-empty-new-note)
-   * [(Advanced Usage) 🗜️ Optimize image size](#advanced-usage-️-optimize-image-size)
-   * [🛠️ Develop](#️-develop)
-   * [🔗 Original OpenAPI Documentation](#-original-openapi-documentation)
+    * [🦮 Table of Contents](#-table-of-contents)
+    * [🔧 Installation](#-installation)
+    * [📖 (Basic) Usage](#-basic-usage)
+        * [🚀 Initialization](#-initialization)
+        * [📊 Application Information](#-application-information)
+        * [🔍 Search note](#-search-note)
+        * [🏭 Create Note](#-create-note)
+            * [🖼️ Create Image note](#️-create-image-note)
+        * [👀 Get note](#-get-note)
+        * [🔄 Update note](#-update-note)
+        * [🗑️ Delete note](#️-delete-note)
+        * [📅 Day note](#-day-note)
+        * [📤 Export note](#-export-note)
+        * [📥 import note](#-import-note)
+        * [💾 Save revision](#-save-revision)
+        * [💾 Create data backup](#-create-data-backup)
+        * [🏷 Create attribute](#-create-attribute)
+        * [Get attachment list](#get-attachment-list)
+        * [Get attachment info](#get-attachment-info)
+        * [Update attachment info](#update-attachment-info)
+        * [Get attachment content](#get-attachment-content)
+        * [Update attachment content](#update-attachment-content)
+        * [Create attachment](#create-attachment)
+    * [(Advanced Usage) ✅ TODO List](#advanced-usage--todo-list)
+        * [Add TODO item](#add-todo-item)
+        * [Check/Uncheck a TODO item](#checkuncheck-a-todo-item)
+        * [Update a TODO item](#update-a-todo-item)
+        * [Delete a TODO item](#delete-a-todo-item)
+        * [Move yesterday's unfinished todo to today](#move-yesterdays-unfinished-todo-to-today)
+    * [(Advanced Usage) 🚚 Upload Markdown files](#advanced-usage--upload-markdown-files)
+        * [Upload single Markdown file with images](#upload-single-markdown-file-with-images)
+        * [Bulk upload Markdown files in a folder](#bulk-upload-markdown-files-in-a-folder)
+            * [Import from VNote](#import-from-vnote)
+            * [Import from Joplin](#import-from-joplin)
+            * [Import from Logseq](#import-from-logseq)
+            * [Import from Obsidian](#import-from-obsidian)
+            * [Import from Youdao Note/有道云笔记](#import-from-youdao-note有道云笔记)
+            * [Import from Turtl](#import-from-turtl)
+            * [Import from other markdown software](#import-from-other-markdown-software)
+    * [(Advanced Usage) 🎨 Beautify notes](#advanced-usage--beautify-notes)
+        * [Beautify a note](#beautify-a-note)
+        * [Beautify a note and its child notes](#beautify-a-note-and-its-child-notes)
+    * [(Advanced Usage) 🧹 Sort note content](#advanced-usage--sort-note-content)
+    * [(Advanced Usage) 🧹 Delete empty new note](#advanced-usage--delete-empty-new-note)
+    * [(Advanced Usage) 🗜️ Optimize image size](#advanced-usage-️-optimize-image-size)
+    * [🛠️ Develop](#️-develop)
+    * [🔗 Original OpenAPI Documentation](#-original-openapi-documentation)
+
 <!--te-->
 
 ## 🔧 Installation
@@ -559,9 +561,22 @@ I've successfully convert a note of 44MB to 9.9MB after this process. Backup you
 
 The default quality is set to 90.
 
+`optimize_image_attachments` will keep the original image format and try to compress it.
+
 ```
 ea.optimize_image_attachments('uMJt0Ajr1CuC')
 ```
+
+To save even more space, you can try the following method.
+
+The `optimize_image_attachments_to_webp` function converts images to the `WebP` format, significantly reducing file
+sizes. Based on my experience, `WebP` images can be as little as 25% to 50% of the size of `PNG` images.
+
+```
+ea.optimize_image_attachments_to_webp('H2q3901uFDCH')
+```
+
+This action can save significant space if you have many clipped pages. Whoever invented `WebP` is a genius.
 
 ## 🛠️ Develop
 

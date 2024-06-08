@@ -1040,6 +1040,7 @@ class ETAPI:
 
         mdFolder = os.path.expandvars(os.path.expanduser(mdFolder))
 
+        error_files = {}
         for root, dirs, files in os.walk(mdFolder, topdown=True):
             root_folder_name = os.path.basename(root)
 
@@ -1063,7 +1064,10 @@ class ETAPI:
                 if any(x in name for x in includePattern):
                     file_path = os.path.join(root, name)
                     logger.info(file_path)
-                    self.upload_md_file(file=file_path, parentNoteId=current_parent_note_id)
+                    try:
+                        self.upload_md_file(file=file_path, parentNoteId=current_parent_note_id)
+                    except Exception as e:
+                        error_files[os.path.abspath(file_path)] = e
 
             logger.info('dirs')
             for name in natsort.natsorted(dirs):
@@ -1081,6 +1085,13 @@ class ETAPI:
                     res['note']['noteId']
                     note_tree[rel_path] = res['note']['noteId']
 
+        # count how many errors
+        if error_files:
+            count = len(error_files)
+            logger.error(f"There are {count} errors.")
+            for i, (file, e) in enumerate(error_files.items()):
+                logger.error(f"{i} | {file}: {e}")
+            # return False
         return True
 
     def backup(self, backup_name):

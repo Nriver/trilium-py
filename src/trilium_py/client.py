@@ -5,6 +5,7 @@ import sys
 import urllib.parse
 from collections.abc import Mapping
 from typing import Optional, Union
+from datetime import datetime
 
 import magic
 import markdown2
@@ -349,15 +350,23 @@ class ETAPI:
         title: Optional[str] = None,
         type: Optional[str] = None,
         mime: Optional[str] = None,
+        utcDateCreated: Optional[datetime] = None,
     ) -> dict:
         url = f'{self.server_url}/etapi/notes/{noteId}'
+
+        utcDateCreated = self.format_date(utcDateCreated) if utcDateCreated else None
+        
         params = {
             "title": title,
             "type": type,
             "mime": mime,
+            "utcDateCreated": utcDateCreated,
         }
         res = requests.patch(url, json=clean_param(params), headers=self.get_header())
         return res.json()
+    
+    def format_date(self, date: datetime) -> str:
+        return date.strftime('%Y-%m-%d %H:%M:%S%Z')
 
     def delete_note(self, noteId: str) -> bool:
         url = f'{self.server_url}/etapi/notes/{noteId}'

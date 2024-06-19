@@ -366,7 +366,8 @@ class ETAPI:
         return res.json()
     
     def format_date(self, date: datetime) -> str:
-        return date.strftime('%Y-%m-%d %H:%M:%S%Z')
+        # note: ETAPI requires exactly 3 decimal places for seconds
+        return date.strftime('%Y-%m-%d %H:%M:%S.%d3%Z')
 
     def delete_note(self, noteId: str) -> bool:
         url = f'{self.server_url}/etapi/notes/{noteId}'

@@ -6,6 +6,7 @@ import urllib.parse
 from collections.abc import Mapping
 from typing import Optional, Union
 from datetime import datetime
+import dateutil
 
 import magic
 import markdown2
@@ -355,9 +356,18 @@ class ETAPI:
     ) -> dict:
         url = f'{self.server_url}/etapi/notes/{noteId}'
 
+        # # ensure both dateCreated and utcDateCreated are set and match each other
+        # if dateCreated and not utcDateCreated:
+        #     utcDateCreated = dateCreated.astimezone(dateutil.tz.tzutc())
+        # elif utcDateCreated and not dateCreated:
+        #     dateCreated = utcDateCreated.astimezone(dateutil.tz.tzlocal())
+        
+        dateCreated, utcDateCreated = self.synchronize_dates(dateCreated, utcDateCreated)
+
+        # convert datetime to ETAPI format
         dateCreated = self.format_date(dateCreated, kind='local') if dateCreated else None
         utcDateCreated = self.format_date(utcDateCreated, kind='utc') if utcDateCreated else None
-        
+
         params = {
             "title": title,
             "type": type,
@@ -368,6 +378,19 @@ class ETAPI:
         res = requests.patch(url, json=clean_param(params), headers=self.get_header())
         return res.json()
     
+    def synchronize_dates(self, local_date: Optional[datetime], utc_date: Optional[datetime]) -> tuple[Optional[datetime], Optional[datetime]]:
+        '''Synchronize local and UTC dates'''
+        if local_date and utc_date:
+            raise ValueError('Both local and UTC dates were provided, cannot determine which to use.')
+        if local_date and not utc_date:
+            utc_date = local_date.astimezone(dateutil.tz.tzutc())
+        elif utc_date and not local_date:
+            local_date = utc_date.astimezone(dateutil.tz.tzlocal())
+        # elif local_date and utc_date and local_date != utc_date.astimezone(dateutil.tz.tzlocal()):
+        elif local_date and utc_date != utc_date.astimezone(dateutil.tz.tzlocal()):
+            raise ValueError('local_date and utc_date are inconsistent.')
+        return local_date, utc_date
+
     def format_date(self, date: datetime, kind: str) -> str:
         # ETAPI date expects:
         #   local example: '2023-08-21 23:38:51.110+0200'

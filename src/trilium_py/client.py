@@ -350,24 +350,34 @@ class ETAPI:
         title: Optional[str] = None,
         type: Optional[str] = None,
         mime: Optional[str] = None,
+        dateCreated: Optional[datetime] = None,
         utcDateCreated: Optional[datetime] = None,
     ) -> dict:
         url = f'{self.server_url}/etapi/notes/{noteId}'
 
-        utcDateCreated = self.format_date(utcDateCreated) if utcDateCreated else None
+        dateCreated = self.format_date(dateCreated, kind='local') if dateCreated else None
+        utcDateCreated = self.format_date(utcDateCreated, kind='utc') if utcDateCreated else None
         
         params = {
             "title": title,
             "type": type,
             "mime": mime,
+            "dateCreated": dateCreated,
             "utcDateCreated": utcDateCreated,
         }
         res = requests.patch(url, json=clean_param(params), headers=self.get_header())
         return res.json()
     
-    def format_date(self, date: datetime) -> str:
-        # note: ETAPI requires exactly 3 decimal places for seconds
-        return date.strftime('%Y-%m-%d %H:%M:%S.%d3%Z')
+    def format_date(self, date: datetime, kind: str) -> str:
+        # ETAPI date expects:
+        #   local example: '2023-08-21 23:38:51.110+0200'
+        #   UTC example: '2011-03-08 07:00:00.083Z'
+        # and exactly 3 decimal places for seconds
+        if kind == 'local':
+            date = date.strftime('%Y-%m-%d %H:%M:%S.%d3%z') 
+        if kind == 'utc':
+            date = date.strftime('%Y-%m-%d %H:%M:%S.%d3%Z')
+        return date
 
     def delete_note(self, noteId: str) -> bool:
         url = f'{self.server_url}/etapi/notes/{noteId}'

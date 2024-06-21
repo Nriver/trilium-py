@@ -385,12 +385,17 @@ class ETAPI:
         if local_date and utc_date:
             raise ValueError('Both local and UTC dates were provided, cannot determine which to use.')
 
+        timezone = datetime.now().astimezone().tzinfo
+
+        if local_date and local_date.tzinfo is None:
+            timezone = datetime.now().astimezone().tzinfo
+            print(f"tzinfo is None, assuming local timezone ({timezone})")
+            local_date = local_date.replace(tzinfo=timezone)
+        if utc_date and utc_date.tzinfo is None:
+            print('utc date tzinfo is None, forcing UTC')
+            utc_date = utc_date.replace(tzinfo=dateutil.tz.tzutc())
+
         if local_date and not utc_date:
-            print("local_date provided, converting to UTC")
-            if local_date.tzinfo is None:
-                tz = datetime.now().astimezone().tzinfo
-                print(f"tzinfo is None, assuming local timezone ({tz})")
-                local_date = local_date.replace(tzinfo=tz)
             # ETAPI uses as Zulu (+00) as UTC, and breaks if given true UTC
             # utc_date = local_date.astimezone(dateutil.tz.tzutc()) # does not work
             utc_date = local_date.astimezone(dateutil.tz.tzstr('Z'))
@@ -398,7 +403,8 @@ class ETAPI:
 
         # warning: these two paths not well tested
         elif utc_date and not local_date:
-            local_date = utc_date.astimezone(dateutil.tz.tzlocal())
+            print(f"utc_date provided, converting to local ({timezone})")
+            local_date = utc_date.astimezone(tz=timezone)
         elif local_date and utc_date != utc_date.astimezone(dateutil.tz.tzlocal()):
             raise ValueError('local_date and utc_date are inconsistent.')
         return local_date, utc_date

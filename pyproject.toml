@@ -47,3 +47,6 @@ platforms = ["win-64"]
 trilium-py = { path = ".", editable = true }
 
 [tool.pixi.tasks]
+
+[tool.pixi.dependencies]
+python-dateutil = ">=2.9.0,<2.10"

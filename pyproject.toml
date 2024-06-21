@@ -4,6 +4,13 @@
 requires = ["setuptools>=43.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
+# Project secton added to support Pixi (by Prefix.dev)
+# https://packaging.python.org/en/latest/guides/writing-pyproject-toml/
+[project]
+name = "trilium-py"
+# fetch from setup.py:
+dynamic = ["description", "version","requires-python","authors","keywords","classifiers","dependencies","urls","readme","optional-dependencies"]
+
 [tool.black]
 skip-string-normalization = true
 line-length = 100
@@ -31,3 +38,12 @@ log_cli = true
 log_cli_level = "DEBUG"
 log_cli_format = "%(asctime)s [%(levelname)8s] %(message)s (%(filename)s:%(lineno)s)"
 log_cli_date_format = "%Y-%m-%d %H:%M:%S"
+
+[tool.pixi.project]
+channels = ["conda-forge"]
+platforms = ["win-64"]
+
+[tool.pixi.pypi-dependencies]
+trilium-py = { path = ".", editable = true }
+
+[tool.pixi.tasks]

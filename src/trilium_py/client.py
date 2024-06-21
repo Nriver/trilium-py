@@ -2,10 +2,11 @@ import os
 import re
 import string
 import sys
+import time
 import urllib.parse
 from collections.abc import Mapping
 from typing import Optional, Union
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 import dateutil
 
 import magic
@@ -363,10 +364,12 @@ class ETAPI:
         #     dateCreated = utcDateCreated.astimezone(dateutil.tz.tzlocal())
         
         dateCreated, utcDateCreated = self.synchronize_dates(dateCreated, utcDateCreated)
+        print(f"dateCreated: {dateCreated}, utcDateCreated: {utcDateCreated}")
 
         # convert datetime to ETAPI format
         dateCreated = self.format_date(dateCreated, kind='local') if dateCreated else None
         utcDateCreated = self.format_date(utcDateCreated, kind='utc') if utcDateCreated else None
+        print(f"dateCreated: {dateCreated}, utcDateCreated: {utcDateCreated}")
 
         params = {
             "title": title,
@@ -382,15 +385,25 @@ class ETAPI:
         '''Synchronize local and UTC dates'''
         if local_date and utc_date:
             raise ValueError('Both local and UTC dates were provided, cannot determine which to use.')
+
         if local_date and not utc_date:
-            utc_date = local_date.astimezone(dateutil.tz.tzutc())
+            print("local_date provided, converting to UTC")
+            if local_date.tzinfo is None:
+                tz = datetime.now().astimezone().tzinfo
+                print(f"tzinfo is None, assuming local timezone ({tz})")
+                local_date = local_date.replace(tzinfo=tz)
+            # ETAPI uses as Zulu (+00) as UTC, and breaks if given true UTC
+            # utc_date = local_date.astimezone(dateutil.tz.tzutc()) # does not work
+            utc_date = local_date.astimezone(dateutil.tz.tzstr('Z'))
+            print(f"local_date: {local_date}, utc_date: {utc_date}")
+
+        # warning: these two paths not well tested
         elif utc_date and not local_date:
             local_date = utc_date.astimezone(dateutil.tz.tzlocal())
-        # elif local_date and utc_date and local_date != utc_date.astimezone(dateutil.tz.tzlocal()):
         elif local_date and utc_date != utc_date.astimezone(dateutil.tz.tzlocal()):
             raise ValueError('local_date and utc_date are inconsistent.')
         return local_date, utc_date
-
+    
     def format_date(self, date: datetime, kind: str) -> str:
         # ETAPI date expects:
         #   local example: '2023-08-21 23:38:51.110+0200'
@@ -400,6 +413,7 @@ class ETAPI:
             date = date.strftime('%Y-%m-%d %H:%M:%S.%d3%z') 
         if kind == 'utc':
             date = date.strftime('%Y-%m-%d %H:%M:%S.%d3%Z')
+        print(f'Formatted date: {date}', 'kind:', kind)
         return date
 
     def delete_note(self, noteId: str) -> bool:

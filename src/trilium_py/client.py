@@ -2,11 +2,10 @@ import os
 import re
 import string
 import sys
-import time
 import urllib.parse
 from collections.abc import Mapping
 from typing import Optional, Union
-from datetime import datetime, timedelta, timezone
+from datetime import datetime
 import dateutil
 
 import magic

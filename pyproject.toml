@@ -50,3 +50,4 @@ trilium-py = { path = ".", editable = true }
 
 [tool.pixi.dependencies]
 python-dateutil = ">=2.9.0,<2.10"
+requests-mock = ">=1.12.1,<1.13"

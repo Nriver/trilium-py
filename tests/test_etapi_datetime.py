@@ -1,10 +1,32 @@
 import unittest
 from datetime import datetime, timezone
 from trilium_py.client import ETAPI
+import requests_mock
 
 class TestETAPI(unittest.TestCase):
     def setUp(self):
-        self.etapi = ETAPI()
+        self.etapi = ETAPI('http://bogus:8080')
+    def test_etapi_login(self):
+        etapi = ETAPI('http://bogus:8080')
+
+        with requests_mock.Mocker() as mock:
+            adapter = mock.post(
+                'http://bogus:8080/etapi/auth/login',
+                json={"authToken": "Token bogus"},
+                status_code=201,
+            )
+            self.assertEqual(etapi.login('123'), 'Token bogus')
+            self.assertEqual(adapter.last_request.text, 'password=123')
+
+            # Test that the token is cached
+            mock.post(
+                'http://bogus:8080/etapi/auth/logout',
+                status_code=204,
+                request_headers={
+                    'Authorization': 'Token bogus',
+                },
+            )
+            self.assertTrue(etapi.logout())
 
     def test_format_date_local(self):
         # Test case 1: Test with local date and time

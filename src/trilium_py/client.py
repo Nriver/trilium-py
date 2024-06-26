@@ -391,6 +391,9 @@ class ETAPI:
         return res.json()
     
     def handle_dates(self, dateCreated: Optional[datetime], utcDateCreated: Optional[datetime]):
+        #BUG: TypeError: ETAPI.parse_date_from_string() takes 1 positional argument
+        #but 2 were given
+        # ...in case we are passing date object instead of string
         parsed_date = self.parse_date_from_string(dateCreated) if dateCreated else None
         parsed_utc_date = self.parse_date_from_string(utcDateCreated) if utcDateCreated else None
         synchronized_dates = self.synchronize_dates(parsed_date, parsed_utc_date)

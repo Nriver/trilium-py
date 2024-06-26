@@ -358,7 +358,12 @@ class ETAPI:
     ) -> dict:
         url = f'{self.server_url}/etapi/notes/{noteId}'
 
-        dateCreated, utcDateCreated = self.handle_dates(dateCreated, utcDateCreated)
+        if dateCreated:
+            dateCreated = self.handle_dates(dateCreated=dateCreated)
+        if utcDateCreated:
+            utcDateCreated = self.handle_dates(utcDateCreated=utcDateCreated)
+
+        # dateCreated, utcDateCreated = self.handle_dates(dateCreated=dateCreated, utcDateCreated=utcDateCreated)
 
         # if dateCreated:
         #     dateCreated = self.handle_dates(dateCreated)
@@ -390,14 +395,6 @@ class ETAPI:
         res = requests.patch(url, json=clean_param(params), headers=self.get_header())
         return res.json()
     
-    def handle_dates(self, dateCreated: Optional[datetime], utcDateCreated: Optional[datetime]):
-        #BUG: TypeError: ETAPI.parse_date_from_string() takes 1 positional argument
-        #but 2 were given
-        # ...in case we are passing date object instead of string
-        parsed_date = self.parse_date_from_string(dateCreated) if dateCreated else None
-        parsed_utc_date = self.parse_date_from_string(utcDateCreated) if utcDateCreated else None
-        synchronized_dates = self.synchronize_dates(parsed_date, parsed_utc_date)
-        return synchronized_dates
     def get_local_timezone():
         # Get the local timezone offset in minutes and create a timezone object
         offset_min = -1 * time.timezone if (time.localtime().tm_isdst == 0) else -1 * time.altzone
@@ -406,17 +403,41 @@ class ETAPI:
         print(f"timezone: {local_timezone}")
         # print(f"local_timezone offset: {offset}")
         return local_timezone
+    def handle_dates(self, 
+                     dateCreated: Optional[datetime] = None, 
+                     utcDateCreated: Optional[datetime] = None):
+        if dateCreated and not isinstance(dateCreated, datetime):
+            print(f"dateCreated is not datetime object, is {type(dateCreated)}")
+            raise TypeError("dateCreated must be a datetime object")
+        if utcDateCreated and not isinstance(utcDateCreated, datetime):
+            print(f"utcdateCreated is not datetime object, is {type(utcDateCreated)}")            
+            raise TypeError("utcDateCreated must be a datetime object")
 
-    def parse_date_from_string(mydate: str):
-        parsed_date = dateutil.parser.parse(mydate)
-        print(f"parsed_date:\n\t{parsed_date}")
-        if parsed_date.tzinfo is None:
-            print("parsed_date.tzinfo is None. Adding tzinfo from current machine time.")
+        if dateCreated and dateCreated.tzinfo is None:
+            print("dateCreated.tzinfo is None. Adding tzinfo from current machine time.")
             tzinfo = get_local_timezone()
-            parsed_date = parsed_date.replace(tzinfo=tzinfo)
+            dateCreated = dateCreated.replace(tzinfo=tzinfo)
             print("parsed date w/ tzinfo:")
-            print(f"\t{parsed_date} (timezone: {parsed_date.tzinfo})")
-        return parsed_date
+            print(f"\t{dateCreated} (timezone: {dateCreated.tzinfo})")
+        
+        if utcDateCreated and utcDateCreated.tzinfo is None:
+            print('utc date tzinfo is None, forcing UTC')
+            utcDateCreated = utcDateCreated.replace(tzinfo=dateutil.tz.tzutc())
+
+        synchronized_dates = self.synchronize_dates(local_date=dateCreated, utc_date=utcDateCreated)
+    
+        return synchronized_dates
+
+    # def parse_date_from_string(mydate: str):
+    #     parsed_date = dateutil.parser.parse(mydate)
+    #     print(f"parsed_date:\n\t{parsed_date}")
+    #     if parsed_date.tzinfo is None:
+    #         print("parsed_date.tzinfo is None. Adding tzinfo from current machine time.")
+    #         tzinfo = get_local_timezone()
+    #         parsed_date = parsed_date.replace(tzinfo=tzinfo)
+    #         print("parsed date w/ tzinfo:")
+    #         print(f"\t{parsed_date} (timezone: {parsed_date.tzinfo})")
+    #     return parsed_date
 
     def synchronize_dates(self, local_date: Optional[datetime], utc_date: Optional[datetime]) -> tuple[Optional[datetime], Optional[datetime]]:
         '''Synchronize local and UTC dates'''
@@ -425,14 +446,14 @@ class ETAPI:
 
         # timezone = datetime.now().astimezone().tzinfo
 
-        if local_date and local_date.tzinfo is None:
-            tzinfo = get_local_timezone()
-            # timezone = datetime.now().astimezone().tzinfo
-            # print(f"tzinfo is None, assuming local timezone ({timezone})")
-            local_date = local_date.replace(tzinfo=tzinfo)
-        if utc_date and utc_date.tzinfo is None:
-            print('utc date tzinfo is None, forcing UTC')
-            utc_date = utc_date.replace(tzinfo=dateutil.tz.tzutc())
+        # if local_date and local_date.tzinfo is None:
+        #     tzinfo = get_local_timezone()
+        #     # timezone = datetime.now().astimezone().tzinfo
+        #     # print(f"tzinfo is None, assuming local timezone ({timezone})")
+        #     local_date = local_date.replace(tzinfo=tzinfo)
+        # if utc_date and utc_date.tzinfo is None:
+        #     print('utc date tzinfo is None, forcing UTC')
+        #     utc_date = utc_date.replace(tzinfo=dateutil.tz.tzutc())
 
         if local_date and not utc_date:
             # ETAPI uses as Zulu (+00) as UTC, and breaks if given true UTC
@@ -454,7 +475,7 @@ class ETAPI:
     def format_date(self, date: datetime, kind: str) -> str:
         # ETAPI date expects:
         #   local example: '2023-08-21 23:38:51.110+0200'
-        #   UTC example: '2011-03-08 07:00:00.083Z'
+        #   UTC example  : '2023-03-22 01:38:51.110Z'
         # and exactly 3 decimal places for seconds
         if kind == 'local':
             date = date.strftime('%Y-%m-%d %H:%M:%S.%d3%z') 

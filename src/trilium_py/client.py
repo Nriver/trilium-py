@@ -363,12 +363,13 @@ class ETAPI:
         #     dateCreated = utcDateCreated.astimezone(dateutil.tz.tzlocal())
         
         dateCreated, utcDateCreated = self.synchronize_dates(dateCreated, utcDateCreated)
-        print(f"dateCreated: {dateCreated}, utcDateCreated: {utcDateCreated}")
+        # print(f"dateCreated: {dateCreated}, utcDateCreated: {utcDateCreated}")
 
         # convert datetime to ETAPI format
         dateCreated = self.format_date(dateCreated, kind='local') if dateCreated else None
         utcDateCreated = self.format_date(utcDateCreated, kind='utc') if utcDateCreated else None
-        print(f"dateCreated: {dateCreated}, utcDateCreated: {utcDateCreated}")
+        
+        # print(f"dateCreated: {dateCreated}, utcDateCreated: {utcDateCreated}")
 
         params = {
             "title": title,
@@ -399,7 +400,10 @@ class ETAPI:
             # ETAPI uses as Zulu (+00) as UTC, and breaks if given true UTC
             # utc_date = local_date.astimezone(dateutil.tz.tzutc()) # does not work
             utc_date = local_date.astimezone(dateutil.tz.tzstr('Z'))
-            print(f"local_date: {local_date}, utc_date: {utc_date}")
+            print("local_date:")
+            print(f"\t{local_date}")
+            print("utc_date:")
+            print(f"\t{utc_date}")
 
         # warning: these two paths not well tested
         elif utc_date and not local_date:
@@ -418,7 +422,8 @@ class ETAPI:
             date = date.strftime('%Y-%m-%d %H:%M:%S.%d3%z') 
         if kind == 'utc':
             date = date.strftime('%Y-%m-%d %H:%M:%S.%d3%Z')
-        print(f'Formatted date: {date}', 'kind:', kind)
+        print(f'ETAPI Formatted date kind: {kind}')
+        print(f'\t{date}')
         return date
 
     def delete_note(self, noteId: str) -> bool:

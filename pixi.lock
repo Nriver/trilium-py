@@ -536,7 +536,7 @@ packages:
   name: trilium-py
   version: 0.9.7
   path: .
-  sha256: fb8d94f95fc83f1cdaf6de26a95be119da85a1699214eaf2e8b722a1fe1edd97
+  sha256: f09caa6f61fae2515232704aed6d6ca65172330db9956dde7dacd7344923800c
   requires_dist:
   - beautifulsoup4
   - requests

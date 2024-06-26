@@ -392,7 +392,7 @@ class ETAPI:
     
     def handle_dates(self, dateCreated: Optional[datetime], utcDateCreated: Optional[datetime]):
         parsed_date = self.parse_date_from_string(dateCreated) if dateCreated else None
-        parsed_utc_date = self.parse_date_from_string(utcDate   Created) if utcDateCreated else None
+        parsed_utc_date = self.parse_date_from_string(utcDateCreated) if utcDateCreated else None
         synchronized_dates = self.synchronize_dates(parsed_date, parsed_utc_date)
         return synchronized_dates
     def get_local_timezone():

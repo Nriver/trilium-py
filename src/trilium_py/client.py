@@ -359,9 +359,12 @@ class ETAPI:
         url = f'{self.server_url}/etapi/notes/{noteId}'
 
         if dateCreated:
-            dateCreated = self.handle_dates(dateCreated=dateCreated)
+            dateCreated, utcDateCreated = self.handle_dates(dateCreated=dateCreated)
+            print(f"Patch_note: dateCreated: {dateCreated}")
+            dateCreated = self.format_date_to_etapi(dateCreated, kind='local')
         if utcDateCreated:
-            utcDateCreated = self.handle_dates(utcDateCreated=utcDateCreated)
+            dateCreated, utcDateCreated = self.handle_dates(utcDateCreated=utcDateCreated)
+            utcDateCreated = self.format_date_to_etapi(utcDateCreated, kind='utc')
 
         # dateCreated, utcDateCreated = self.handle_dates(dateCreated=dateCreated, utcDateCreated=utcDateCreated)
 
@@ -380,8 +383,8 @@ class ETAPI:
         # # print(f"dateCreated: {dateCreated}, utcDateCreated: {utcDateCreated}")
 
         # # convert datetime to ETAPI format
-        # dateCreated = self.format_date(dateCreated, kind='local') if dateCreated else None
-        # utcDateCreated = self.format_date(utcDateCreated, kind='utc') if utcDateCreated else None
+        # dateCreated = self.format_date_to_etapi(dateCreated, kind='local') if dateCreated else None
+        # utcDateCreated = self.format_date_to_etapi(utcDateCreated, kind='utc') if utcDateCreated else None
         
         # print(f"dateCreated: {dateCreated}, utcDateCreated: {utcDateCreated}")
 
@@ -444,7 +447,7 @@ class ETAPI:
         if local_date and utc_date:
             raise ValueError('Both local and UTC dates were provided, cannot determine which to use.')
 
-        # timezone = datetime.now().astimezone().tzinfo
+        local_timezone = datetime.now().astimezone().tzinfo
 
         # if local_date and local_date.tzinfo is None:
         #     tzinfo = get_local_timezone()
@@ -466,13 +469,14 @@ class ETAPI:
 
         # warning: these two paths not well tested
         elif utc_date and not local_date:
-            print(f"utc_date provided, converting to local ({timezone})")
-            local_date = utc_date.astimezone(tz=timezone)
+            print(f"utc_date provided ({utc_date}), converting to local ({local_timezone})")
+            local_date = utc_date.astimezone(local_timezone)
+            print(f"\tutc to local: {local_date}")
         elif local_date and utc_date != utc_date.astimezone(dateutil.tz.tzlocal()):
             raise ValueError('local_date and utc_date are inconsistent.')
         return local_date, utc_date
     
-    def format_date(self, date: datetime, kind: str) -> str:
+    def format_date_to_etapi(self, date: datetime, kind: str) -> str:
         # ETAPI date expects:
         #   local example: '2023-08-21 23:38:51.110+0200'
         #   UTC example  : '2023-03-22 01:38:51.110Z'

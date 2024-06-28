@@ -358,24 +358,18 @@ class ETAPI:
     ) -> dict:
         url = f'{self.server_url}/etapi/notes/{noteId}'
 
-        if dateCreated:
-            dateCreated = self.handle_dates(dateCreated=dateCreated)[0]
-            print(f"Patch_note: dateCreated: {dateCreated}")
-            dateCreated = self.format_date_to_etapi(dateCreated, kind='local')
-            print(f"Patch_note: dateCreated: {dateCreated}")
-            print(f"date created class:")
-            print(dateCreated.__class__)
-            print(f"date created dir:")
-            print(dir(dateCreated))
-            print(f"date created type:")
-            print(type(dateCreated))
-        if utcDateCreated:
-            utcDateCreated = self.handle_dates(utcDateCreated=utcDateCreated)[1]
-            print(f"Patch_note: utcDateCreated: {utcDateCreated}")
-            utcDateCreated = self.format_date_to_etapi(utcDateCreated, kind='utc')
+        # Ensure local and utc dates are both defined and match each other (adjusted for timezone)
+        localx, utcx = self.handle_dates(dateCreated=dateCreated, utcDateCreated=utcDateCreated)
+        # print('localx:', localx)
+        # print('utcx:', utcx)
+        
+        dateCreated = self.format_date_to_etapi(localx, kind='local')
+        utcDateCreated = self.format_date_to_etapi(utcx, kind='utc')
 
-        print(f"Patch_note: dateCreated: {dateCreated}")
-        print(f"date created type: {type(dateCreated)}")
+        # print(f"Patch_note: dateCreated after handle_dates(): {dateCreated}")
+        # print(f"date created class: {dateCreated.__class__}")
+        # print(f"patch_note: utcDateCreated after handle_dates(): {utcDateCreated}")
+        # print(f"utcDateCreated class: {utcDateCreated.__class__}")
 
         params = {
             "title": title,
@@ -384,7 +378,6 @@ class ETAPI:
             "dateCreated": dateCreated,
             "utcDateCreated": utcDateCreated,
         }
-        print(f"Patch_note: params: {params}")
         res = requests.patch(url, json=clean_param(params), headers=self.get_header())
         return res.json()
     
@@ -394,7 +387,8 @@ class ETAPI:
         # this is short and sweet
         local_timezone = datetime.now().astimezone().tzinfo
 
-        # so why the heck did I think we need all this?
+        # So why the heck did I think we need all this? Delete if this reason doesn't
+        # reappear soon
         # # Get the local timezone offset in minutes and create a timezone object
         # offset_min = -1 * time.timezone if (time.localtime().tm_isdst == 0) else -1 * time.altzone
         # offset = timedelta(seconds=offset_min)
@@ -405,6 +399,7 @@ class ETAPI:
     def handle_dates(self, 
                      dateCreated: Optional[datetime] = None, 
                      utcDateCreated: Optional[datetime] = None):
+        '''Ensure that both local and UTC times are defined, and have same time (adjusted for timezone)'''
         if dateCreated and not isinstance(dateCreated, datetime):
             print(f"dateCreated is not datetime object, is {type(dateCreated)}")
             raise TypeError("dateCreated must be a datetime object")
@@ -413,15 +408,17 @@ class ETAPI:
             raise TypeError("utcDateCreated must be a datetime object")
 
         if dateCreated and dateCreated.tzinfo is None:
-            print("dateCreated.tzinfo is None. Adding tzinfo from current machine time.")
             tzinfo = self.get_local_timezone()
             dateCreated = dateCreated.replace(tzinfo=tzinfo)
-            print("parsed date w/ tzinfo:")
-            print(f"\t{dateCreated} (timezone: {dateCreated.tzinfo})")
+            print(f"dateCreated.tzinfo was None. Changed to: {dateCreated.tzinfo}.")
+            # print("parsed date w/ tzinfo:")
+            # print(f"\t{dateCreated} (timezone: {dateCreated.tzinfo})")
         
         if utcDateCreated and utcDateCreated.tzinfo is None:
-            print('utc date tzinfo is None, forcing UTC')
             utcDateCreated = utcDateCreated.replace(tzinfo=dateutil.tz.tzutc())
+            print(f'utc date tzinfo was None, forced to UTC ({utcDateCreated})')
+            # print('parsed utc date w/ tzinfo:')
+            # print(f'\t{utcDateCreated} (timezone: {utcDateCreated.tzinfo})')
 
         # After ensuring TZ is set for one of the date types, synchronize them
         synchronized_dates = self.synchronize_dates(local_date=dateCreated, utc_date=utcDateCreated)
@@ -439,12 +436,10 @@ class ETAPI:
         if local_date and not utc_date:
             utc_date = local_date.astimezone(dateutil.tz.tzutc())
             # utc_date = local_date.astimezone(dateutil.tz.tzstr('Z'))
-
-        # warning: these two paths not well tested
         elif utc_date and not local_date:
-            print(f"utc_date provided ({utc_date}), converting to local ({local_timezone})")
+            # print(f"utc_date provided ({utc_date}), converting to local ({local_timezone})")
             local_date = utc_date.astimezone(local_timezone)
-            print(f"\tutc to local: {local_date}")
+            # print(f"\tutc to local: {local_date}")
         elif local_date and utc_date != utc_date.astimezone(dateutil.tz.tzlocal()):
             raise ValueError('local_date and utc_date are inconsistent.')
 

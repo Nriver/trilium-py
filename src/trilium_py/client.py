@@ -366,11 +366,6 @@ class ETAPI:
         dateCreated = self.format_date_to_etapi(localx, kind='local')
         utcDateCreated = self.format_date_to_etapi(utcx, kind='utc')
 
-        # print(f"Patch_note: dateCreated after handle_dates(): {dateCreated}")
-        # print(f"date created class: {dateCreated.__class__}")
-        # print(f"patch_note: utcDateCreated after handle_dates(): {utcDateCreated}")
-        # print(f"utcDateCreated class: {utcDateCreated.__class__}")
-
         params = {
             "title": title,
             "type": type,
@@ -380,22 +375,6 @@ class ETAPI:
         }
         res = requests.patch(url, json=clean_param(params), headers=self.get_header())
         return res.json()
-    
-    def get_local_timezone(self=None):
-        print("Getting local_timezone...")
-        
-        # this is short and sweet
-        local_timezone = datetime.now().astimezone().tzinfo
-
-        # So why the heck did I think we need all this? Delete if this reason doesn't
-        # reappear soon
-        # # Get the local timezone offset in minutes and create a timezone object
-        # offset_min = -1 * time.timezone if (time.localtime().tm_isdst == 0) else -1 * time.altzone
-        # offset = timedelta(seconds=offset_min)
-        # local_timezone = timezone(offset)
-
-        print(f"timezone: {local_timezone}")
-        return local_timezone
     def handle_dates(self, 
                      dateCreated: Optional[datetime] = None, 
                      utcDateCreated: Optional[datetime] = None):
@@ -427,9 +406,12 @@ class ETAPI:
         return synchronized_dates
 
     def synchronize_dates(self, local_date: Optional[datetime], utc_date: Optional[datetime]) -> tuple[Optional[datetime], Optional[datetime]]:
-        '''Synchronize local and UTC dates'''
+        '''Synchronize local and UTC dates. We expect only one of local or utc date to
+        be passed, use that to define the other, and return both as datetime objects.'''
         if local_date and utc_date:
-            raise ValueError('Both local and UTC dates were provided, cannot determine which to use.')
+            msg = 'Both local and UTC dates were provided, cannot determine which to use.\n'
+            msg = msg + 'Please pass only one of local or UTC date.'
+            raise ValueError(msg)
 
         local_timezone = self.get_local_timezone()
 
@@ -448,11 +430,27 @@ class ETAPI:
         print(f"\tutc_date  : {utc_date}")
         return local_date, utc_date
     
+    def get_local_timezone(self=None):
+        print("Getting local_timezone...")
+        
+        # this is short and sweet
+        local_timezone = datetime.now().astimezone().tzinfo
+
+        # So why the heck did I think we need all this? Delete if this reason doesn't
+        # reappear soon
+        # # Get the local timezone offset in minutes and create a timezone object
+        # offset_min = -1 * time.timezone if (time.localtime().tm_isdst == 0) else -1 * time.altzone
+        # offset = timedelta(seconds=offset_min)
+        # local_timezone = timezone(offset)
+
+        print(f"timezone: {local_timezone}")
+        return local_timezone
+
     def format_date_to_etapi(self, date: datetime, kind: str) -> str:
-        # ETAPI date expects:
-        #   local example: '2023-08-21 23:38:51.110+0200'
-        #   UTC example  : '2023-03-22 01:38:51.110Z'
-        # and exactly 3 decimal places for seconds
+        '''From a datetime object, return a date string formatted to ETAPI requirements:
+                local: '2023-08-21 23:38:51.110-0200'
+                UTC  : '2023-08-22 01:38:51.110Z'
+        and exactly 3 decimal places for seconds.'''
         if kind == 'local':
             date = date.strftime('%Y-%m-%d %H:%M:%S.%d3%z') 
         if kind == 'utc':
@@ -460,7 +458,7 @@ class ETAPI:
             date = date.strftime('%Y-%m-%d %H:%M:%S.%d3%Z')
         print(f'ETAPI Formatted date kind: {kind}')
         print(f'\t{date}')
-        print(f'\t{type (date)}')
+        # print(f'\t{type (date)}')
         return date
 
     def delete_note(self, noteId: str) -> bool:

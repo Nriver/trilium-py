@@ -21,7 +21,7 @@ from .utils.file_util import replace_extension
 from .utils.markdown_math import reconstructMath, sanitizeInput
 from .utils.note_util import beautify_content, sort_note_by_headings
 from .utils.param_util import clean_param, format_query_string
-from .utils.time_util import get_today, get_yesterday
+from .utils.time_util import get_today, get_yesterday, synchronize_dates, format_date_to_etapi, get_local_timezone
 from .utils.image_util import compress_image_bytes, get_extension_from_image_mime
 
 
@@ -361,8 +361,8 @@ class ETAPI:
         if dateCreated or utcDateCreated:
             # Ensure local and utc dates are both defined and match each other (adjusted for timezone)
             localx, utcx = self.handle_dates(dateCreated=dateCreated, utcDateCreated=utcDateCreated)
-            dateCreated = self.format_date_to_etapi(localx, kind='local')
-            utcDateCreated = self.format_date_to_etapi(utcx, kind='utc')
+            dateCreated = format_date_to_etapi(localx, kind='local')
+            utcDateCreated = format_date_to_etapi(utcx, kind='utc')
 
         params = {
             "title": title,
@@ -388,7 +388,7 @@ class ETAPI:
             raise TypeError("utcDateCreated must be a datetime object")
 
         if dateCreated and dateCreated.tzinfo is None:
-            tzinfo = self.get_local_timezone()
+            tzinfo = get_local_timezone()
             dateCreated = dateCreated.replace(tzinfo=tzinfo)
             print(f"dateCreated.tzinfo was None. Changed to: {dateCreated.tzinfo}.")
         
@@ -397,63 +397,63 @@ class ETAPI:
             print(f'utc date tzinfo was None, forced to UTC ({utcDateCreated})')
 
         # After ensuring TZ is set for one of the date types, synchronize them
-        synchronized_dates = self.synchronize_dates(local_date=dateCreated, utc_date=utcDateCreated)
+        synchronized_dates = synchronize_dates(local_date=dateCreated, utc_date=utcDateCreated)
     
         return synchronized_dates
 
-    def synchronize_dates(self, local_date: Optional[datetime], utc_date: Optional[datetime]) -> tuple[Optional[datetime], Optional[datetime]]:
-        '''Synchronize local and UTC dates. We expect only one of local or utc date to
-        be passed, use that to define the other, and return both as datetime objects.'''
-        if local_date and utc_date:
-            msg = 'Both local and UTC dates were provided, cannot determine which to use.\n'
-            msg = msg + 'Please pass only one of local or UTC date.'
-            raise ValueError(msg)
+    # def synchronize_dates(self, local_date: Optional[datetime], utc_date: Optional[datetime]) -> tuple[Optional[datetime], Optional[datetime]]:
+    #     '''Synchronize local and UTC dates. We expect only one of local or utc date to
+    #     be passed, use that to define the other, and return both as datetime objects.'''
+    #     if local_date and utc_date:
+    #         msg = 'Both local and UTC dates were provided, cannot determine which to use.\n'
+    #         msg = msg + 'Please pass only one of local or UTC date.'
+    #         raise ValueError(msg)
 
-        local_timezone = self.get_local_timezone()
+    #     local_timezone = self.get_local_timezone()
 
-        if local_date and not utc_date:
-            utc_date = local_date.astimezone(dateutil.tz.tzutc())
-            # utc_date = local_date.astimezone(dateutil.tz.tzstr('Z'))
-        elif utc_date and not local_date:
-            local_date = utc_date.astimezone(local_timezone)
-        elif local_date and utc_date != utc_date.astimezone(dateutil.tz.tzlocal()):
-            raise ValueError('local_date and utc_date are inconsistent.')
+    #     if local_date and not utc_date:
+    #         utc_date = local_date.astimezone(dateutil.tz.tzutc())
+    #         # utc_date = local_date.astimezone(dateutil.tz.tzstr('Z'))
+    #     elif utc_date and not local_date:
+    #         local_date = utc_date.astimezone(local_timezone)
+    #     elif local_date and utc_date != utc_date.astimezone(dateutil.tz.tzlocal()):
+    #         raise ValueError('local_date and utc_date are inconsistent.')
 
-        print('Synchronized dates:')
-        print(f"\tlocal_date: {local_date}")
-        print(f"\tutc_date  : {utc_date}")
-        return local_date, utc_date
+    #     print('Synchronized dates:')
+    #     print(f"\tlocal_date: {local_date}")
+    #     print(f"\tutc_date  : {utc_date}")
+    #     return local_date, utc_date
     
-    def get_local_timezone(self=None):
-        print("Getting local_timezone...")
+    # def get_local_timezone(self=None):
+    #     print("Getting local_timezone...")
         
-        # this is short and sweet
-        local_timezone = datetime.now().astimezone().tzinfo
+    #     # this is short and sweet
+    #     local_timezone = datetime.now().astimezone().tzinfo
 
-        # So why the heck did I think we need all this? Delete if this reason doesn't
-        # reappear soon
-        # # Get the local timezone offset in minutes and create a timezone object
-        # offset_min = -1 * time.timezone if (time.localtime().tm_isdst == 0) else -1 * time.altzone
-        # offset = timedelta(seconds=offset_min)
-        # local_timezone = timezone(offset)
+    #     # So why the heck did I think we need all this? Delete if this reason doesn't
+    #     # reappear soon
+    #     # # Get the local timezone offset in minutes and create a timezone object
+    #     # offset_min = -1 * time.timezone if (time.localtime().tm_isdst == 0) else -1 * time.altzone
+    #     # offset = timedelta(seconds=offset_min)
+    #     # local_timezone = timezone(offset)
 
-        print(f"timezone: {local_timezone}")
-        return local_timezone
+    #     print(f"timezone: {local_timezone}")
+    #     return local_timezone
 
-    def format_date_to_etapi(self, date: datetime, kind: str) -> str:
-        '''From a datetime object, return a date string formatted to ETAPI requirements:
-                local: '2023-08-21 23:38:51.110-0200'
-                UTC  : '2023-08-22 01:38:51.110Z'
-        and exactly 3 decimal places for seconds.'''
-        if kind == 'local':
-            date = date.strftime('%Y-%m-%d %H:%M:%S.%d3%z') 
-        if kind == 'utc':
-            date = date.astimezone(dateutil.tz.tzstr('Z')) # use Zulu time
-            date = date.strftime('%Y-%m-%d %H:%M:%S.%d3%Z')
-        print(f'ETAPI Formatted date kind: {kind}')
-        print(f'\t{date}')
-        # print(f'\t{type (date)}')
-        return date
+    # def format_date_to_etapi(self, date: datetime, kind: str) -> str:
+    #     '''From a datetime object, return a date string formatted to ETAPI requirements:
+    #             local: '2023-08-21 23:38:51.110-0200'
+    #             UTC  : '2023-08-22 01:38:51.110Z'
+    #     and exactly 3 decimal places for seconds.'''
+    #     if kind == 'local':
+    #         date = date.strftime('%Y-%m-%d %H:%M:%S.%d3%z') 
+    #     if kind == 'utc':
+    #         date = date.astimezone(dateutil.tz.tzstr('Z')) # use Zulu time
+    #         date = date.strftime('%Y-%m-%d %H:%M:%S.%d3%Z')
+    #     print(f'ETAPI Formatted date kind: {kind}')
+    #     print(f'\t{date}')
+    #     # print(f'\t{type (date)}')
+    #     return date
 
     def delete_note(self, noteId: str) -> bool:
         url = f'{self.server_url}/etapi/notes/{noteId}'

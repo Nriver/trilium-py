@@ -135,9 +135,12 @@ res = ea.search_note(
     search="note.title %= '.*'",
     ancestorNoteId="Parent Note ID",
     fastSearch=False,
-    limit=1000,
+    orderBy=["title"],
+    limit=100,
 )
 ```
+
+Note: `limit` will not work without `orderBy`.
 
 ### 🏭 Create Note
 

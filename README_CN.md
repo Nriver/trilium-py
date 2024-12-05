@@ -129,9 +129,12 @@ res = ea.search_note(
     search="note.title %= '.*'",
     ancestorNoteId="父笔记ID",
     fastSearch=False,
-    limit=1000,
+    orderBy=["title"],
+    limit=100,
 )
 ```
+
+注意: `limit` 必须配合 `orderBy` 一起使用
 
 ### 🏭 创建笔记
 

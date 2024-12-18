@@ -1523,7 +1523,7 @@ class ETAPI:
 
         # Prepare note title and note id list
         # Get all note titles and note ids
-        all_notes = self.search_note(search="note.title %= '.*'")
+        all_notes = self.search_note(search="note.title %= '.*' #!ignoreAutoInternalLink")
         all_note_title_list = []
         for x in all_notes['results']:
             if x['isProtected']:

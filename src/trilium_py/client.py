@@ -1545,7 +1545,11 @@ class ETAPI:
             pass
         elif process_all_notes:
             # process all notes if not provided a note id list
-            target_notes = [x[1] for x in all_note_title_list]
+            target_notes = [
+                x['noteId']
+                for x in self.search_note(search="note.title %= '.*'")['results']
+                if not x['isProtected']
+            ]
 
         # Add internal link
 

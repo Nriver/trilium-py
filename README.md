@@ -582,29 +582,92 @@ ea.optimize_image_attachments_to_webp('H2q3901uFDCH')
 
 This action can save significant space if you have many clipped pages. Whoever invented `WebP` is a genius.
 
-## (Advanced Usage) Automatically add internal link
+## (Advanced Usage) 🔗 Automatically Add Internal Links
 
-Experimental feature. Backup your database before do anything with this feature. It may completely destroy your notes.
+This feature allows you to automatically create internal links within your notes. Let’s take a look at how it works.
 
-If you find something wrong after using this feature. Please provide me a minimal note sample to test and fix potential
-bugs.
+### Example
 
-Add internal link in note
+Here is a sample note:
 
+![auto-link-1](docs/auto-link-1.webp)
+
+After running a single line of code:
+
+```python
+auto_create_internal_link('put_note_id_here')
 ```
-auto_create_internal_link('HfAnsf8XiarY')
+
+The note transforms into this:
+
+![auto-link-2](docs/auto-link-2.webp)
+
+As you can see, some text has been replaced with internal links. The feature follows these rules:
+
+- **Title Match**: Content that matches any other note's title is replaced with an internal link.
+- **Duplicate Titles Ignored**: If multiple notes share the same title, no link is created for that title.
+- **Longer Matches First**: Longer titles take precedence. For example, in the above example, "Nate River" is linked,
+  not just "River."
+- **Existing Links Remain**: Pre-existing links in the text are left untouched.
+
+However, some words like "make" and "work" in the example are part of my "English Words That I Do Not Know" note. Since
+they are common and frequently used, I don’t want them to create excessive internal links.
+
+### Excluding Notes from Internal Linking
+
+To prevent certain notes from being linked:
+
+- Add the tag `#ignoreAutoInternalLink` to a note. This note (and optionally its sub-notes) will be excluded from link
+  creation.
+- You can make it **inheritable**—you can apply it to a parent note and inheritable, then it will be automatically
+  exclude all its sub-notes.
+
+Here’s how it looks after applying the exclusion rule:
+
+![auto-link-3](docs/auto-link-3.webp)
+
+The result is cleaner and more intentional.
+
+### Special Case: Duplicate Titles
+
+When multiple notes share the same title, a specific condition allows for internal links:
+
+- **Direct Sub-Notes Have Priority**: Direct child notes take precedence over other notes with the same title.
+
+For instance:
+
+![auto-link-4](docs/auto-link-4.webp)
+
+In this case, the note `TriliumNext` links "How to compile" to its own child note, not the one from `Trilium`.
+
+### Final Rule: No Self-Linking
+
+A note will never create an internal link to itself.
+
+---
+
+### Code Samples
+
+**Add an internal link to a specific note by its ID:**
+
+```python
+auto_create_internal_link('gLmmsIM8yPqx')
 ```
 
-For multiple notes
+**Add internal links for multiple notes:**
 
-```
+```python
 auto_create_internal_link(target_notes=['gLmmsIM8yPqx', 'T4Ui3wNByO03'])
 ```
 
-(Dangerous action, backup first) Add internal notes for all text notes
+**(Experimental - Use with Caution)**  
+**Add internal links to all text notes:**
 
-```
-auto_create_internal_link(prcess_all_note=True)
+This is an experimental feature. **Backup your database** before using it, as it may irreversibly modify your notes. If
+issues occur, please provide a minimal note sample to help debug.
+
+```python
+auto_create_internal_link(process_all_notes=True)
 ```
 
 ## 🛠️ Develop

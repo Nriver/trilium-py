@@ -148,6 +148,7 @@ setup(
         'minify-html',
         'pillow',
         'python-dateutil',
+        'tqdm',
     ],
     # Optional
     # List additional groups of dependencies here (e.g. development

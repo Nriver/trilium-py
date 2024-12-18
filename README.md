@@ -549,7 +549,8 @@ res = ea.sort_note_content('y6hROhWjNmHQ', 'zh_CN.UTF-8')
 
 ## (Advanced Usage) 🧹 Delete empty `new note`
 
-Sometimes I inadvertently create numerous "new notes" which remain undeleted within my note tree. These "new notes" clutter my
+Sometimes I inadvertently create numerous "new notes" which remain undeleted within my note tree. These "new notes"
+clutter my
 workspace, scattered across various locations. I made this bulk deletion of these empty "new notes." Additionally, it
 generates warning messages for "new notes" that contain content, maybe we should change the title for those notes.
 
@@ -580,6 +581,31 @@ ea.optimize_image_attachments_to_webp('H2q3901uFDCH')
 ```
 
 This action can save significant space if you have many clipped pages. Whoever invented `WebP` is a genius.
+
+## (Advanced Usage) Automatically add internal link
+
+Experimental feature. Backup your database before do anything with this feature. It may completely destroy your notes.
+
+If you find something wrong after using this feature. Please provide me a minimal note sample to test and fix potential
+bugs.
+
+Add internal link in note
+
+```
+auto_create_internal_link('HfAnsf8XiarY')
+```
+
+For multiple notes
+
+```
+auto_create_internal_link(target_notes=['gLmmsIM8yPqx', 'T4Ui3wNByO03'])
+```
+
+(Dangerous action, backup first) Add internal notes for all text notes
+
+```
+auto_create_internal_link(prcess_all_note=True)
+```
 
 ## 🛠️ Develop
 

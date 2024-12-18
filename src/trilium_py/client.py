@@ -16,12 +16,20 @@ import requests
 from bs4 import BeautifulSoup
 from loguru import logger
 from natsort import natsort
+from tqdm import tqdm
 
 from .utils.file_util import replace_extension
+from .utils.html_util import add_internal_links
 from .utils.markdown_math import reconstructMath, sanitizeInput
-from .utils.note_util import beautify_content, sort_note_by_headings
+from .utils.note_util import beautify_content, sort_note_by_headings, preprocess_note_title_list
 from .utils.param_util import clean_param, format_query_string
-from .utils.time_util import get_today, get_yesterday, synchronize_dates, format_date_to_etapi, get_local_timezone
+from .utils.time_util import (
+    get_today,
+    get_yesterday,
+    synchronize_dates,
+    format_date_to_etapi,
+    get_local_timezone,
+)
 from .utils.image_util import compress_image_bytes, get_extension_from_image_mime
 
 
@@ -373,9 +381,10 @@ class ETAPI:
         }
         res = requests.patch(url, json=clean_param(params), headers=self.get_header())
         return res.json()
-    def handle_dates(self, 
-                     dateCreated: Optional[datetime] = None, 
-                     utcDateCreated: Optional[datetime] = None):
+
+    def handle_dates(
+        self, dateCreated: Optional[datetime] = None, utcDateCreated: Optional[datetime] = None
+    ):
         '''Ensure that both local and UTC times are defined, and have same time
         (adjusted for timezone)'''
         if not dateCreated and not utcDateCreated:
@@ -384,21 +393,21 @@ class ETAPI:
             print(f"dateCreated is not datetime object, is {type(dateCreated)}")
             raise TypeError("dateCreated must be a datetime object")
         if utcDateCreated and not isinstance(utcDateCreated, datetime):
-            print(f"utcdateCreated is not datetime object, is {type(utcDateCreated)}")            
+            print(f"utcdateCreated is not datetime object, is {type(utcDateCreated)}")
             raise TypeError("utcDateCreated must be a datetime object")
 
         if dateCreated and dateCreated.tzinfo is None:
             tzinfo = get_local_timezone()
             dateCreated = dateCreated.replace(tzinfo=tzinfo)
             print(f"dateCreated.tzinfo was None. Changed to: {dateCreated.tzinfo}.")
-        
+
         if utcDateCreated and utcDateCreated.tzinfo is None:
             utcDateCreated = utcDateCreated.replace(tzinfo=dateutil.tz.tzutc())
             print(f'utc date tzinfo was None, forced to UTC ({utcDateCreated})')
 
         # After ensuring TZ is set for one of the date types, synchronize them
         synchronized_dates = synchronize_dates(local_date=dateCreated, utc_date=utcDateCreated)
-    
+
         return synchronized_dates
 
     # def synchronize_dates(self, local_date: Optional[datetime], utc_date: Optional[datetime]) -> tuple[Optional[datetime], Optional[datetime]]:
@@ -423,10 +432,10 @@ class ETAPI:
     #     print(f"\tlocal_date: {local_date}")
     #     print(f"\tutc_date  : {utc_date}")
     #     return local_date, utc_date
-    
+
     # def get_local_timezone(self=None):
     #     print("Getting local_timezone...")
-        
+
     #     # this is short and sweet
     #     local_timezone = datetime.now().astimezone().tzinfo
 
@@ -446,7 +455,7 @@ class ETAPI:
     #             UTC  : '2023-08-22 01:38:51.110Z'
     #     and exactly 3 decimal places for seconds.'''
     #     if kind == 'local':
-    #         date = date.strftime('%Y-%m-%d %H:%M:%S.%d3%z') 
+    #         date = date.strftime('%Y-%m-%d %H:%M:%S.%d3%z')
     #     if kind == 'utc':
     #         date = date.astimezone(dateutil.tz.tzstr('Z')) # use Zulu time
     #         date = date.strftime('%Y-%m-%d %H:%M:%S.%d3%Z')
@@ -1498,6 +1507,96 @@ class ETAPI:
                 logger.warning(f'note {x["noteId"]} is not empty')
                 if verbose:
                     logger.info(content)
+
+    def auto_create_internal_link(
+        self,
+        target_note_id=None,
+        target_notes=None,
+        process_all_notes=False,
+        skip_clipped_notes=True,
+        skip_day_notes=True,
+        verbose=True,
+    ):
+        """
+        Create internal link for notes
+        """
+
+        # Prepare note title and note id list
+        # Get all note titles and note ids
+        all_notes = self.search_note(search="note.title %= '.*'")
+        all_note_title_list = []
+        for x in all_notes['results']:
+            if x['isProtected']:
+                # Remove protected notes, they are not editable via ETAPI
+                continue
+            title = x['title']
+            note_id = x['noteId']
+            all_note_title_list.append([title, note_id])
+
+        # Process the note titles, handling duplicates and sorting
+        processed_note_title_list = preprocess_note_title_list(all_note_title_list)
+
+        # prepare target note id
+        if target_note_id:
+            target_notes = [
+                target_note_id,
+            ]
+        elif target_notes:
+            pass
+        elif process_all_notes:
+            # process all notes if not provided a note id list
+            target_notes = [x[1] for x in all_note_title_list]
+
+        # Add internal link
+
+        def get_child_note_title_note_id_list(note_id):
+            res = self.get_note(note_id)
+            result = []
+            for child_note_id in res['childNoteIds']:
+                x = self.get_note(child_note_id)
+                result.append([x['title'], x['noteId']])
+            return preprocess_note_title_list(result)
+
+        for note_id in tqdm(target_notes):
+
+            # only process text note here
+            current_note = self.get_note(note_id)
+
+            if verbose:
+                logger.info(f'current note id: {note_id} title: {current_note["title"]}')
+
+            if not current_note['type'] == 'text':
+                if verbose:
+                    logger.info('skip: not text note')
+                continue
+
+            if skip_clipped_notes and any(
+                [x['name'] == 'pageUrl' for x in current_note['attributes']]
+            ):
+                if verbose:
+                    logger.info('skip: clipped note')
+                continue
+
+            if skip_day_notes and any(
+                [x['name'] == 'dateNote' for x in current_note['attributes']]
+            ):
+                if verbose:
+                    logger.info('skip: day note')
+                continue
+
+            # add child note, we can handle sub notes with same name from different parent notes
+            processed_child_note_title_list = get_child_note_title_note_id_list(note_id)
+            tmp_list_for_current_note = processed_child_note_title_list + processed_note_title_list
+
+            content = self.get_note_content(note_id)
+            updated_content, replaced = add_internal_links(
+                content, tmp_list_for_current_note, current_note_id=note_id
+            )
+            # If content has changed, update the note
+            if replaced:
+                self.update_note_content(note_id, updated_content)
+                if verbose:
+                    logger.info(f"Added internal link to note {note_id}.")
 
 
 class ListTemplate(string.Template):

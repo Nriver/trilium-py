@@ -110,3 +110,31 @@ def sort_note_by_headings(html_content, locale_str='zh_CN.UTF-8'):
     sorted_html_string = content_before_first_h + sorted_html
 
     return sorted_html_string
+
+
+def preprocess_note_title_list(data):
+    """
+    Optimized version of the function to preprocess the list of [title, note_id].
+    Cleans titles, removes duplicates and previous matching entries, and sorts by title length.
+    """
+
+    def clean_title(title):
+        return title.strip()
+
+    # Use an ordered dictionary to maintain insertion order while ensuring uniqueness
+    from collections import OrderedDict
+
+    cleaned_data = OrderedDict()
+
+    # Traverse the data and process each title
+    for title, note_id in data:
+        cleaned_title = clean_title(title)
+        if cleaned_title in cleaned_data:
+            # If the title already exists, remove it
+            del cleaned_data[cleaned_title]
+        else:
+            # Otherwise, add it to the dictionary
+            cleaned_data[cleaned_title] = note_id
+
+    # Convert the dictionary back to a list and sort by title length (descending)
+    return sorted(cleaned_data.items(), key=lambda x: len(x[0]), reverse=True)

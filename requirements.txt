@@ -9,3 +9,4 @@ loguru
 minify-html
 pillow
 python-dateutil
+tqdm

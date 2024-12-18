@@ -508,6 +508,32 @@ ea.optimize_image_attachments_to_webp('H2q3901uFDCH')
 
 如果你有很多剪辑的页面，这个操作可以节省大量空间。发明 `WebP` 的人真是个天才。
 
+
+## （高级用法）自动添加内部链接
+
+实验性功能。在使用此功能之前，请备份您的数据库。它可能会完全破坏您的笔记。
+
+如果在使用此功能后发现任何问题，请提供一个最小化的笔记示例，以便测试和修复潜在的错误。
+
+在笔记中添加内部链接：
+
+```
+auto_create_internal_link('HfAnsf8XiarY')
+```
+
+针对多个笔记：
+
+```
+auto_create_internal_link(target_notes=['gLmmsIM8yPqx', 'T4Ui3wNByO03'])
+```
+
+（危险操作，请先备份）为所有文本笔记添加内部链接：
+
+```
+auto_create_internal_link(process_all_note=True)
+```
+
+
 ## 🛠️ 开发
 
 使用pip egg link进行安装，以便在不重新安装的情况下进行包更改。

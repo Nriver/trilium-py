@@ -1,7 +1,11 @@
 import locale
 import re
+import warnings
 
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, MarkupResemblesLocatorWarning
+
+# Disable MarkupResemblesLocatorWarning globally
+warnings.filterwarnings('ignore', category=MarkupResemblesLocatorWarning)
 
 TAG_LEVELS = {'h1': 1, 'h2': 2, 'h3': 3, 'h4': 4, 'h5': 5, 'h6': 6}
 
@@ -73,3 +77,61 @@ def sort_h_tags_with_hierarchy(data, locale_str='zh_CN.UTF-8'):
     # Concatenate data in a depth-first search manner
     html_string = dfs_concat_data(tree)
     return html_string
+
+
+def add_internal_links(
+    html_content, keyword_note_id_list, current_note_id=None, exclude_headings=True
+):
+    """
+    Adds internal links to the HTML content by replacing keywords with anchor tags.
+
+    Args:
+        html_content (str): The HTML content to process.
+        keyword_note_id_list (list of tuples): List of (keyword, note_id).
+        exclude_headings (bool): Whether to exclude heading tags from processing.
+        current_note_id (str): The ID of the current note to prevent self-referencing.
+
+    Returns:
+        tuple: A tuple containing the updated HTML content and a boolean indicating if replacements were made.
+    """
+    # Use BeautifulSoup to parse the HTML content
+    soup = BeautifulSoup(html_content, "html.parser")
+    replaced = False  # Flag to check if any replacement happens
+
+    # Precompile the keywords and links into a dictionary, excluding self-referencing notes
+    keyword_to_link = {
+        keyword: f'<a class="reference-link" href="#root/{note_id}">{keyword}</a>'
+        for keyword, note_id in keyword_note_id_list
+        if note_id != current_note_id  # Exclude the current note's ID
+    }
+
+    # Create a regex pattern to match any keyword
+    if not keyword_to_link:
+        return str(soup), replaced  # No keywords to process
+
+    keyword_pattern = re.compile(
+        r'\b(' + '|'.join(re.escape(k) for k in keyword_to_link.keys()) + r')\b'
+    )
+
+    # Tags to exclude from replacement
+    exclude_tags = ['a']
+    if exclude_headings:
+        exclude_tags.extend(['h2', 'h3', 'h4', 'h5', 'h6'])
+
+    # Traverse all text nodes once
+    for text_node in soup.find_all(string=True):
+        # Skip nodes inside tags that shouldn't contain links
+        if text_node.parent.name in exclude_tags:
+            continue
+
+        # Replace keywords in the text
+        def replace_keyword(match):
+            replaced_keyword = match.group(0)
+            return keyword_to_link[replaced_keyword]
+
+        new_text = keyword_pattern.sub(replace_keyword, text_node)
+        if new_text != text_node:  # If the text has actually changed
+            text_node.replace_with(BeautifulSoup(new_text, "html.parser"))
+            replaced = True  # Mark that replacement has occurred
+
+    return str(soup), replaced

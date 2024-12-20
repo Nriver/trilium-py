@@ -135,3 +135,22 @@ def add_internal_links(
             replaced = True  # Mark that replacement has occurred
 
     return str(soup), replaced
+
+
+if __name__ == '__main__':
+    # Example input HTML content
+    html_content = """
+    <p> Only root can see this. <a href="#root/python_programming">Python</a> is a widely used programming language. Python has a simple syntax and supports multiple paradigms.</p>
+    """
+    # List of keywords and their corresponding note ids
+    data = [
+        ["Python", "python_programming"],
+        ["programming language", "programming_language"],
+        ["simple syntax", "simple_syntax"],
+        ["root", "root"],
+    ]
+    updated_html, updated = add_internal_links(html_content, data)
+    print(f'content updated {updated}')
+    if updated:
+        # Output the modified HTML
+        print(updated_html)

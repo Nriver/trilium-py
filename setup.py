@@ -145,7 +145,6 @@ setup(
         'markdown2[all]',
         'natsort',
         'loguru',
-        'minify-html',
         'pillow',
         'python-dateutil',
         'tqdm',

@@ -1,6 +1,5 @@
 import re
-
-import minify_html
+import html
 from bs4 import BeautifulSoup
 
 from .html_util import sort_h_tags_with_hierarchy
@@ -10,23 +9,21 @@ def beautify_content(content):
     """
     Beautify note content, add new lines and remove redundant lines
 
-    :param content:
-    :return:
+    :param content: The HTML content to be beautified.
+    :return: Beautified HTML content.
     """
 
-    # minify html, it's slightly different from ckeditor's minify, but works fine.
-    content = minify_html.minify(content, keep_closing_tags=True)
+    # Use html module to unescape HTML entities (like &nbsp;)
+    content = html.unescape(content)
 
-    # fix redundant empty p tag
-    # logger.info('<p> <p></p><h2>' in content)
+    # Fix redundant empty <p> tags
     for heading_level in range(2, 6):
-        content = content.replace(f'<p> </p><p></p><h{heading_level}>', f'<h{heading_level}>')
-        content = content.replace(f'<p> <p></p><h{heading_level}>', f'<h{heading_level}>')
+        # Replace patterns of empty <p> tags before headings
+        content = content.replace(f'<p> </p><p></p><h{heading_level}>', f'<h{heading_level}>')
+        content = content.replace(f'<p> </p><h{heading_level}>', f'<h{heading_level}>')
         content = content.replace(f'<p> <h{heading_level}>', f'<h{heading_level}>')
 
-    # logger.info(content)
-
-    # add new line before headings
+    # Add a new line before headings
     for heading_level in range(2, 6):
         pat = f'<h{heading_level}>'
         res = re.finditer(pat, content)
@@ -38,9 +35,7 @@ def beautify_content(content):
                 key2 = '<p></p>'
                 back_pos2 = pos - len(key2)
 
-                # logger.info(f'pos1 {content[back_pos1:pos]}')
-                # logger.info(f'pos2 {content[back_pos2:pos]}')
-
+                # If no unnecessary empty <p> tag exists before the heading, insert <p></p>
                 if not (
                     (back_pos1 >= 0 and content[back_pos1:pos] == key1)
                     or (back_pos2 >= 0 and content[back_pos2:pos] == key2)

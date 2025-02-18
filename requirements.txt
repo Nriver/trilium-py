@@ -6,7 +6,6 @@ python-magic-bin; sys_platform == 'win32'
 markdown2[all]
 natsort
 loguru
-minify-html
 pillow
 python-dateutil
 tqdm

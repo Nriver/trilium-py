@@ -1,5 +1,6 @@
-from PIL import Image
 from io import BytesIO
+
+from PIL import Image, ImageOps
 
 
 def compress_image_bytes(image_bytes, extension, quality=90):
@@ -15,6 +16,10 @@ def compress_image_bytes(image_bytes, extension, quality=90):
     try:
         with BytesIO(image_bytes) as img_buffer:
             with Image.open(img_buffer) as img:
+                # Correct image orientation based on EXIF data, if available
+                # This ensures the image is properly oriented after conversion
+                img = ImageOps.exif_transpose(img)
+
                 output_buffer = BytesIO()
                 # PIL/pillow can only recognize JPEG, it does not know JPG...
                 if extension == 'jpg':
@@ -40,3 +45,13 @@ def get_extension_from_image_mime(mime):
         return 'svg'
     else:
         return mime.split('/')[1]
+
+
+if __name__ == "__main__":
+    image_file = '/home/nate/data/1/1.jpg'
+    output_file = '/home/nate/data/1/1.webp'
+    with open(image_file, 'rb') as f:
+        image_bytes = f.read()
+    compressed_image_bytes = compress_image_bytes(image_bytes, 'webp', 90)
+    with open(output_file, 'wb') as f:
+        f.write(compressed_image_bytes)

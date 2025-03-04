@@ -85,10 +85,8 @@ class WEBAPI:
         if not sid:
             return False
 
-        data = {'_csrf': self.csrf_token}
-
         url = f'{self.server_url}/logout'
-        res = requests.post(url, data=data, cookies=self.get_cookie())
+        res = requests.post(url, headers=self.get_headers(), cookies=self.get_cookie())
 
         if res.status_code == 200:
             logger.info('logout successfully')
@@ -99,3 +97,22 @@ class WEBAPI:
         url = f'{self.server_url}/api/notes/{note_id}/blob'
         res = requests.get(url, cookies=self.get_cookie())
         return res.json()['content']
+
+    def share_note(self, note_id: str):
+        url = f'{self.server_url}/api/notes/{note_id}/clone-to-note/_share'
+
+        res = requests.put(url, headers=self.get_headers(), cookies=self.get_cookie())
+        logger.info(res.json())
+        if res.json():
+            return True
+        return False
+
+    def cancel_share_note(self, note_id: str):
+        url = f'{self.server_url}/api/branches/_share_{note_id}?taskId=no-progress-reporting'
+
+        res = requests.delete(url, headers=self.get_headers(), cookies=self.get_cookie())
+        logger.info(res.json())
+
+        if res.status_code == 200:  # DELETE 请求通常返回 200 表示成功
+            return True
+        return False

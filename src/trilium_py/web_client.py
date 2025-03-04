@@ -69,6 +69,7 @@ class WEBAPI:
         if res.status_code == 200:
             self.sid = session.cookies.get('trilium.sid')
             self._csrf = session.cookies.get('_csrf')
+            self.refresh_csrf_token()
             return self.sid
         else:
             logger.info(res.text)

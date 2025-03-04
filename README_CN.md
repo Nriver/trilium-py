@@ -626,7 +626,7 @@ auto_create_internal_link(process_all_notes=True)
 
 ## (基础) Web API 使用
 
-这些功能是基于 Trilium Web 客户端的 Web API 开发的。在使用之前，请确保已完成初始化。
+这些功能是基于 Trilium Web 客户端的 Web API 开发的。在使用之前，请确保已完成[初始化](#web-api-初始化)。
 
 ### 📣 分享笔记 & 取消分享笔记
 

@@ -700,8 +700,7 @@ auto_create_internal_link(process_all_notes=True)
 
 ## (Basic) Web API Usage
 
-These features are made based on the web API from Trilium's web client. Be sure you have done the initialization before
-use it.
+These features are made based on the web API from Trilium's web client. Be sure you have done the [initialization](#web-api-initialization) before use it.
 
 ### 📣 Share note & cancel share note
 

@@ -4,7 +4,7 @@
 English | <a href="README_CN.md">简体中文</a>
 </p>
 
-Python client for ETAPI of Trilium Note.
+Python client for ETAPI and Web API of Trilium Note.
 
 [![Downloads](https://static.pepy.tech/badge/trilium-py)](https://pepy.tech/project/trilium-py)
 [![Supported Versions](https://img.shields.io/pypi/pyversions/trilium-py.svg)](https://pypi.org/project/trilium-py)
@@ -18,8 +18,10 @@ Python client for ETAPI of Trilium Note.
 * [🐍 trilium-py](#-trilium-py)
    * [🦮 Table of Contents](#-table-of-contents)
    * [🔧 Installation](#-installation)
-   * [📖 (Basic) Usage](#-basic-usage)
-      * [🚀 Initialization](#-initialization)
+   * [🚀 Initialization](#-initialization)
+      * [ETAPI initialization](#etapi-initialization)
+      * [Web API initialization](#web-api-initialization)
+   * [📖 (Basic) ETAPI Usage](#-basic-etapi-usage)
       * [📊 Application Information](#-application-information)
       * [🔍 Search note](#-search-note)
       * [🏭 Create Note](#-create-note)
@@ -67,6 +69,8 @@ Python client for ETAPI of Trilium Note.
       * [Special Case: Duplicate Titles](#special-case-duplicate-titles)
       * [Final Rule: No Self-Linking](#final-rule-no-self-linking)
       * [Code Samples](#code-samples)
+   * [(Basic) Web API Usage](#basic-web-api-usage)
+      * [Share note &amp; cancel share note](#share-note--cancel-share-note)
    * [🛠️ Develop](#️-develop)
    * [🔗 Original OpenAPI Documentation](#-original-openapi-documentation)
 <!--te-->
@@ -77,11 +81,12 @@ Python client for ETAPI of Trilium Note.
 python3 -m pip install trilium-py --user
 ```
 
-## 📖 (Basic) Usage
+## 🚀 Initialization
 
-These are basic function that Trilium's ETAPI provides. Down below are some simple example code to use this package.
+In the following code example, `ea` stands for ETAPI, and `wa` stands for Web API. Please perform the corresponding
+initialization process based on whether you need to use the ETAPI or the Web API.
 
-### 🚀 Initialization
+### ETAPI initialization
 
 If you have a ETAPI token, change the `server_url` and `token` to yours.
 
@@ -106,7 +111,26 @@ token = ea.login(password)
 print(token)
 ```
 
-After initialization, you can use Trilium ETAPI with python now. The following are some examples.
+After initialization, you can use Trilium ETAPI with python now.
+
+### Web API initialization
+
+You need to login every time you use the web API due to the CSRF limit.
+
+```
+from trilium_py.src.trilium_py.web_client import WEBAPI
+
+server_url = 'http://localhost:8080'
+password = '1234'
+wa = WEBAPI(server_url)
+wa.login(password)
+```
+
+After initialization, you can use Trilium web API with python now.
+
+## 📖 (Basic) ETAPI Usage
+
+These are basic function that Trilium's ETAPI provides. Down below are some simple example code to use this package.
 
 ### 📊 Application Information
 
@@ -672,6 +696,18 @@ issues occur, please provide a minimal note sample to help debug.
 
 ```python
 auto_create_internal_link(process_all_notes=True)
+```
+
+## (Basic) Web API Usage
+
+These features are made based on the web API from Trilium's web client. Be sure you have done the initialization before
+use it.
+
+### 📣 Share note & cancel share note
+
+```
+wa.share_note('your_note_id')
+wa.cancel_share_note('RfhYrtyQLU8o')
 ```
 
 ## 🛠️ Develop

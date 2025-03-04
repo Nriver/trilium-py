@@ -7,7 +7,7 @@
 > [!IMPORTANT]
 > 中文文档可能落后于英文文档，如果有问题请先查看英文文档。
 
-Trilium Note的ETAPI的Python客户端。
+Trilium Note的ETAPI和Web API的Python客户端。
 
 [![Downloads](https://static.pepy.tech/badge/trilium-py)](https://pepy.tech/project/trilium-py)
 [![Supported Versions](https://img.shields.io/pypi/pyversions/trilium-py.svg)](https://pypi.org/project/trilium-py)
@@ -21,8 +21,10 @@ Trilium Note的ETAPI的Python客户端。
 * [🐍 trilium-py](#-trilium-py)
    * [🦮 目录](#-目录)
    * [🔧 安装](#-安装)
-   * [📖 (基本) 用法](#-基本-用法)
-      * [🚀 初始化](#-初始化)
+   * [🚀 初始化](#-初始化)
+      * [ETAPI 初始化](#etapi-初始化)
+      * [Web API 初始化](#web-api-初始化)
+   * [📖 (基本) ETAPI 用法](#-基本-etapi-用法)
       * [📊 应用信息](#-应用信息)
       * [🔍 搜索笔记](#-搜索笔记)
       * [🏭 创建笔记](#-创建笔记)
@@ -65,6 +67,8 @@ Trilium Note的ETAPI的Python客户端。
       * [特殊情况：重复标题](#特殊情况重复标题)
       * [最后一条规则：避免自引用](#最后一条规则避免自引用)
       * [代码示例](#代码示例)
+   * [(基础) Web API 使用](#基础-web-api-使用)
+      * [分享笔记 &amp; 取消分享笔记](#分享笔记--取消分享笔记)
    * [🛠️ 开发](#️-开发)
    * [🔗 原始OpenAPI文档](#-原始openapi文档)
 <!--te-->
@@ -75,11 +79,9 @@ Trilium Note的ETAPI的Python客户端。
 python3 -m pip install trilium-py --user
 ```
 
-## 📖 (基本) 用法
+## 🚀 初始化
 
-以下是Trilium的ETAPI提供的基本功能。下面是一些使用这个包的简单示例代码。
-
-### 🚀 初始化
+### ETAPI 初始化
 
 如果你有一个ETAPI令牌，请将 `server_url` 和 `token` 更改为你自己的。
 
@@ -103,7 +105,26 @@ token = ea.login(password)
 print(token)
 ```
 
-初始化后，就可以使用Python使用Trilium的ETAPI了。以下是一些示例。
+初始化后，就可以使用Python使用Trilium的 ETAPI 了。
+
+### Web API 初始化
+
+由于 CSRF 限制，每次使用 Web API 时都需要登录。
+
+```
+from trilium_py.src.trilium_py.web_client import WEBAPI
+
+server_url = 'http://localhost:8080'
+password = '1234'
+wa = WEBAPI(server_url)
+wa.login(password)
+```
+
+初始化后，就可以使用Python使用Trilium的 Web API 了。
+
+## 📖 (基本) ETAPI 用法
+
+以下是Trilium的ETAPI提供的基本功能。下面是一些使用这个包的简单示例代码。
 
 ### 📊 应用信息
 
@@ -174,6 +195,7 @@ res = ea.create_image_note(
     image_file="shield.png",
 )
 ```
+
 ### 👀 获取笔记
 
 检索笔记的内容。
@@ -320,6 +342,7 @@ ea.add_todo("买暖宝宝")
 ea.todo_check(0)
 ea.todo_uncheck(1)
 ```
+
 ### 更新TODO项
 
 使用 `update_todo` 来更新某个索引处的TODO项描述。
@@ -397,7 +420,8 @@ res = ea.upload_md_folder(
 
 #### 从Obsidian导入
 
-Obsidian有一个非常独特的文件链接系统。你应该使用[obsidian-export](https://github.com/zoni/obsidian-export)将Obsidian vault转换为常规的Markdown文件。然后再使用trilium-py将笔记导入Trilium。
+Obsidian有一个非常独特的文件链接系统。你应该使用[obsidian-export](https://github.com/zoni/obsidian-export)将Obsidian
+vault转换为常规的Markdown文件。然后再使用trilium-py将笔记导入Trilium。
 
 首先进行转换。
 
@@ -416,7 +440,8 @@ res = ea.upload_md_folder(
 
 #### 从有道云笔记导入
 
-有道云笔记不再提供导出功能。不过好在你可以使用<https://github.com/DeppWang/youdaonote-pull>下载你的笔记并将其转换为Markdown文件。之后，trilium-py应该能够帮助你导入它们。
+有道云笔记不再提供导出功能。不过好在你可以使用<https://github.com/DeppWang/youdaonote-pull>
+下载你的笔记并将其转换为Markdown文件。之后，trilium-py应该能够帮助你导入它们。
 
 ```python
 res = ea.upload_md_folder(
@@ -507,14 +532,14 @@ ea.optimize_image_attachments('uMJt0Ajr1CuC')
 
 为了进一步节省空间，可以尝试以下方法。
 
-`optimize_image_attachments_to_webp` 函数将图像转换为 `WebP` 格式，显著减少文件大小。根据我的经验，`WebP` 图像的大小可能只有 `PNG` 图像的25%到50%。
+`optimize_image_attachments_to_webp` 函数将图像转换为 `WebP` 格式，显著减少文件大小。根据我的经验，`WebP` 图像的大小可能只有
+`PNG` 图像的25%到50%。
 
 ```
 ea.optimize_image_attachments_to_webp('H2q3901uFDCH')
 ```
 
 如果你有很多剪辑的页面，这个操作可以节省大量空间。发明 `WebP` 的人真是个天才。
-
 
 ## （高级用法）🔗 自动添加内部链接
 
@@ -599,6 +624,16 @@ auto_create_internal_link(target_notes=['gLmmsIM8yPqx', 'T4Ui3wNByO03'])
 auto_create_internal_link(process_all_notes=True)
 ```
 
+## (基础) Web API 使用
+
+这些功能是基于 Trilium Web 客户端的 Web API 开发的。在使用之前，请确保已完成初始化。
+
+### 📣 分享笔记 & 取消分享笔记
+
+```python
+wa.share_note('你的笔记ID')
+wa.cancel_share_note('RfhYrtyQLU8o')
+```
 
 ## 🛠️ 开发
 
@@ -610,4 +645,5 @@ python -m pip install --user -e .
 
 ## 🔗 原始OpenAPI文档
 
-原始OpenAPI文档在[这里](https://github.com/zadam/trilium/blob/master/src/etapi/etapi.openapi.yaml)。你可以使用[swagger editor](https://editor.swagger.io/)打开它。
+原始OpenAPI文档在[这里](https://github.com/zadam/trilium/blob/master/src/etapi/etapi.openapi.yaml)
+。你可以使用[swagger editor](https://editor.swagger.io/)打开它。

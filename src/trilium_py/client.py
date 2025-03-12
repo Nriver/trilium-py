@@ -3,13 +3,13 @@ import re
 import string
 import sys
 import urllib.parse
+from collections import deque
 from collections.abc import Mapping
+from datetime import datetime
+from typing import Literal
 from typing import Optional, Union
 
-import time
 import dateutil
-from datetime import datetime, timezone, timedelta
-
 import magic
 import markdown2
 import requests
@@ -20,6 +20,7 @@ from tqdm import tqdm
 
 from .utils.file_util import replace_extension
 from .utils.html_util import add_internal_links
+from .utils.image_util import compress_image_bytes, get_extension_from_image_mime
 from .utils.markdown_math import reconstructMath, sanitizeInput
 from .utils.note_util import beautify_content, sort_note_by_headings, preprocess_note_title_list
 from .utils.param_util import clean_param, format_query_string
@@ -30,7 +31,6 @@ from .utils.time_util import (
     format_date_to_etapi,
     get_local_timezone,
 )
-from .utils.image_util import compress_image_bytes, get_extension_from_image_mime
 
 
 class ETAPI:
@@ -124,17 +124,17 @@ class ETAPI:
         return res.json()
 
     def create_note(
-        self,
-        parentNoteId: str,
-        title: str,
-        type: str,
-        mime: Optional[str] = None,
-        content=None,
-        notePosition: Optional[int] = None,
-        prefix: Optional[str] = None,
-        isExpanded: Optional[str] = None,
-        noteId: Optional[str] = None,
-        branchId: Optional[str] = None,
+            self,
+            parentNoteId: str,
+            title: str,
+            type: str,
+            mime: Optional[str] = None,
+            content=None,
+            notePosition: Optional[int] = None,
+            prefix: Optional[str] = None,
+            isExpanded: Optional[str] = None,
+            noteId: Optional[str] = None,
+            branchId: Optional[str] = None,
     ) -> dict:
         """
         Actually it's create or update,
@@ -171,18 +171,18 @@ class ETAPI:
         return res.json()
 
     def create_file_note(
-        self,
-        parentNoteId: str,
-        title: str,
-        file_path: str,
-        type: str = 'file',
-        mime: str = "application/octet-stream",
-        content='<p></p>',
-        notePosition: Optional[int] = None,
-        prefix: Optional[str] = None,
-        isExpanded: Optional[str] = None,
-        noteId: Optional[str] = None,
-        branchId: Optional[str] = None,
+            self,
+            parentNoteId: str,
+            title: str,
+            file_path: str,
+            type: str = 'file',
+            mime: str = "application/octet-stream",
+            content='<p></p>',
+            notePosition: Optional[int] = None,
+            prefix: Optional[str] = None,
+            isExpanded: Optional[str] = None,
+            noteId: Optional[str] = None,
+            branchId: Optional[str] = None,
     ):
         '''
         Upload ordinary file as a sub-note
@@ -258,18 +258,18 @@ class ETAPI:
         return
 
     def create_image_note(
-        self,
-        parentNoteId: str,
-        title: str,
-        image_file: str,
-        type: str = 'image',
-        mime: Optional[str] = None,
-        content=None,
-        notePosition: Optional[int] = None,
-        prefix: Optional[str] = None,
-        isExpanded: Optional[str] = None,
-        noteId: Optional[str] = None,
-        branchId: Optional[str] = None,
+            self,
+            parentNoteId: str,
+            title: str,
+            image_file: str,
+            type: str = 'image',
+            mime: Optional[str] = None,
+            content=None,
+            notePosition: Optional[int] = None,
+            prefix: Optional[str] = None,
+            isExpanded: Optional[str] = None,
+            noteId: Optional[str] = None,
+            branchId: Optional[str] = None,
     ):
         '''
         Upload image as a sub-note
@@ -356,13 +356,13 @@ class ETAPI:
         return
 
     def patch_note(
-        self,
-        noteId: str,
-        title: Optional[str] = None,
-        type: Optional[str] = None,
-        mime: Optional[str] = None,
-        dateCreated: Optional[datetime] = None,
-        utcDateCreated: Optional[datetime] = None,
+            self,
+            noteId: str,
+            title: Optional[str] = None,
+            type: Optional[str] = None,
+            mime: Optional[str] = None,
+            dateCreated: Optional[datetime] = None,
+            utcDateCreated: Optional[datetime] = None,
     ) -> dict:
         url = f'{self.server_url}/etapi/notes/{noteId}'
 
@@ -383,7 +383,7 @@ class ETAPI:
         return res.json()
 
     def handle_dates(
-        self, dateCreated: Optional[datetime] = None, utcDateCreated: Optional[datetime] = None
+            self, dateCreated: Optional[datetime] = None, utcDateCreated: Optional[datetime] = None
     ):
         '''Ensure that both local and UTC times are defined, and have same time
         (adjusted for timezone)'''
@@ -494,14 +494,14 @@ class ETAPI:
         return res.json()
 
     def create_branch(
-        self,
-        branchId: str,
-        noteId: str,
-        parentNoteId: str,
-        prefix: str,
-        notePosition: int,
-        isExpanded: bool,
-        utcDateModified,
+            self,
+            branchId: str,
+            noteId: str,
+            parentNoteId: str,
+            prefix: str,
+            notePosition: int,
+            isExpanded: bool,
+            utcDateModified,
     ) -> dict:
         # url = f'{self.server_url}/etapi/branches/{branchId}'
         url = f'{self.server_url}/etapi/branches/'
@@ -540,13 +540,13 @@ class ETAPI:
         return res.json()
 
     def create_attribute(
-        self,
-        noteId: str,
-        type: str,
-        name: str,
-        value: str,
-        isInheritable: bool,
-        attributeId: Optional[str] = None,
+            self,
+            noteId: str,
+            type: str,
+            name: str,
+            value: str,
+            isInheritable: bool,
+            attributeId: Optional[str] = None,
     ) -> dict:
         url = f'{self.server_url}/etapi/attributes/'
         params = {
@@ -766,7 +766,7 @@ class ETAPI:
         return self.todo_check(todo_index, check=False)
 
     def add_todo(
-        self, todo_description: str, todo_caption: str = r'<p>TODO:</p>', date: str = None
+            self, todo_description: str, todo_caption: str = r'<p>TODO:</p>', date: str = None
     ) -> bool:
         """append item to todo list.
 
@@ -1127,12 +1127,12 @@ class ETAPI:
         return res
 
     def upload_md_folder(
-        self,
-        parentNoteId: str,
-        mdFolder: str,
-        includePattern: Optional[list[str]] = None,
-        ignoreFolder: Optional[list[str]] = None,
-        ignoreFile: Optional[list[str]] = None,
+            self,
+            parentNoteId: str,
+            mdFolder: str,
+            includePattern: Optional[list[str]] = None,
+            ignoreFolder: Optional[list[str]] = None,
+            ignoreFile: Optional[list[str]] = None,
     ):
         includePattern = includePattern or ['.md']
         ignoreFolder = ignoreFolder or []
@@ -1276,13 +1276,13 @@ class ETAPI:
         return res.json()
 
     def create_attachment(
-        self,
-        ownerId: str,
-        file_path: str,
-        title: str = None,
-        role: str = None,
-        mime: str = None,
-        position: int = 0,
+            self,
+            ownerId: str,
+            file_path: str,
+            title: str = None,
+            role: str = None,
+            mime: str = None,
+            position: int = 0,
     ) -> dict:
         """
         create or update a attachment
@@ -1337,12 +1337,12 @@ class ETAPI:
         return res
 
     def update_attachment(
-        self,
-        attachmentId: str,
-        title: str,
-        role: str,
-        mime: str,
-        position: int = 0,
+            self,
+            attachmentId: str,
+            title: str,
+            role: str,
+            mime: str,
+            position: int = 0,
     ) -> dict:
         """
         update a attachment
@@ -1371,7 +1371,7 @@ class ETAPI:
         return res.content
 
     def update_attachment_content(
-        self, attachmentId: str, data_source: str, is_file: bool = True
+            self, attachmentId: str, data_source: str, is_file: bool = True
     ) -> bool:
         # upload file, set content
         url = f'{self.server_url}/etapi/attachments/{attachmentId}/content'
@@ -1509,13 +1509,13 @@ class ETAPI:
                     logger.info(content)
 
     def auto_create_internal_link(
-        self,
-        target_note_id=None,
-        target_notes=None,
-        process_all_notes=False,
-        skip_clipped_notes=True,
-        skip_day_notes=True,
-        verbose=True,
+            self,
+            target_note_id=None,
+            target_notes=None,
+            process_all_notes=False,
+            skip_clipped_notes=True,
+            skip_day_notes=True,
+            verbose=True,
     ):
         """
         Create internal link for notes
@@ -1575,14 +1575,14 @@ class ETAPI:
                 continue
 
             if skip_clipped_notes and any(
-                [x['name'] == 'pageUrl' for x in current_note['attributes']]
+                    [x['name'] == 'pageUrl' for x in current_note['attributes']]
             ):
                 if verbose:
                     logger.info('skip: clipped note')
                 continue
 
             if skip_day_notes and any(
-                [x['name'] == 'dateNote' for x in current_note['attributes']]
+                    [x['name'] == 'dateNote' for x in current_note['attributes']]
             ):
                 if verbose:
                     logger.info('skip: day note')
@@ -1601,6 +1601,81 @@ class ETAPI:
                 self.update_note_content(note_id, updated_content)
                 if verbose:
                     logger.info(f"Added internal link to note {note_id}.")
+
+    def traverse_note_tree(self, noteId: str, depth: int = 3, limit: int = 100, method: Literal['dfs', 'bfs'] = 'dfs'):
+        """
+        Traverse the note tree using either DFS or BFS and collect information from notes and their descendants.
+        Args:
+            noteId: Starting note ID
+            depth: Maximum traversal depth
+            limit: Maximum number of notes to collect before stopping (default: 100)
+            method: Traversal method, either 'dfs' (depth-first) or 'bfs' (breadth-first) (default: 'dfs')
+        Returns:
+            list: List containing information of all found notes in the tree, up to limit
+        """
+        search_result = []
+
+        if method.lower() not in ['dfs', 'bfs']:
+            raise ValueError("Method must be either 'dfs' or 'bfs'")
+
+        # DFS Implementation
+        if method.lower() == 'dfs':
+            def dfs_helper(current_note_id: str, current_depth: int) -> None:
+                if current_depth > depth or len(search_result) >= limit:
+                    return
+
+                try:
+                    note = self.get_note(noteId=current_note_id)
+                    note_content = self.get_note_content(current_note_id)
+
+                    search_result.append({
+                        "noteId": current_note_id,
+                        "title": note.get("title", ""),
+                        "content": note_content,
+                        "depth": current_depth
+                    })
+
+                    child_note_ids = note.get('childNoteIds', [])
+                    for sub_note_id in child_note_ids:
+                        if len(search_result) < limit:
+                            dfs_helper(sub_note_id, current_depth + 1)
+                except Exception as e:
+                    logger.error(f"Error processing note {current_note_id}: {str(e)}")
+
+            dfs_helper(noteId, 1)
+
+        # BFS Implementation
+        elif method.lower() == 'bfs':
+            queue = deque([(noteId, 1)])  # (note_id, depth)
+
+            while queue and len(search_result) < limit:
+                current_note_id, current_depth = queue.popleft()
+
+                if current_depth > depth:
+                    continue
+
+                try:
+                    note = self.get_note(noteId=current_note_id)
+                    note_content = self.get_note_content(current_note_id)
+
+                    search_result.append({
+                        "noteId": current_note_id,
+                        "title": note.get("title", ""),
+                        "content": note_content,
+                        "depth": current_depth
+                    })
+
+                    child_note_ids = note.get('childNoteIds', [])
+                    for sub_note_id in child_note_ids:
+                        if current_depth < depth:
+                            queue.append((sub_note_id, current_depth + 1))
+                except Exception as e:
+                    logger.error(f"Error processing note {current_note_id}: {str(e)}")
+
+        if len(search_result) >= limit:
+            logger.info(f"Reached limit of {limit} notes using {method} method, stopping traversal")
+
+        return search_result
 
 
 class ListTemplate(string.Template):

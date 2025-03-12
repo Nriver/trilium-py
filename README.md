@@ -69,8 +69,9 @@ Python client for ETAPI and Web API of Trilium Note.
       * [Special Case: Duplicate Titles](#special-case-duplicate-titles)
       * [Final Rule: No Self-Linking](#final-rule-no-self-linking)
       * [Code Samples](#code-samples)
+   * [(Advanced Usage) 📝🌳 Traverse Note Tree](#advanced-usage--traverse-note-tree)
    * [(Basic) Web API Usage](#basic-web-api-usage)
-      * [Share note &amp; cancel share note](#share-note--cancel-share-note)
+      * [📣 Share note &amp; cancel share note](#-share-note--cancel-share-note)
    * [🛠️ Develop](#️-develop)
    * [🔗 Original OpenAPI Documentation](#-original-openapi-documentation)
 <!--te-->
@@ -696,6 +697,17 @@ issues occur, please provide a minimal note sample to help debug.
 
 ```python
 auto_create_internal_link(process_all_notes=True)
+```
+
+## (Advanced Usage) 📝🌳 Traverse Note Tree
+
+Fetch a note's title and content along with its descendants'. Great for reassembling large notes split into smaller child notes.
+
+The method can be `bfs` or `dfs`.
+```python
+res = ea.traverse_note_tree('XdOlGz7MeYWC', depth=3, limit=100, method='bfs')
+for x in res:
+    logger.info(x)
 ```
 
 ## (Basic) Web API Usage

@@ -68,7 +68,7 @@ Trilium Note的ETAPI和Web API的Python客户端。
       * [最后一条规则：避免自引用](#最后一条规则避免自引用)
       * [代码示例](#代码示例)
    * [(基础) Web API 使用](#基础-web-api-使用)
-      * [分享笔记 &amp; 取消分享笔记](#分享笔记--取消分享笔记)
+      * [📣 分享笔记 &amp; 取消分享笔记](#-分享笔记--取消分享笔记)
    * [🛠️ 开发](#️-开发)
    * [🔗 原始OpenAPI文档](#-原始openapi文档)
 <!--te-->
@@ -622,6 +622,18 @@ auto_create_internal_link(target_notes=['gLmmsIM8yPqx', 'T4Ui3wNByO03'])
 
 ```python
 auto_create_internal_link(process_all_notes=True)
+```
+
+##（高级用法）📝🌳 遍历笔记树  
+
+获取某个笔记的标题和内容，以及其所有子笔记的标题和内容。非常适用于重新组合拆分成较小子笔记的大型笔记。  
+
+方法可以是 `bfs`（广度优先搜索）或 `dfs`（深度优先搜索）。  
+
+```python
+res = ea.traverse_note_tree('XdOlGz7MeYWC', depth=3, limit=100, method='bfs')  
+for x in res:  
+    logger.info(x)  
 ```
 
 ## (基础) Web API 使用

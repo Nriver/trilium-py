@@ -7,7 +7,7 @@
 > [!IMPORTANT]
 > 中文文档可能落后于英文文档，如果有问题请先查看英文文档。
 
-Trilium Note的ETAPI和Web API的Python客户端。
+Trilium Note 的 ETAPI 和 Web API 的 Python 客户端，并提供额外的高级功能。
 
 [![Downloads](https://static.pepy.tech/badge/trilium-py)](https://pepy.tech/project/trilium-py)
 [![Supported Versions](https://img.shields.io/pypi/pyversions/trilium-py.svg)](https://pypi.org/project/trilium-py)

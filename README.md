@@ -4,7 +4,7 @@
 English | <a href="README_CN.md">简体中文</a>
 </p>
 
-Python client for ETAPI and Web API of Trilium Note.
+Python client for Trilium Note's ETAPI and Web API, with additional advanced features :)
 
 [![Downloads](https://static.pepy.tech/badge/trilium-py)](https://pepy.tech/project/trilium-py)
 [![Supported Versions](https://img.shields.io/pypi/pyversions/trilium-py.svg)](https://pypi.org/project/trilium-py)

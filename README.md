@@ -260,7 +260,7 @@ ea.set_day_note(date, new_content)
 
 ### 📤 Export note
 
-Export note comes in two formats `html` or `markdown`/`md`.
+Export note comes in two formats `html` or `markdown`/`md`. Setting `noteId` to `root` will export all notes.
 
 ```python
 res = ea.export_note(

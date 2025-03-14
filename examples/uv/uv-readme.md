@@ -73,8 +73,13 @@ Options:
   --global             Use global ~/.trilium-py/.env file
   --help               Show this message and exit.
 
-❯ uv run ea_appinfo.py 
-Connecting to Trilium server at http://localhost:8080...
+❯ uv run ea_app_info.py 
+╭─────────────────────── Connection Information ───────────────────────╮
+│ Configuration Source: /var/home/matt/dev/trilium-py/examples/uv/.env │
+│ Server URL: http://localhost:8080                                    │
+│ Token: ********...mqo=                                               │
+╰──────────────────────────────────────────────────────────────────────╯
+Connecting to Trilium server...
                      Trilium Server Information                      
 ┏━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃ Property               ┃ Value                                    ┃

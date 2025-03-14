@@ -5,7 +5,7 @@ This script reads the saved Trilium ETAPI token from a .env file and displays
 information about the connected Trilium server.
 
 Usage:
-    uv run show_app_info.py
+    uv run ea_app_info.py
     
 The script will look for .env files in the following locations (in order):
 1. Current directory
@@ -44,27 +44,32 @@ def load_env_file(env_file: Path = None, is_global: bool = False) -> tuple:
         is_global: Whether to use global .env file
         
     Returns:
-        tuple: (server_url, token) or (None, None) if not found
+        tuple: (server_url, token, source_path) or (None, None, None) if not found
     """
+    source_path = None
+    
     # Determine which .env file to load
     if env_file and env_file.exists():
         load_dotenv(env_file)
+        source_path = env_file
     elif is_global:
         global_env = Path.home() / '.trilium-py' / '.env'
         if global_env.exists():
             load_dotenv(global_env)
+            source_path = global_env
     else:
         local_env = Path.cwd() / '.env'
         if local_env.exists():
             load_dotenv(local_env)
+            source_path = local_env
         else:
-            return None, None
+            return None, None, None
     
     # Get values from environment
     server_url = os.environ.get('TRILIUM_SERVER')
     token = os.environ.get('TRILIUM_TOKEN')
     
-    return server_url, token
+    return server_url, token, source_path
 
 
 def display_app_info(app_info: dict):
@@ -94,7 +99,7 @@ def main(env_file: str, is_global: bool):
     try:
         # Load environment variables
         env_path = Path(env_file) if env_file else None
-        server_url, token = load_env_file(env_path, is_global)
+        server_url, token, source_path = load_env_file(env_path, is_global)
         
         if not server_url or not token:
             console.print(Panel.fit(
@@ -105,7 +110,15 @@ def main(env_file: str, is_global: bool):
             sys.exit(0)
         
         # Connect to server
-        console.print(f"Connecting to Trilium server at [bold]{server_url}[/bold]...")
+        console.print(Panel.fit(
+            f"[bold]Configuration Source:[/bold] {source_path}\n"
+            f"[bold]Server URL:[/bold] {server_url}\n"
+            f"[bold]Token:[/bold] {'*' * 8}...{token[-4:] if token else ''}",
+            title="Connection Information",
+            border_style="blue"
+        ))
+        
+        console.print(f"Connecting to Trilium server...")
         ea = ETAPI(server_url, token)
         
         # Get and display app info

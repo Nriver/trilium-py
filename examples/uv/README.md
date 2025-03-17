@@ -31,6 +31,9 @@ Then execute :
 
     uv run hello-world.py
 
+Script names follow function names, for example `ea_app_info.py` for `ea.app_info()`.
+
+
 ## Examples
 
 ### Get Trilium Token

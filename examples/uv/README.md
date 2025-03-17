@@ -12,7 +12,7 @@ uv run <scipt-name> <parameters>
 
 ## Development
 
-Write standalone scripts with dependencies declared using (inline metadata)[https://packaging.python.org/en/latest/specifications/inline-script-metadata/#inline-script-metadata] (PEP 723) and execute with `uv run`. For example:
+Write standalone scripts with dependencies declared using [inline metadata](https://packaging.python.org/en/latest/specifications/inline-script-metadata/#inline-script-metadata) (PEP 723) and execute with `uv run`. For example:
 
 ```python
 '''demo: hello world from Trilium-py'''

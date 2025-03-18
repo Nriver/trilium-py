@@ -16,6 +16,7 @@ Usage:
 
 import os
 import sys
+import traceback
 from pathlib import Path
 from typing import Optional
 import click
@@ -186,23 +187,8 @@ def main(folder: str, parent_note: str, env_file: Optional[str], is_global: bool
                 # Offer to create the parent note
                 if Confirm.ask(f"Would you like to create a new note titled '{parent_note}'?", default=True):
                     try:
-                        # Special case for root note
-                        if parent_note.lower() == "root":
-                            parent_note_id = "root"
-                            console.print("[green]Using root note as parent[/green]")
-                        else:
-                            console.print(f"Searching for parent note with title: {parent_note}")
-                            search_results = ea.search_note(f"note.title = '{parent_note}'")
-                            
-                            if search_results and search_results.get('results'):
-                                parent_note_id = search_results['results'][0]['noteId']
-                                console.print(f"[green]Found parent note with ID: {parent_note_id}[/green]")
-                            else:
-                                console.print(f"[yellow]Parent note with title '{parent_note}' not found, using root[/yellow]")
-                                parent_note_id = "root"
-                        
                         res = ea.create_note(
-                            parentNoteId=parent_note_id,
+                            parentNoteId="root",
                             title=parent_note,
                             type="text",
                             content=f"Imported from <tt>{folder_path}</tt><br>by <tt>{sys.argv[0]}</tt><br>on <tt>{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</tt>",
@@ -210,10 +196,14 @@ def main(folder: str, parent_note: str, env_file: Optional[str], is_global: bool
                         parent_note_id = res['note']['noteId']
                         console.print(f"[green]Created new parent note with ID: {parent_note_id}[/green]")
                     except Exception as e:
-                        console.print(f"[bold red]Failed to create parent note: {str(e)}[/bold red]")
+                        console.print(f"[bold red]✗ Failed to create parent note:[/bold red]")
+                        console.print(f"[red]Error: {str(e)}[/red]")
+                        console.print(f"[dim red]{traceback.format_exc()}[/dim red]")
+                        console.print(f"[dim red]Result: {res}[/dim red]")
+                        console.print("[red]Location: While creating new parent note in main()[/red]")
                         sys.exit(1)
                 else:
-                    console.print(f"[bold red]Upload cancelled: Parent note not found[/bold red]")
+                    console.print(f"[bold red]✗ Upload cancelled: Parent note not found[/bold red]")
                     sys.exit(1)
         
         # Show upload configuration
@@ -240,7 +230,7 @@ def main(folder: str, parent_note: str, env_file: Optional[str], is_global: bool
         
         # Confirm before proceeding
         if not Confirm.ask("Proceed with upload?", default=True):
-            console.print("[bold yellow]Upload cancelled by user[/bold yellow]")
+            console.print("[bold yellow]✗ Upload cancelled by user[/bold yellow]")
             sys.exit(0)
         
         # Perform the upload
@@ -260,11 +250,17 @@ def main(folder: str, parent_note: str, env_file: Optional[str], is_global: bool
                 console.print(f"[bold yellow]⚠ Upload completed with some warnings[/bold yellow]")
                 
         except Exception as e:
-            console.print(f"[bold red]✗ Upload failed: {str(e)}[/bold red]")
+            console.print(f"[bold red]✗ Upload failed:[/bold red]")
+            console.print(f"[red]Error: {str(e)}[/red]")
+            console.print(f"[dim red]{traceback.format_exc()}[/dim red]")
+            console.print("[red]Location: During ea.upload_md_folder() call in main()[/red]")
             sys.exit(1)
         
     except Exception as e:
-        console.print(f"[bold red]✗ Error: {str(e)}[/bold red]")
+        console.print(f"[bold red]✗ Error:[/bold red]")
+        console.print(f"[red]{str(e)}[/red]")
+        console.print(f"[dim red]{traceback.format_exc()}[/dim red]")
+        console.print("[red]Location: In main() function[/red]")
         sys.exit(1)
 
 

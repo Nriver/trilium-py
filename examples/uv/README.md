@@ -105,19 +105,19 @@ Implementation of README.md#bulk-upload-markdown-files-in-a-folder
 
 With extra logic to accommodate sub-folder of assets (e.g. images) with same name as the .md file. Avoids situation where this input:
 
-  source_dir/
-      Foobaz.md
-      Foobaz/hero-image.jpg
-      Foobaz/another-pic.jpg
+    source_dir/
+        Foobaz.md
+        Foobaz/hero-image.jpg
+        Foobaz/another-pic.jpg
     
 Would create in Trilium:
 
-  destination_note/
-      Foobaz
-          hero-image.jpg
-          another-pic.jpg
-      Foobaz
-          (empty)
+    destination_note/
+        Foobaz
+            hero-image.jpg
+            another-pic.jpg
+        Foobaz
+            (empty)
 
 Note: any content in the sub-folder that is not linked from the .md will be left behind.
 

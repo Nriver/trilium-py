@@ -111,11 +111,17 @@ def find_folders_matching_md_files(folder_path: Path) -> list:
 @click.option("--env-file", "-e", help="Path to .env file with token", 
               type=click.Path(exists=True, dir_okay=False, resolve_path=True))
 @click.option("--global", "is_global", is_flag=True, help="Use global ~/.trilium-py/.env file")
-@click.option("--ignore-folders", "-if", help="Folders to ignore (comma-separated)", default="")
-@click.option("--ignore-files", "-ig", help="Files to ignore (comma-separated)", default="")
+@click.option("--ignore-folders", "-if", help="Additional folders to ignore (comma-separated)",
+              default="")
+@click.option("--ignore-folder-list", "-ifl", help="Path to a text file with folders to ignore (one per line)",
+              type=click.Path(exists=True, dir_okay=False, resolve_path=True))
+@click.option("--ignore-files", "-ig", help="Files to ignore (comma-separated)",
+              default="")
+@click.option("--include-pattern", "-ip", help="File patterns to include (comma-separated)",
+              default=".md")
 
 def main(folder: str, parent_note: str, env_file: Optional[str], is_global: bool,
-         ignore_folders: str, ignore_files: str) -> None:
+         ignore_folders: str, ignore_folder_list: str, ignore_files: str, include_pattern: str) -> None:
     """Bulk upload Markdown files to Trilium."""
     try:
         # Load environment variables
@@ -145,8 +151,16 @@ def main(folder: str, parent_note: str, env_file: Optional[str], is_global: bool
             console.print("[yellow]These folders will be ignored to prevent conflicts[/yellow]")
             ignore_folders_list.extend(matching_folders)
         
+        # Process ignore folder list
+        if ignore_folder_list:
+            with open(ignore_folder_list, 'r') as f:
+                ignore_folders_list.extend([line.strip() for line in f.readlines()])
+        
         # Process ignore files
         ignore_files_list = [f.strip() for f in ignore_files.split(",")] if ignore_files else []
+        
+        # Process include patterns
+        include_patterns = [p.strip() for p in include_pattern.split(",")] if include_pattern else [".md"]
         
         # Connect to Trilium
         console.print("Connecting to Trilium server...")
@@ -170,10 +184,25 @@ def main(folder: str, parent_note: str, env_file: Optional[str], is_global: bool
                 console.print(f"[yellow]Note with title '{parent_note}' not found[/yellow]")
                 
                 # Offer to create the parent note
-                if Confirm.ask(f"Would you like to create a new note titled '{parent_note}' under root?", default=True):
+                if Confirm.ask(f"Would you like to create a new note titled '{parent_note}'?", default=True):
                     try:
+                        # Special case for root note
+                        if parent_note.lower() == "root":
+                            parent_note_id = "root"
+                            console.print("[green]Using root note as parent[/green]")
+                        else:
+                            console.print(f"Searching for parent note with title: {parent_note}")
+                            search_results = ea.search_note(f"note.title = '{parent_note}'")
+                            
+                            if search_results and search_results.get('results'):
+                                parent_note_id = search_results['results'][0]['noteId']
+                                console.print(f"[green]Found parent note with ID: {parent_note_id}[/green]")
+                            else:
+                                console.print(f"[yellow]Parent note with title '{parent_note}' not found, using root[/yellow]")
+                                parent_note_id = "root"
+                        
                         res = ea.create_note(
-                            parentNoteId="root",
+                            parentNoteId=parent_note_id,
                             title=parent_note,
                             type="text",
                             content=f"Imported from <tt>{folder_path}</tt><br>by <tt>{sys.argv[0]}</tt><br>on <tt>{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</tt>",
@@ -187,6 +216,33 @@ def main(folder: str, parent_note: str, env_file: Optional[str], is_global: bool
                     console.print(f"[bold red]Upload cancelled: Parent note not found[/bold red]")
                     sys.exit(1)
         
+        # Show upload configuration
+        config_info = [
+            f"[bold]Folder to upload:[/bold] {folder_path}",
+            f"[bold]Parent note title:[/bold] {parent_note}"
+        ]
+        
+        config_info.extend([
+            f"[bold]Folders to ignore:[/bold] {', '.join(ignore_folders_list)}",
+            f"[bold]Files to ignore:[/bold] {', '.join(ignore_files_list)}",
+            f"[bold]Include patterns:[/bold] {', '.join(include_patterns)}",
+        ])
+        
+        # Show ignore folder list file if specified
+        if ignore_folder_list:
+            config_info.append(f"[bold]Ignore folder list file:[/bold] {ignore_folder_list}")
+            
+        console.print(Panel.fit(
+            "\n".join(config_info),
+            title="Upload Configuration",
+            border_style="green"
+        ))
+        
+        # Confirm before proceeding
+        if not Confirm.ask("Proceed with upload?", default=True):
+            console.print("[bold yellow]Upload cancelled by user[/bold yellow]")
+            sys.exit(0)
+        
         # Perform the upload
         console.print("[bold]Starting upload...[/bold]")
         try:
@@ -195,6 +251,7 @@ def main(folder: str, parent_note: str, env_file: Optional[str], is_global: bool
                 mdFolder=str(folder_path),
                 ignoreFolder=ignore_folders_list,
                 ignoreFile=ignore_files_list,
+                includePattern=include_patterns
             )
             
             if result:

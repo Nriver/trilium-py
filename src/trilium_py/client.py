@@ -943,7 +943,7 @@ class ETAPI:
             soup.decompose()
             del soup
 
-    def upload_md_file(self, file: str, parentNoteId: str):
+    def upload_md_file(self, file: str, parentNoteId: str, parse_math: bool = True):
         md_file = os.path.abspath(file).replace('\\', '/').replace('//', '/')
         md_full_name = os.path.basename(md_file)
         md_name = md_full_name[:-3]
@@ -960,7 +960,8 @@ class ETAPI:
             logseq_image_pat = r'(\!\[.*\]\(.*\))\{.*?:height.*width.*}'
             content = re.sub(logseq_image_pat, r'\1', content)
 
-            if not re.search(re.escape("$"), content):
+            # Check if we should parse math formulas
+            if not parse_math or not re.search(re.escape("$"), content):
                 # extra format support
                 # https://github.com/trentm/python-markdown2/wiki/Extras
                 html = markdown2.markdown(
@@ -969,6 +970,7 @@ class ETAPI:
                 )
                 # logger.info(html)
             else:
+                # Parse math formulas
                 no_latex_part, latex_code_part = sanitizeInput(content)
                 html = reconstructMath(
                     markdown2.markdown(
@@ -1133,6 +1135,7 @@ class ETAPI:
             includePattern: Optional[list[str]] = None,
             ignoreFolder: Optional[list[str]] = None,
             ignoreFile: Optional[list[str]] = None,
+            parse_math: bool = True,
     ):
         includePattern = includePattern or ['.md']
         ignoreFolder = ignoreFolder or []
@@ -1170,7 +1173,7 @@ class ETAPI:
                     file_path = os.path.join(root, name)
                     logger.info(file_path)
                     try:
-                        self.upload_md_file(file=file_path, parentNoteId=current_parent_note_id)
+                        self.upload_md_file(file=file_path, parentNoteId=current_parent_note_id, parse_math=parse_math)
                     except Exception as e:
                         error_files[os.path.abspath(file_path)] = e
 

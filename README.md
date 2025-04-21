@@ -441,6 +441,18 @@ res = ea.upload_md_file(
 )
 ```
 
+### Disable math formula parsing
+
+When uploading Markdown files that contain dollar signs ($) which are not meant to be interpreted as math formulas, you can disable the math formula parsing:
+
+```python
+res = ea.upload_md_file(
+    parentNoteId="root",
+    file="./md-demo/document_with_dollar_signs.md",
+    parse_math=False,  # Disable math formula parsing
+)
+```
+
 ### Bulk upload Markdown files in a folder
 
 You can upload a folder with lots of Markdown files to Trilium and preserve the folder structure!
@@ -539,6 +551,18 @@ res = ea.upload_md_folder(
 ```
 
 If there is any problem, please feel free to create an [issue](https://github.com/Nriver/trilium-py/issues/new).
+
+#### Disable math formula parsing for folder import
+
+Similarly, you can disable math formula parsing when importing a folder of Markdown files:
+
+```python
+res = ea.upload_md_folder(
+    parentNoteId="root",
+    mdFolder="~/data/financial_documents/",
+    parse_math=False,  # Disable math formula parsing for all files in the folder
+)
+```
 
 ## (Advanced Usage) 🎨 Beautify notes
 
@@ -689,7 +713,7 @@ auto_create_internal_link('gLmmsIM8yPqx')
 auto_create_internal_link(target_notes=['gLmmsIM8yPqx', 'T4Ui3wNByO03'])
 ```
 
-**(Experimental - Use with Caution)**  
+**(Experimental - Use with Caution)**
 **Add internal links to all text notes:**
 
 This is an experimental feature. **Backup your database** before using it, as it may irreversibly modify your notes. If

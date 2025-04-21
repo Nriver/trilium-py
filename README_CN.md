@@ -251,7 +251,7 @@ ea.set_day_note(date, new_content)
 
 ### 📤 导出笔记
 
-导出笔记有两种格式 `html` 或 `markdown`/`md`。
+导出笔记有两种格式 `html` 或 `markdown`/`md`。将 `noteId` 设置为 `root` 可以导出所有笔记。
 
 ```python
 res = ea.export_note(

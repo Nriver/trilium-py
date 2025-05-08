@@ -27,9 +27,7 @@ from .utils.param_util import clean_param, format_query_string
 from .utils.time_util import (
     get_today,
     get_yesterday,
-    synchronize_dates,
-    format_date_to_etapi,
-    get_local_timezone,
+    format_dates_for_api,
 )
 
 
@@ -364,51 +362,39 @@ class ETAPI:
             dateCreated: Optional[datetime] = None,
             utcDateCreated: Optional[datetime] = None,
     ) -> dict:
+        """
+        Update note properties.
+
+        Args:
+            noteId (str): ID of the note to update
+            title (str, optional): New title for the note
+            type (str, optional): New type for the note
+            mime (str, optional): New MIME type for the note
+            dateCreated (datetime, optional): New creation date (local time)
+            utcDateCreated (datetime, optional): New creation date (UTC time)
+
+        Returns:
+            dict: Response from the API
+        """
         url = f'{self.server_url}/etapi/notes/{noteId}'
 
+        # Format dates for API if provided
+        formatted_date_created, formatted_utc_date_created = None, None
         if dateCreated or utcDateCreated:
-            # Ensure local and utc dates are both defined and match each other (adjusted for timezone)
-            localx, utcx = self.handle_dates(dateCreated=dateCreated, utcDateCreated=utcDateCreated)
-            dateCreated = format_date_to_etapi(localx, kind='local')
-            utcDateCreated = format_date_to_etapi(utcx, kind='utc')
+            formatted_date_created, formatted_utc_date_created = format_dates_for_api(
+                local_date=dateCreated,
+                utc_date=utcDateCreated
+            )
 
         params = {
             "title": title,
             "type": type,
             "mime": mime,
-            "dateCreated": dateCreated,
-            "utcDateCreated": utcDateCreated,
+            "dateCreated": formatted_date_created,
+            "utcDateCreated": formatted_utc_date_created,
         }
         res = requests.patch(url, json=clean_param(params), headers=self.get_header())
         return res.json()
-
-    def handle_dates(
-            self, dateCreated: Optional[datetime] = None, utcDateCreated: Optional[datetime] = None
-    ):
-        '''Ensure that both local and UTC times are defined, and have same time
-        (adjusted for timezone)'''
-        if not dateCreated and not utcDateCreated:
-            return None, None
-        if dateCreated and not isinstance(dateCreated, datetime):
-            print(f"dateCreated is not datetime object, is {type(dateCreated)}")
-            raise TypeError("dateCreated must be a datetime object")
-        if utcDateCreated and not isinstance(utcDateCreated, datetime):
-            print(f"utcdateCreated is not datetime object, is {type(utcDateCreated)}")
-            raise TypeError("utcDateCreated must be a datetime object")
-
-        if dateCreated and dateCreated.tzinfo is None:
-            tzinfo = get_local_timezone()
-            dateCreated = dateCreated.replace(tzinfo=tzinfo)
-            print(f"dateCreated.tzinfo was None. Changed to: {dateCreated.tzinfo}.")
-
-        if utcDateCreated and utcDateCreated.tzinfo is None:
-            utcDateCreated = utcDateCreated.replace(tzinfo=dateutil.tz.tzutc())
-            print(f'utc date tzinfo was None, forced to UTC ({utcDateCreated})')
-
-        # After ensuring TZ is set for one of the date types, synchronize them
-        synchronized_dates = synchronize_dates(local_date=dateCreated, utc_date=utcDateCreated)
-
-        return synchronized_dates
 
     def delete_note(self, noteId: str) -> bool:
         url = f'{self.server_url}/etapi/notes/{noteId}'

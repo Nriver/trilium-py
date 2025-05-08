@@ -5,8 +5,12 @@ from typing import Optional
 import requests
 from loguru import logger
 
+from .version import __version__
+
 
 class WEBAPI:
+    __version__ = __version__
+
     def __init__(self, server_url: str, sid: Optional[str] = None, _csrf: Optional[str] = None,
                  csrf_token: Optional[str] = None):
         if sys.version_info < (3, 9):

@@ -2,7 +2,7 @@
 .. moduleauthor:: Nriver
 """
 
-__version__ = '0.0.1'
+from .version import __version__
 
 
 def main():

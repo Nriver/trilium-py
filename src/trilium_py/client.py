@@ -18,6 +18,7 @@ from loguru import logger
 from natsort import natsort
 from tqdm import tqdm
 
+from .version import __version__
 from .utils.file_util import replace_extension
 from .utils.html_util import add_internal_links
 from .utils.image_util import compress_image_bytes, get_extension_from_image_mime
@@ -32,6 +33,8 @@ from .utils.time_util import (
 
 
 class ETAPI:
+    __version__ = __version__
+
     def __init__(self, server_url: str, token: Optional[str] = None):
         if sys.version_info < (3, 9):
             print(

@@ -8,12 +8,27 @@ https://github.com/pypa/sampleproject
 import pathlib
 import site
 import sys
+import os
 
 # Always prefer setuptools over distutils
 from setuptools import setup, find_packages
 
 # patch for package install in user directory
 site.ENABLE_USER_SITE = "--user" in sys.argv[1:]
+
+# Get version number
+def get_version():
+    """Get version number from version.py file"""
+    version_file = os.path.join(
+        os.path.dirname(__file__),
+        'src', 'trilium_py', 'version.py'
+    )
+    with open(version_file, 'r', encoding='utf-8') as f:
+        version_line = [line for line in f.readlines() if line.startswith('__version__')]
+        if not version_line:
+            raise RuntimeError('Version information not found')
+        version = version_line[0].split('=')[1].strip().strip("'").strip('"')
+        return version
 
 here = pathlib.Path(__file__).parent.resolve()
 
@@ -42,7 +57,7 @@ setup(
     # For a discussion on single-sourcing the version across setup.py and the
     # project code, see
     # https://packaging.python.org/guides/single-sourcing-package-version/
-    version='1.2.1',  # Required
+    version=get_version(),  # Required
     # This is a one-line description or tagline of what your project does. This
     # corresponds to the "Summary" metadata field:
     # https://packaging.python.org/specifications/core-metadata/#summary

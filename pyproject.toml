@@ -39,15 +39,16 @@ log_cli_level = "DEBUG"
 log_cli_format = "%(asctime)s [%(levelname)8s] %(message)s (%(filename)s:%(lineno)s)"
 log_cli_date_format = "%Y-%m-%d %H:%M:%S"
 
-[tool.pixi.project]
-channels = ["conda-forge"]
-platforms = ["win-64"]
+# Now that we have UV we don't need Pixi, since this is a pure python project
+# [tool.pixi.project]
+# channels = ["conda-forge"]
+# platforms = ["win-64"]
 
-[tool.pixi.pypi-dependencies]
-trilium-py = { path = ".", editable = true }
+# [tool.pixi.pypi-dependencies]
+# trilium-py = { path = ".", editable = true }
 
-[tool.pixi.tasks]
+# [tool.pixi.tasks]
 
-[tool.pixi.dependencies]
-python-dateutil = ">=2.9.0,<2.10"
-requests-mock = ">=1.12.1,<1.13"
+# [tool.pixi.dependencies]
+# python-dateutil = ">=2.9.0,<2.10"
+# requests-mock = ">=1.12.1,<1.13"

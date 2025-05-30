@@ -4,6 +4,12 @@
 
 from .version import __version__
 
+# Import the main CLI function
+from .cli.cli import main as cli_main
 
+# For backward compatibility
 def main():
-    pass
+    """CLI entry point."""
+    return cli_main()
+
+__all__ = ['__version__', 'main', 'cli_main']

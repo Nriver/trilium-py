@@ -4,12 +4,13 @@
 requires = ["setuptools>=43.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
-# Project secton added to support Pixi (by Prefix.dev)
-# https://packaging.python.org/en/latest/guides/writing-pyproject-toml/
 [project]
 name = "trilium-py"
 # fetch from setup.py:
 dynamic = ["description", "version","requires-python","authors","keywords","classifiers","dependencies","urls","readme","optional-dependencies"]
+
+[project.scripts]
+tpy = "trilium_py.cli.cli:main"
 
 [tool.black]
 skip-string-normalization = true

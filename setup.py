@@ -130,6 +130,7 @@ setup(
     # When your source code is in a subdirectory under the project root, e.g.
     # You can just specify package directories manually here if your project is
     # simple. Or you can use find_packages().
+    package_dir={'': 'src'},  # Required
     #
     # Alternatively, if you just want to distribute a single Python file, use
     # the `py_modules` argument instead as follows, which will expect a file
@@ -137,8 +138,8 @@ setup(
     #
     #   py_modules=["my_module"],
     #
-    packages=find_packages(where='src', include=['trilium_py', 'trilium_py.*']),  # Required
-    package_dir={'': 'src'},  # Required
+    # packages=find_packages(where='src', include=['trilium_py', 'trilium_py.*']),  # Required
+    packages=find_packages(where='src'),  # Required
     # Specify which Python versions you support. In contrast to the
     # 'Programming Language' classifiers above, 'pip install' will check this
     # and refuse to install the project if the version does not match. See
@@ -165,7 +166,7 @@ setup(
         # for CLI
         'click',
         'python-dotenv',
-        'rich'
+        'rich',
     ],
     # Optional
     # List additional groups of dependencies here (e.g. development

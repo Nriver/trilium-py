@@ -4,26 +4,31 @@ An experimental command line interface wrapper for trilium-py, a python library 
 
 I prototyped this as a standalone package first, [trilium-py-cli][tpy]. That seemed promising, so I created this branch in my trilium-py fork to see if it could be merged into the main repository.
 
-uv managed install works, regular pip install doesn't. I don't know why.
+uv managed install works, regular pip install doesn't. I don't know why yet.
 
-I use `uv` from Astral.sh to manage python environments and packages, which uses the newer `pyproject.toml` format, while trilium-py uses the older `setup.py` format. I don't understand setup.py well, and I haven't been able to get the cli script installed using the standard `pip install .` method with setup.py
+I use [`uv`][uv] from Astral to manage python environments and packages, which uses the newer `pyproject.toml` format, while trilium-py uses the older `setup.py` format. I don't understand setup.py well, and I haven't been able to get the cli script installed using the standard `pip install .` The library installs but not the cli script.
 
 
 ## User Installation
 
 ```bash
-uv tool install git+https://github.com/maphew/trilium-py/tree/CLI
+uv tool install https://github.com/maphew/trilium-py/archive/refs/heads/CLI.zip
 ```
 
 This will make the `tpy` command available in your shell. 
 
-(On Windows or systems where git is not in PATH, download the repo archive, unpack it, and run `uv tool install .` from the root directory of the repo.)
+Uninstall:
+
+```bash
+uv tool uninstall trilium-py
+```
 
 ## Developer Installation
 
 ```bash
 git clone https://github.com/maphew/trilium-py.git
 cd trilium-py
+git checkout CLI
 uv sync
 source .venv/bin/activate
 ```
@@ -98,3 +103,4 @@ Fetching server information...
 
 
 [tpy]: https://github.com/maphew/trilium-py-cli
+[uv]: https://astral.sh/uv

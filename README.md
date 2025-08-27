@@ -76,6 +76,8 @@ Python client for Trilium Note's ETAPI and Web API, with additional advanced fea
       * [📣 Share note &amp; cancel share note](#-share-note--cancel-share-note)
    * [🛠️ Develop](#️-develop)
    * [🔗 Original OpenAPI Documentation](#-original-openapi-documentation)
+* [💰 Donation](#-donation)
+* [🙏 Thanks](#-thanks)
 <!--te-->
 
 ## 🔧 Installation
@@ -759,3 +761,20 @@ python -m pip install --user -e .
 
 The original OpenAPI document is [here](https://github.com/zadam/trilium/blob/master/src/etapi/etapi.openapi.yaml). You
 can open it with [swagger editor](https://editor.swagger.io/).
+
+# 💰 Donation
+
+If you enjoy using **Trilium-py**, your support would mean a lot!
+
+**Ko-fi**
+[![Support Me on Ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/nriver)
+
+**Alipay**
+![Alipay](https://github.com/Nriver/trilium-translation/raw/main/docs/alipay.png)
+
+**WeChat Pay**
+![WeChat Pay](https://github.com/Nriver/trilium-translation/raw/main/docs/wechat_pay.png)
+
+# 🙏 Thanks
+
+Thanks `Matt Wilkie` for donating 10.0 USD!

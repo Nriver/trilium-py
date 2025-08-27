@@ -73,6 +73,8 @@ Trilium Note 的 ETAPI 和 Web API 的 Python 客户端，并提供额外的高�
       * [📣 分享笔记 &amp; 取消分享笔记](#-分享笔记--取消分享笔记)
    * [🛠️ 开发](#️-开发)
    * [🔗 原始OpenAPI文档](#-原始openapi文档)
+* [💰 捐赠](#-捐赠)
+* [🙏 感谢](#-感谢)
 <!--te-->
 
 ## 🔧 安装
@@ -685,3 +687,20 @@ python -m pip install --user -e .
 
 原始OpenAPI文档在[这里](https://github.com/zadam/trilium/blob/master/src/etapi/etapi.openapi.yaml)
 。你可以使用[swagger editor](https://editor.swagger.io/)打开它。
+
+# 💰 捐赠
+
+如果你喜欢使用 **Trilium-py**，欢迎支持我的开发工作！
+
+**Ko-fi**
+[![在 Ko-fi 上支持我](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/nriver)
+
+**支付宝**
+![支付宝](https://github.com/Nriver/trilium-translation/raw/main/docs/alipay.png)
+
+**微信支付**
+![微信支付](https://github.com/Nriver/trilium-translation/raw/main/docs/wechat_pay.png)
+
+# 🙏 感谢
+
+感谢 `Matt Wilkie` 赞助的 10.0 美元!

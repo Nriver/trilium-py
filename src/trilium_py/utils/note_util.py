@@ -7,8 +7,10 @@ from .html_util import sort_h_tags_with_hierarchy
 
 def beautify_content(content):
     """
-    Beautify note content, add new lines and remove redundant lines.
-    Also normalize heading levels to ensure the highest heading is h2.
+    Beautify note content:
+    - Normalize heading levels so the highest becomes h2
+    - Clean redundant empty lines
+    - Add new line before headings (idempotent, no duplication)
 
     :param content: The HTML content to be beautified.
     :return: Beautified HTML content.
@@ -31,32 +33,21 @@ def beautify_content(content):
 
             content = re.sub(r'(<\/?)h([2-6])(>)', replace_heading, content)
 
-
-    # Fix redundant empty <p> tags
+    # Remove redundant <p> before headings
     for heading_level in range(2, 6):
-        # Replace patterns of empty <p> tags before headings
-        content = content.replace(f'<p> </p><p></p><h{heading_level}>', f'<h{heading_level}>')
-        content = content.replace(f'<p> </p><h{heading_level}>', f'<h{heading_level}>')
-        content = content.replace(f'<p> <h{heading_level}>', f'<h{heading_level}>')
+        content = re.sub(
+            fr'(?:<p>\s*</p>\s*)+(<h{heading_level}>)',
+            r'\1',
+            content
+        )
 
-    # Add a new line before headings
+    # Ensure one empty <p></p> before headings (but no duplicates)
     for heading_level in range(2, 6):
-        pat = f'<h{heading_level}>'
-        res = re.finditer(pat, content)
-        if res:
-            for x in reversed(list(res)):
-                pos = x.span()[0]
-                key1 = '<p>&nbsp;</p>'
-                back_pos1 = pos - len(key1)
-                key2 = '<p></p>'
-                back_pos2 = pos - len(key2)
-
-                # If no unnecessary empty <p> tag exists before the heading, insert <p></p>
-                if not (
-                        (back_pos1 >= 0 and content[back_pos1:pos] == key1)
-                        or (back_pos2 >= 0 and content[back_pos2:pos] == key2)
-                ):
-                    content = content[:pos] + '<p></p>' + content[pos:]
+        content = re.sub(
+            fr'(?<!<p></p>)(<h{heading_level}>)',
+            r'<p></p>\1',
+            content
+        )
 
     # remove redundant new line in code block
     content = content.replace('\n</code></pre>', '</code></pre>')

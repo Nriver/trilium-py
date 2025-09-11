@@ -7,7 +7,8 @@ from .html_util import sort_h_tags_with_hierarchy
 
 def beautify_content(content):
     """
-    Beautify note content, add new lines and remove redundant lines
+    Beautify note content, add new lines and remove redundant lines.
+    Also normalize heading levels to ensure the highest heading is h2.
 
     :param content: The HTML content to be beautified.
     :return: Beautified HTML content.
@@ -37,8 +38,8 @@ def beautify_content(content):
 
                 # If no unnecessary empty <p> tag exists before the heading, insert <p></p>
                 if not (
-                    (back_pos1 >= 0 and content[back_pos1:pos] == key1)
-                    or (back_pos2 >= 0 and content[back_pos2:pos] == key2)
+                        (back_pos1 >= 0 and content[back_pos1:pos] == key1)
+                        or (back_pos2 >= 0 and content[back_pos2:pos] == key2)
                 ):
                     content = content[:pos] + '<p></p>' + content[pos:]
 
@@ -56,6 +57,21 @@ def beautify_content(content):
     content = re.sub('^<p></p><h2>', '<h2>', content)
     content = re.sub('^<div><div><p></p><h2>', '<h2>', content)
 
+    # Normalize heading levels
+    headings = re.findall(r'<h([2-6])>', content)
+    if headings:
+        min_heading = min(int(h) for h in headings)
+        if min_heading > 2:  # means no h2 exists, need to shift
+            shift = min_heading - 2
+            for level in range(6, 1, -1):  # replace from h6 -> h2
+                new_level = level - shift
+                if new_level < 2:
+                    new_level = 2
+                content = re.sub(
+                    fr'</?h{level}>',
+                    lambda m: m.group(0).replace(f'h{level}', f'h{new_level}'),
+                    content
+                )
     return content
 
 
@@ -86,10 +102,10 @@ def sort_note_by_headings(html_content, locale_str='zh_CN.UTF-8'):
 
         # Extract the h tag and the content after it
         if next_h_index:
-            content_after_h = html_content[html_content.find(str(h_tag)) : next_h_index]
+            content_after_h = html_content[html_content.find(str(h_tag)): next_h_index]
         else:
             # If there is no next h tag, extract the h tag and all content after it
-            content_after_h = html_content[html_content.find(str(h_tag)) :]
+            content_after_h = html_content[html_content.find(str(h_tag)):]
 
         # result_list.append([current_h, content_after_h])
         result_list.append(content_after_h)

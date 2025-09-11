@@ -18,20 +18,19 @@ def beautify_content(content):
     content = html.unescape(content)
 
     # Normalize heading levels
-    headings = re.findall(r'<h([2-6])>', content)
+    headings = re.findall(r'<h([2-6])', content)
     if headings:
         min_heading = min(int(h) for h in headings)
-        if min_heading > 2:  # means no h2 exists, need to shift
+        if min_heading > 2:
             shift = min_heading - 2
-            for level in range(6, 1, -1):  # replace from h6 -> h2
-                new_level = level - shift
-                if new_level < 2:
-                    new_level = 2
-                content = re.sub(
-                    fr'</?h{level}>',
-                    lambda m: m.group(0).replace(f'h{level}', f'h{new_level}'),
-                    content
-                )
+
+            def replace_heading(m):
+                level = int(m.group(2))
+                new_level = max(2, level - shift)
+                return f"{m.group(1)}h{new_level}{m.group(3)}"
+
+            content = re.sub(r'(<\/?)h([2-6])(>)', replace_heading, content)
+
 
     # Fix redundant empty <p> tags
     for heading_level in range(2, 6):

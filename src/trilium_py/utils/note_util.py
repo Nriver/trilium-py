@@ -7,7 +7,7 @@ from .html_util import sort_h_tags_with_hierarchy
 
 def beautify_content(content):
     """
-    Beautify note content:
+    Beautify note content  (excluding <pre> blocks except trimming inside <code>):
     - Normalize heading levels so the highest becomes h2
     - Clean redundant empty lines
     - Add new line before headings (idempotent, no duplication)
@@ -15,6 +15,25 @@ def beautify_content(content):
     :param content: The HTML content to be beautified.
     :return: Beautified HTML content.
     """
+
+    # Extract <pre> blocks and store them in a dictionary
+    pre_blocks = {}
+    def _extract_pre(m):
+        block = m.group(0)
+        key = f"__PRE_BLOCK_{len(pre_blocks)}__"
+
+        # trim empty lines in <pre><code>
+        block = re.sub(
+            r'(<pre.*?><code.*?>)\n*([\s\S]*?)\n*(</code></pre>)',
+            lambda mm: mm.group(1) + mm.group(2) + mm.group(3),
+            block
+        )
+
+        pre_blocks[key] = block
+        return key
+    # Beautify content
+    content = re.sub(r"<pre.*?>.*?</pre>", _extract_pre, content, flags=re.DOTALL)
+
 
     # Use html module to unescape HTML entities (like &nbsp;)
     content = html.unescape(content)
@@ -62,6 +81,10 @@ def beautify_content(content):
     # remove redundant beginning
     content = re.sub('^<p></p><h2>', '<h2>', content)
     content = re.sub('^<div><div><p></p><h2>', '<h2>', content)
+
+    # Assemble pre blocks
+    for key, block in pre_blocks.items():
+        content = content.replace(key, block)
 
     return content
 

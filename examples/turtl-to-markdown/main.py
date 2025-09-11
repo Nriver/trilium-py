@@ -16,6 +16,16 @@ def make_dir(p):
 def decode(s):
     return base64.b64decode(s)
 
+def strip_illegal_characters(s):
+    illegal_chars = [r"/", "\\", "<", ">", ":", "\"", "|", "?", "*"]
+    out_string = s
+    for char in illegal_chars:
+        out_string = r'{}'.format(out_string).replace(char, '')
+    return out_string
+    
+def truncate_long_filenames(s):
+	out_string = s[:250]
+	return out_string
 
 make_dir(output)
 
@@ -52,6 +62,11 @@ for x in d['notes']:
         # give a default name if no title exists
         title = f'No title {counter}'
         counter += 1
+        
+    title = strip_illegal_characters(title)
+    
+    if len(title) > 250:
+        title = truncate_long_filenames(title)
 
     if not board_id:
         # root folder if not belong to board

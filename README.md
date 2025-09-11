@@ -575,6 +575,12 @@ problems. These issues include an additional line appearing at the end of code b
 the note content, and the absence of line breaks between headings, resulting in a cramped appearance of the note
 content.
 
+When collecting information, some notes copied from the **web**, saved via **clipping plugins**, or imported from **other applications** may contain redundant line breaks, inconsistent heading levels, or messy formatting, making them look cluttered.
+
+Beautify notes will automatically cleans up unnecessary content, normalizes headings and paragraph layouts, and makes your notes cleaner, clearer, and easier to read.
+
+![Beautify result compare](docs/beautify-note.gif)
+
 Here is what you can do to beautify your note.
 
 ### Beautify a note

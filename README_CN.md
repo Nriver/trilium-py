@@ -69,6 +69,7 @@ Trilium Note 的 ETAPI 和 Web API 的 Python 客户端，并提供额外的高�
       * [特殊情况：重复标题](#特殊情况重复标题)
       * [最后一条规则：避免自引用](#最后一条规则避免自引用)
       * [代码示例](#代码示例)
+   * [（高级用法） 🗓️🔁 周期性 TODO](#高级用法-️-周期性-todo)
    * [(基础) Web API 使用](#基础-web-api-使用)
       * [📣 分享笔记 &amp; 取消分享笔记](#-分享笔记--取消分享笔记)
    * [🛠️ 开发](#️-开发)
@@ -510,7 +511,8 @@ res = ea.upload_md_folder(
 
 由于Trilium使用的库的限制，导入的笔记可能会遇到轻微的格式问题。这些问题包括代码块末尾出现额外的一行，图像与笔记内容融为一体，标题之间缺少换行符，导致笔记内容显得拥挤。
 
-在日常整理资料时，一些从 **网上复制的文字**、通过 **剪藏插件保存的页面**，或者从 **其他软件导入的笔记**，经常会带有冗余的空行、不统一的标题层级、奇怪的排版等问题，看起来比较杂乱。
+在日常整理资料时，一些从 **网上复制的文字**、通过 **剪藏插件保存的页面**，或者从 **其他软件导入的笔记**
+，经常会带有冗余的空行、不统一的标题层级、奇怪的排版等问题，看起来比较杂乱。
 
 美化笔记可以自动清理这些冗余内容，并规范化标题和段落排版，让笔记更简洁、清晰、易于阅读。
 
@@ -668,6 +670,50 @@ auto_create_internal_link(process_all_notes=True)
 res = ea.traverse_note_tree('XdOlGz7MeYWC', depth=3, limit=100, method='bfs')
 for x in res:
     logger.info(x)
+```
+
+## （高级用法） 🗓️🔁 周期性 TODO
+
+你可以使用 add_periodic_todos 来自动添加周期性任务（每天、每周、每月、每年）。
+如果某个任务在今天到期，并且今天的 TODO 里还没有，就会自动添加进去。
+
+```python
+periodic_todos = [
+    # 每天伸展身体
+    {"content": "伸展身体", "type": "daily"},
+
+    # 每天给 Nriver 买牛奶 :)
+    {"content": "给 Nriver 买牛奶 :)", "type": "daily"},
+
+    # 每周六洗衣服
+    {"content": "洗衣服", "type": "weekly", "weekday": 6},
+
+    # 每月 1 号写总结报告
+    {"content": "写总结报告", "type": "monthly", "day": 1},
+
+    # 每月最后一天交房租
+    {"content": "交房租", "type": "monthly", "day": -1},
+
+    # 每月 10 号买抗过敏药
+    {"content": "买抗过敏药", "type": "monthly", "day": 10},
+
+    # 每年 12 月 31 日年度总结
+    {"content": "年度总结", "type": "yearly", "month": 12, "day": 31},
+
+    # 每年 1 月 1 日新年快乐 :)
+    {"content": "新年快乐 :)", "type": "yearly", "month": 1, "day": 1},
+    
+    # 每月 15 号缴账单，直到 2077-01-01
+    {"content": "缴账单", "type": "monthly", "day": 15, "end_date": "2077-01-01"},
+
+    # 从 2025-01-01 开始，每周一团队会议
+    {"content": "团队会议", "type": "weekly", "weekday": 1, "start_date": "2025-01-01"},
+
+    # 2025-09-26 到 2025-09-30 的特别项目
+    {"content": "特别项目", "type": "daily", "start_date": "2025-09-26", "end_date": "2025-09-30"},
+]
+
+res = ea.add_periodic_todos(periodic_todos)
 ```
 
 ## (基础) Web API 使用

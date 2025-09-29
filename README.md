@@ -72,6 +72,7 @@ Python client for Trilium Note's ETAPI and Web API, with additional advanced fea
       * [Final Rule: No Self-Linking](#final-rule-no-self-linking)
       * [Code Samples](#code-samples)
    * [(Advanced Usage) 📝🌳 Traverse Note Tree](#advanced-usage--traverse-note-tree)
+   * [(Advanced Usage) 🗓️🔁 Periodic TODOs](#advanced-usage-️-periodic-todos)
    * [(Basic) Web API Usage](#basic-web-api-usage)
       * [📣 Share note &amp; cancel share note](#-share-note--cancel-share-note)
    * [🛠️ Develop](#️-develop)
@@ -447,7 +448,8 @@ res = ea.upload_md_file(
 
 ### Disable math formula parsing
 
-When uploading Markdown files that contain dollar signs ($) which are not meant to be interpreted as math formulas, you can disable the math formula parsing:
+When uploading Markdown files that contain dollar signs ($) which are not meant to be interpreted as math formulas, you
+can disable the math formula parsing:
 
 ```python
 res = ea.upload_md_file(
@@ -575,9 +577,12 @@ problems. These issues include an additional line appearing at the end of code b
 the note content, and the absence of line breaks between headings, resulting in a cramped appearance of the note
 content.
 
-When collecting information, some notes copied from the **web**, saved via **clipping plugins**, or imported from **other applications** may contain redundant line breaks, inconsistent heading levels, or messy formatting, making them look cluttered.
+When collecting information, some notes copied from the **web**, saved via **clipping plugins**, or imported from *
+*other applications** may contain redundant line breaks, inconsistent heading levels, or messy formatting, making them
+look cluttered.
 
-Beautify notes will automatically cleans up unnecessary content, normalizes headings and paragraph layouts, and makes your notes cleaner, clearer, and easier to read.
+Beautify notes will automatically cleans up unnecessary content, normalizes headings and paragraph layouts, and makes
+your notes cleaner, clearer, and easier to read.
 
 ![Beautify result compare](docs/beautify-note.gif)
 
@@ -735,22 +740,69 @@ auto_create_internal_link(process_all_notes=True)
 
 ## (Advanced Usage) 📝🌳 Traverse Note Tree
 
-Fetch a note's title and content along with its descendants'. Great for reassembling large notes split into smaller child notes.
+Fetch a note's title and content along with its descendants'. Great for reassembling large notes split into smaller
+child notes.
 
 The method can be `bfs` or `dfs`.
+
 ```python
 res = ea.traverse_note_tree('XdOlGz7MeYWC', depth=3, limit=100, method='bfs')
 for x in res:
     logger.info(x)
 ```
 
+## (Advanced Usage) 🗓️🔁 Periodic TODOs
+
+You can use add_periodic_todos to automatically add recurring tasks (daily, weekly, monthly, yearly).
+If a task is due today and not already in today’s TODO list, it will be added automatically.
+
+```python
+periodic_todos = [
+    # Stretch body every day
+    {"content": "Stretch body", "type": "daily"},
+
+    # Buy milk for Nriver every day :)
+    {"content": "Buy milk for Nriver :)", "type": "daily"},
+
+    # Wash clothes on every Saturday
+    {"content": "Wash clothes", "type": "weekly", "weekday": 6},
+
+    # Write monthly report on the first day of every month
+    {"content": "Write monthly report", "type": "monthly", "day": 1},
+
+    # Pay rent on the last day of every month
+    {"content": "Pay rent", "type": "monthly", "day": -1},
+
+    # Buy anti-allergy medicine on the 10th of every month
+    {"content": "Buy anti-allergy medicine", "type": "monthly", "day": 10},
+
+    # Annual review every year on December 31
+    {"content": "Annual review", "type": "yearly", "month": 12, "day": 31},
+
+    # Happy new year on January 1 :)
+    {"content": "Happy new year :)", "type": "yearly", "month": 1, "day": 1},
+    
+    # Pay bills on the 15th of every month until 2077-01-01
+    {"content": "Pay bills", "type": "monthly", "day": 15, "end_date": "2077-01-01"},
+
+    # Team meeting every Monday starting from 2025-01-01
+    {"content": "Team meeting", "type": "weekly", "weekday": 1, "start_date": "2025-01-01"},
+
+    # Special project from 2025-09-26 to 2025-09-30
+    {"content": "Work on special project", "type": "daily", "start_date": "2025-09-26", "end_date": "2025-09-30"},
+]
+
+ea.add_periodic_todos(periodic_todos)
+```
+
 ## (Basic) Web API Usage
 
-These features are made based on the web API from Trilium's web client. Be sure you have done the [initialization](#web-api-initialization) before use it.
+These features are made based on the web API from Trilium's web client. Be sure you have done
+the [initialization](#web-api-initialization) before use it.
 
 ### 📣 Share note & cancel share note
 
-```
+```python
 wa.share_note('your_note_id')
 wa.cancel_share_note('RfhYrtyQLU8o')
 ```

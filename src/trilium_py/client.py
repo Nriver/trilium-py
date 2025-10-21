@@ -430,18 +430,29 @@ class ETAPI:
 
     def create_branch(
             self,
-            branchId: str,
             noteId: str,
             parentNoteId: str,
-            prefix: str,
-            notePosition: int,
-            isExpanded: bool,
-            utcDateModified,
+            prefix: str = "",
+            notePosition: int = 0,
+            isExpanded: bool = False,
+            utcDateModified = None
     ) -> dict:
-        # url = f'{self.server_url}/etapi/branches/{branchId}'
+        """
+         In Trilium, a *clone* (internally called a "branch") links a note to a parent note,
+        allowing the same note to appear in multiple places within the note tree.
+        This method creates such a clone or updates an existing one if it already exists
+        between the specified parent and child.
+
+        :param noteId:
+        :param parentNoteId:
+        :param prefix:
+        :param notePosition:
+        :param isExpanded:
+        :param utcDateModified:
+        :return:
+        """
         url = f'{self.server_url}/etapi/branches/'
         params = {
-            "branchId": branchId,
             "noteId": noteId,
             "parentNoteId": parentNoteId,
             "prefix": prefix,

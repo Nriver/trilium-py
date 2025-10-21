@@ -5,11 +5,10 @@ import sys
 import urllib.parse
 from collections import deque
 from collections.abc import Mapping
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Literal
 from typing import Optional, Union
 
-import dateutil
 import magic
 import markdown2
 import requests
@@ -18,7 +17,6 @@ from loguru import logger
 from natsort import natsort
 from tqdm import tqdm
 
-from .version import __version__
 from .utils.file_util import replace_extension
 from .utils.html_util import add_internal_links
 from .utils.image_util import compress_image_bytes, get_extension_from_image_mime
@@ -30,6 +28,7 @@ from .utils.time_util import (
     get_yesterday,
     format_dates_for_api,
 )
+from .version import __version__
 
 
 class ETAPI:
@@ -878,6 +877,69 @@ class ETAPI:
         finally:
             soup.decompose()
             del soup
+
+    def add_periodic_todos(self, periodic_todos):
+        today = datetime.today().date()
+        weekday = today.isoweekday()  # Monday=1, Sunday=7
+        day = today.day
+        month = today.month
+        year = today.year
+
+        # last day of month
+        next_month = month % 12 + 1
+        next_month_year = year + (1 if next_month == 1 else 0)
+        last_day_of_month = (datetime(next_month_year, next_month, 1).date() - timedelta(days=1)).day
+
+        today_todos = self.get_todo()
+
+        for task in periodic_todos:
+            task_content = task["content"]
+            add_task = False
+
+            # Daily task
+            if task.get("type") == "daily":
+                add_task = True
+
+            # Weekly task
+            elif task.get("type") == "weekly" and task.get("weekday") == weekday:
+                add_task = True
+
+            # Monthly task
+            elif task.get("type") == "monthly":
+                task_day = task.get("day")
+                if isinstance(task_day, int):
+                    if task_day > 0:
+                        # Positive day → fixed day of month (e.g. 1 = first day)
+                        if day == task_day:
+                            add_task = True
+                    elif task_day < 0:
+                        # Negative day → count from the end of month (e.g. -1 = last day, -2 = second last day)
+                        target_day = last_day_of_month + 1 + task_day
+                        if day == target_day:
+                            add_task = True
+
+            # Yearly task
+            elif task.get("type") == "yearly":
+                if task.get("month") == month and task.get("day") == day:
+                    add_task = True
+
+            # Custom date range (string to date)
+            start_date = task.get("start_date")
+            end_date = task.get("end_date")
+            if start_date:
+                start_date = datetime.strptime(start_date, "%Y-%m-%d").date()
+                if today < start_date:
+                    add_task = False
+            if end_date:
+                end_date = datetime.strptime(end_date, "%Y-%m-%d").date()
+                if today > end_date:
+                    add_task = False
+
+            # Add todo if not already present
+            if add_task and task_content not in today_todos:
+                self.add_todo(task_content)
+
+        return
 
     def upload_md_file(self, file: str, parentNoteId: str, parse_math: bool = True):
         md_file = os.path.abspath(file).replace('\\', '/').replace('//', '/')

@@ -32,6 +32,10 @@ Trilium Note 的 ETAPI 和 Web API 的 Python 客户端，并提供额外的高�
       * [👀 获取笔记](#-获取笔记)
       * [🔄 更新笔记](#-更新笔记)
       * [🗑️ 删除笔记](#️-删除笔记)
+      * [📄 创建笔记克隆（分支）](#-创建笔记克隆分支)
+      * [🔍 获取笔记克隆信息](#-获取笔记克隆信息)
+      * [✏️ 修改笔记克隆信息](#️-修改笔记克隆信息)
+      * [❌ 删除笔记克隆](#-删除笔记克隆)
       * [📅 日记](#-日记)
       * [📤 导出笔记](#-导出笔记)
       * [💾 创建数据备份](#-创建数据备份)
@@ -238,6 +242,67 @@ ea.patch_note(
 
 ```python
 ea.delete_note("noteid")
+```
+
+### 📄 创建笔记克隆（分支）
+
+在 ETAPI 中，这个对象被称为 **branch（分支）**，但在 Trilium 的用户界面中，它实际上表示的是一个 **笔记克隆（note clone）**。
+
+下面的示例演示如何在 `note1` 下创建 `note2` 的一个克隆：
+
+```python
+res = ea.create_branch(
+    noteId="note2",
+    parentNoteId="note1",
+)
+````
+
+返回的结果示例如下：
+
+```python
+{
+    'branchId': 'note1_note2',
+    'noteId': 'note2',
+    'parentNoteId': 'note1',
+    'prefix': None,
+    'notePosition': 10,
+    'isExpanded': False,
+    'utcDateModified': '2025-10-21T03:25:16.397Z'
+}
+```
+
+> 💡 **提示：**
+> 在 Trilium 的数据模型中，*branch（分支）* 是 *clone（克隆）* 的内部表示形式。
+> 删除分支只会移除该父子关系链接，而不会删除实际的笔记。
+
+### 🔍 获取笔记克隆信息
+
+通过 `branchId` 获取指定笔记克隆（分支）的详细信息：
+
+```python
+res = ea.get_branch(branchId="note1_note2")
+```
+
+### ✏️ 修改笔记克隆信息
+
+更新现有笔记克隆的显示属性，例如前缀、顺序或展开状态：
+
+```python
+res = ea.patch_branch(
+    branchId="note1_note2",
+    notePosition=0,
+    prefix="patched",
+    isExpanded=False
+)
+```
+
+### ❌ 删除笔记克隆
+
+从树结构中移除一个笔记克隆（分支）。
+这只会断开与父笔记的链接，不会删除笔记本身：
+
+```python
+res = ea.delete_branch(branchId="note1_note2")
 ```
 
 ### 📅 日记

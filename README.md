@@ -29,6 +29,10 @@ Python client for Trilium Note's ETAPI and Web API, with additional advanced fea
       * [👀 Get note](#-get-note)
       * [🔄 Update note](#-update-note)
       * [🗑️ Delete note](#️-delete-note)
+      * [📄 Create note clone/branch](#-create-note-clonebranch)
+      * [🔍 Get note clone info](#-get-note-clone-info)
+      * [✏️ Modify note clone info](#️-modify-note-clone-info)
+      * [❌ Delete note clone](#-delete-note-clone)
       * [📅 Day note](#-day-note)
       * [📤 Export note](#-export-note)
       * [📥 import note](#-import-note)
@@ -246,6 +250,57 @@ Simply delete a note by id.
 
 ```python
 ea.delete_note("noteid")
+```
+
+### 📄 Create note clone/branch
+
+In the ETAPI, this is called a branch, but in the Trilium UI it represents a note clone.
+
+Here is an example to create a clone of `note2` under `note1`.
+
+```
+res = ea.create_branch(
+    noteId="note2",
+    parentNoteId="note1",
+)
+```
+
+It will return the note clone info like this:
+
+```
+{
+    'branchId': 'note1_note2',
+    'noteId': 'note2',
+    'parentNoteId': 'note1',
+    'prefix': None,
+    'notePosition': 10,
+    'isExpanded': False,
+    'utcDateModified': '2025-10-21T03:25:16.397Z'
+}
+```
+
+### 🔍 Get note clone info
+
+Retrieve details about a specific note clone (branch) by its branchId
+
+```
+res = ea.get_branch(branchId="note1_note2")
+```
+
+### ✏️ Modify note clone info
+
+Update an existing note clone’s display attributes such as prefix, position, or expansion state
+
+```
+res = ea.patch_branch(branchId="note1_note2", notePosition=0, prefix="patched", isExpanded=False)
+```
+
+### ❌ Delete note clone
+
+Remove a note clone (branch) from the tree.
+
+```
+res = ea.delete_branch(branchId="note1_note2")
 ```
 
 ### 📅 Day note

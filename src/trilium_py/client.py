@@ -952,7 +952,7 @@ class ETAPI:
 
         return
 
-    def upload_md_file(self, file: str, parentNoteId: str, parse_math: bool = True, image_and_file_as_attachments: bool = False):
+    def upload_md_file(self, file: str, parentNoteId: str, parse_math: bool = True, image_and_file_as_attachments: bool = True):
         md_file = os.path.abspath(file).replace('\\', '/').replace('//', '/')
         md_full_name = os.path.basename(md_file)
         md_name = md_full_name[:-3]

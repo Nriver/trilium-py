@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 from typing import Literal
 from typing import Optional, Union
 
-import magic
+import mimetypes
 import markdown2
 import requests
 from bs4 import BeautifulSoup
@@ -336,7 +336,7 @@ class ETAPI:
         '''
         if not mime:
             # if mime not specified, get mime info by python-magic package
-            mime = magic.from_file(image_file, mime=True)
+            mime, _ = mimetypes.guess_type(image_file)
 
         if not mime:
             # just in case python-magic not working, give a default mime
@@ -1322,7 +1322,7 @@ class ETAPI:
 
         if not mime:
             # if mime not specified, get mime info by python-magic package
-            mime = magic.from_file(file_path, mime=True)
+            mime, _ = mimetypes.guess_type(file_path)
 
         if not mime:
             # just in case python-magic not working, give a default mime

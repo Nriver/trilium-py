@@ -1,8 +1,5 @@
 requests
 BeautifulSoup4
-python-magic; sys_platform == 'darwin'
-python-magic; sys_platform == 'linux'
-python-magic-bin; sys_platform == 'win32'
 markdown2[all]
 natsort
 loguru

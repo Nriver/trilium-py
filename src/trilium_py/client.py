@@ -1000,13 +1000,13 @@ class ETAPI:
         pat = '<img (.*?)>'
         images = re.findall(pat, html)
 
-        res = self.create_note(
+        current_note_res = self.create_note(
             parentNoteId=parentNoteId,
             title=md_name,
             type="text",
             content=html,
         )
-        note_id = res['note']['noteId']
+        note_id = current_note_res['note']['noteId']
         # logger.info(note_id)
 
         if images:
@@ -1135,7 +1135,7 @@ class ETAPI:
             # replace note content
             res = self.update_note_content(note_id, html)
 
-        return res
+        return current_note_res
 
     def upload_md_folder(
             self,

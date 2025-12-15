@@ -3,4 +3,4 @@ This module contains a single variable, __version__, which is the version of the
 This allows for a single source of truth for the package version.
 """
 
-__version__ = '1.3.1'
+__version__ = '1.3.3'

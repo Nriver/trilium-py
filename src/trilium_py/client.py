@@ -952,7 +952,7 @@ class ETAPI:
 
         return
 
-    def upload_md_file(self, file: str, parentNoteId: str, parse_math: bool = True):
+    def upload_md_file(self, file: str, parentNoteId: str, parse_math: bool = True, image_and_file_as_attachments: bool = True):
         md_file = os.path.abspath(file).replace('\\', '/').replace('//', '/')
         md_full_name = os.path.basename(md_file)
         md_name = md_full_name[:-3]
@@ -1056,20 +1056,31 @@ class ETAPI:
                     # if image name is not specified, use file name
                     image_name = os.path.basename(image_path)
 
-                res = self.create_image_note(
-                    parentNoteId=note_id,
-                    title=image_name,
-                    image_file=image_file_path,
-                )
-                # logger.info(res)
-                image_note_id = res['note']['noteId']
-                # fix path with `/` in it, the param should be quoted.
-                # e.g. relative url from obsidian
-                image_url = (
-                    f"api/images/{image_note_id}/"
-                    f"{urllib.parse.quote(res['note']['title'], safe='')}"
-                )
-                logger.info(image_url)
+                if image_and_file_as_attachments:
+                    res = self.create_attachment(
+                        ownerId=note_id,
+                        file_path=image_file_path,
+                        title=image_name,
+                        role='image',
+                    )
+                    image_note_id = res['attachmentId']
+                    image_url = f"api/attachments/{image_note_id}/image/{urllib.parse.quote(res['title'], safe='')}"
+                    logger.info(image_url)
+                else:
+                    res = self.create_image_note(
+                        parentNoteId=note_id,
+                        title=image_name,
+                        image_file=image_file_path,
+                    )
+                    # logger.info(res)
+                    image_note_id = res['note']['noteId']
+                    # fix path with `/` in it, the param should be quoted.
+                    # e.g. relative url from obsidian
+                    image_url = (
+                        f"api/images/{image_note_id}/"
+                        f"{urllib.parse.quote(res['note']['title'], safe='')}"
+                    )
+                    logger.info(image_url)
 
                 html = html.replace(image_path, image_url)
 
@@ -1117,18 +1128,28 @@ class ETAPI:
             if os.path.exists(file_path):
                 logger.info(file_path)
 
-                res = self.create_file_note(
-                    parentNoteId=note_id,
-                    title=link_name,
-                    file_path=file_path,
-                )
-                logger.info(res)
+                if image_and_file_as_attachments:
+                    res = self.create_attachment(
+                        ownerId=note_id,
+                        file_path=file_path,
+                        title=link_name,
+                        role='file',
+                    )
+                    file_attachment_id = res['attachmentId']
+                    file_url = f"#root/{note_id}?viewMode=attachments&amp;attachmentId={file_attachment_id}"
+                    logger.info(file_url)
+                else:
+                    res = self.create_file_note(
+                        parentNoteId=note_id,
+                        title=link_name,
+                        file_path=file_path,
+                    )
 
-                # update file link
-                file_note_id = res['note']['noteId']
-                # fix path with `/` in it, the param should be quoted.
-                # e.g. relative url from obsidian
-                file_url = f"#root/{note_id}/{file_note_id}"
+                    # update file link
+                    file_note_id = res['note']['noteId']
+                    # fix path with `/` in it, the param should be quoted.
+                    # e.g. relative url from obsidian
+                    file_url = f"#root/{note_id}/{file_note_id}"
 
                 html = html.replace(link, file_url)
 

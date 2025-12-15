@@ -155,9 +155,6 @@ setup(
     install_requires=[
         'BeautifulSoup4',
         'requests',
-        "python-magic;sys_platform=='darwin'",
-        "python-magic;sys_platform=='linux'",
-        "python-magic-bin;platform_system=='Windows'",
         'markdown2[all]',
         'natsort',
         'loguru',

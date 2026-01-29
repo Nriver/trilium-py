@@ -335,7 +335,7 @@ res = ea.export_note(
 This is the built-in feature in trilium. The input file should be a zip file.
 
 ```python
-res = ea.export_note(
+res = ea.import_note(
     noteId='sK5fn4T6yZRI',
     file_path='/home/nate/data/1/test.zip',
 )

@@ -121,3 +121,23 @@ class WEBAPI:
         if res.status_code == 200:  # DELETE 请求通常返回 200 表示成功
             return True
         return False
+
+    def enter_protected_session(self, password: str):
+        url = f'{self.server_url}/api/login/protected'
+        data = {'password': password}
+        res = requests.post(url, headers=self.get_headers(), cookies=self.get_cookie(), json=data)
+        try:
+            if res.json()['success'] == True:
+                return True
+            else:
+                return False
+        except:
+            return False
+
+    def leave_protected_session(self):
+        url = f'{self.server_url}/api/logout/protected'
+        res = requests.post(url, headers=self.get_headers(), cookies=self.get_cookie())
+        if res.status_code == 204:
+            logger.info('leave protected session successfully')
+            return True
+        return False

@@ -785,12 +785,36 @@ res = ea.add_periodic_todos(periodic_todos)
 
 这些功能是基于 Trilium Web 客户端的 Web API 开发的。在使用之前，请确保已完成[初始化](#web-api-初始化)。
 
+### 📄 获取笔记内容
+
+通过笔记 ID 轻松获取笔记内容。
+
+```python
+res = wa.get_note_content('RfhYrtyQLU8o')
+```
+
 ### 📣 分享笔记 & 取消分享笔记
 
 ```python
 wa.share_note('你的笔记ID')
 wa.cancel_share_note('RfhYrtyQLU8o')
 ```
+
+### 🔒 受保护的会话 / 加密的笔记
+
+使用 `enter_protected_session` 方法进入保护会话。 进入保护会话后，即可访问被加密保护的笔记。
+
+```
+wa.enter_protected_session(password)
+res = wa.get_note_content(protected_note_id)
+```
+
+使用 leave_protected_session 方法退出保护会话。
+
+```
+wa.leave_protected_session()
+```
+
 
 ## 🛠️ 开发
 

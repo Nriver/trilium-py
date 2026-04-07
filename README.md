@@ -880,11 +880,33 @@ ea.add_periodic_todos(periodic_todos)
 These features are made based on the web API from Trilium's web client. Be sure you have done
 the [initialization](#web-api-initialization) before use it.
 
+### 📄 Get note content
+
+Easy to get note content by note id.
+```
+res = wa.get_note_content('RfhYrtyQLU8o')
+```
+
 ### 📣 Share note & cancel share note
 
 ```python
 wa.share_note('your_note_id')
 wa.cancel_share_note('RfhYrtyQLU8o')
+```
+
+### 🔒 Protected session / encrypted notes
+
+You can enter protected session by `login_protected_session` method. Then you can access the encrypted notes after entering protected session.
+
+```
+wa.enter_protected_session(password)
+res = wa.get_note_content(protected_note_id)
+```
+
+Leave protected session by `logout_protected_session` method.
+
+```
+wa.leave_protected_session()
 ```
 
 ## 🛠️ Develop

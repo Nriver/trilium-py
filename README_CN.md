@@ -793,13 +793,6 @@ res = ea.add_periodic_todos(periodic_todos)
 res = wa.get_note_content('RfhYrtyQLU8o')
 ```
 
-### 📣 分享笔记 & 取消分享笔记
-
-```python
-wa.share_note('你的笔记ID')
-wa.cancel_share_note('RfhYrtyQLU8o')
-```
-
 ### 🔒 受保护的会话 / 加密的笔记
 
 使用 `enter_protected_session` 方法进入保护会话。 进入保护会话后，即可访问被加密保护的笔记。
@@ -815,6 +808,20 @@ res = wa.get_note_content(protected_note_id)
 wa.leave_protected_session()
 ```
 
+### 🔄 更新笔记内容
+
+传入笔记id和内容即可. 如果是受保护的笔记，请先进入受保护的会话。
+
+```python
+wa.update_note_content(note_id, '<p>protected note content updated by trilium-py :)</p>')
+```
+
+### 📣 分享笔记 & 取消分享笔记
+
+```python
+wa.share_note('你的笔记ID')
+wa.cancel_share_note('RfhYrtyQLU8o')
+```
 
 ## 🛠️ 开发
 

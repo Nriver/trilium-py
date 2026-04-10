@@ -103,6 +103,14 @@ class WEBAPI:
         res = requests.get(url, cookies=self.get_cookie())
         return res.json()['content']
 
+    def update_note_content(self, note_id, content):
+        url = f'{self.server_url}/api/notes/{note_id}/data'
+        data = {'content': content}
+        res = requests.put(url, headers=self.get_headers(), cookies=self.get_cookie(), json=data)
+        if res.status_code == 204:
+            return True
+        return False
+
     def share_note(self, note_id: str):
         url = f'{self.server_url}/api/notes/{note_id}/clone-to-note/_share'
 

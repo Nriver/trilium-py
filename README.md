@@ -883,15 +883,9 @@ the [initialization](#web-api-initialization) before use it.
 ### 📄 Get note content
 
 Easy to get note content by note id.
-```
-res = wa.get_note_content('RfhYrtyQLU8o')
-```
-
-### 📣 Share note & cancel share note
 
 ```python
-wa.share_note('your_note_id')
-wa.cancel_share_note('RfhYrtyQLU8o')
+res = wa.get_note_content('RfhYrtyQLU8o')
 ```
 
 ### 🔒 Protected session / encrypted notes
@@ -907,6 +901,21 @@ Leave protected session by `logout_protected_session` method.
 
 ```
 wa.leave_protected_session()
+```
+
+### 🔄 Update note content
+
+Simply pass the note id and its content. If the note is protected, you need to enter the protected session first.
+
+```python
+wa.update_note_content(note_id, '<p>protected note content updated by trilium-py :)</p>')
+```
+
+### 📣 Share note & cancel share note
+
+```python
+wa.share_note('your_note_id')
+wa.cancel_share_note('RfhYrtyQLU8o')
 ```
 
 ## 🛠️ Develop

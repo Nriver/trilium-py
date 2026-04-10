@@ -31,7 +31,9 @@ class WEBAPI:
         return {
             '_csrf': self._csrf,
             'trilium.sid': self.sid,
-            'trilium-device': 'desktop'
+            'trilium-device': 'desktop',
+            # Trilium next uses this cookie
+            'trilium-csrf': self.csrf_token,
         }
 
     def get_headers(self) -> dict:
@@ -40,6 +42,7 @@ class WEBAPI:
         }
 
     def refresh_csrf_token(self) -> str:
+        # Classic Trilium 0.63.7, the csrfToken is from `/` endpoint
         url = f'{self.server_url}/'
         res = requests.get(url, cookies=self.get_cookie())
         csrf_token_match = re.search(r"csrfToken:\s*'([^']+)'", res.text)
@@ -51,7 +54,14 @@ class WEBAPI:
             return csrf_token
         else:
             logger.info("csrfToken not found.")
-            return ''
+            # Trilium next, the csrfToken is from `/bootstrap` endpoint
+            logger.info("Trying to extract csrfToken from /bootstrap endpoint...")
+            url = f'{self.server_url}/bootstrap'
+            res = requests.get(url, cookies=self.get_cookie())
+            csrf_token = res.json()['csrfToken']
+            logger.info(f"Extracted csrfToken: {csrf_token}")
+            self.csrf_token = csrf_token
+            return csrf_token
 
     def login(self, password: str) -> Optional[str]:
         """

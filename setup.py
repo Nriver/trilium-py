@@ -129,10 +129,9 @@ setup(
     # larger catalog.
     keywords='trilium, etapi, api client',  # Optional
     # When your source code is in a subdirectory under the project root, e.g.
-    # `src/`, it is necessary to specify the `package_dir` argument.
-    package_dir={'': 'src'},  # Optional
     # You can just specify package directories manually here if your project is
     # simple. Or you can use find_packages().
+    package_dir={'': 'src'},  # Required
     #
     # Alternatively, if you just want to distribute a single Python file, use
     # the `py_modules` argument instead as follows, which will expect a file
@@ -140,6 +139,7 @@ setup(
     #
     #   py_modules=["my_module"],
     #
+    # packages=find_packages(where='src', include=['trilium_py', 'trilium_py.*']),  # Required
     packages=find_packages(where='src'),  # Required
     # Specify which Python versions you support. In contrast to the
     # 'Programming Language' classifiers above, 'pip install' will check this
@@ -161,6 +161,10 @@ setup(
         'pillow',
         'python-dateutil',
         'tqdm',
+        # for CLI
+        'click',
+        'python-dotenv',
+        'rich',
     ],
     # Optional
     # List additional groups of dependencies here (e.g. development
@@ -171,10 +175,18 @@ setup(
     #
     # Similar to `install_requires` above, these must be valid existing
     # projects.
-    # extras_require={  # Optional
-    #     'dev': ['check-manifest'],
-    #     'test': ['coverage'],
-    # },
+    extras_require={
+        'dev': [
+            'pytest',
+            'black',
+            'isort',
+            'mypy',
+        ],
+        'test': [
+            'pytest',
+            'pytest-cov',
+        ],
+    },
     # If there are data files included in your packages that need to be
     # installed, specify them here.
     # package_data={  # Optional
@@ -193,11 +205,11 @@ setup(
     #
     # For example, the following would provide a command called `sample` which
     # executes the function `main` from this package when invoked:
-    # entry_points={  # Optional
-    #     'console_scripts': [
-    #         'sample=sample:main',
-    #     ],
-    # },
+    entry_points={
+        'console_scripts': [
+            'tpy=trilium_py.cli.cli:main',
+        ],
+    },
     # List additional URLs that are relevant to your project as a dict.
     #
     # This field corresponds to the "Project-URL" metadata fields:

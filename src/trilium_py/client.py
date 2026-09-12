@@ -1,4 +1,5 @@
 import mimetypes
+import json
 import os
 import re
 import string
@@ -29,6 +30,102 @@ from .utils.time_util import (
     format_dates_for_api,
 )
 from .version import __version__
+
+
+def _parse_front_matter_tags(frontmatter: str) -> list[str]:
+    """Extract a `tags:` string list from a Markdown front matter block.
+
+    Handles the Joplin "Markdown + Front Matter" shape:
+
+        tags:
+          - nix
+          - 'quoted ''tag'''
+
+    Only a block-style list directly under a top-level `tags:` key is read;
+    anything else (inline `tags: []`, missing key, ...) yields [].
+    Single/double-quoted scalars are unquoted. Order is preserved,
+    duplicates are removed.
+    """
+    tags: list[str] = []
+    lines = frontmatter.split('\n')
+    i = 0
+    while i < len(lines):
+        if re.match(r'^tags:\s*$', lines[i]):
+            i += 1
+            while i < len(lines) and re.match(r'^\s+-\s+', lines[i]):
+                item = re.sub(r'^\s+-\s+', '', lines[i]).strip()
+                if len(item) >= 2 and item.startswith("'") and item.endswith("'"):
+                    item = item[1:-1].replace("''", "'")
+                elif len(item) >= 2 and item.startswith('"') and item.endswith('"'):
+                    item = item[1:-1].replace('\\"', '"').replace('\\\\', '\\')
+                if item:
+                    tags.append(item)
+                i += 1
+            break
+        i += 1
+    return list(dict.fromkeys(tags))
+
+
+def _parse_front_matter_title(frontmatter: str) -> Optional[str]:
+    """Extract the `title:` value from a Markdown front matter block.
+
+    Handles the Joplin "Markdown + Front Matter" shapes ``title: plain``,
+    ``title: 'single ''quoted'''`` and ``title: "double \\"quoted\\""``.
+    Returns ``None`` when absent or empty so callers can fall back to the
+    file name (which is filesystem-sanitised and truncated).
+    """
+    match = re.search(r'^title:[ \t]*(.+)$', frontmatter, re.MULTILINE)
+    if not match:
+        return None
+    item = match.group(1).strip()
+    if len(item) >= 2 and item.startswith("'") and item.endswith("'"):
+        item = item[1:-1].replace("''", "'")
+    elif len(item) >= 2 and item.startswith('"') and item.endswith('"'):
+        item = item[1:-1].replace('\\"', '"').replace('\\\\', '\\')
+    item = item.strip()
+    return item or None
+
+
+def _format_front_matter_date(raw: str) -> tuple[Optional[str], Optional[str]]:
+    """Normalise a front matter timestamp to Trilium's (local, UTC) pair.
+
+    Accepts the Joplin "Markdown + Front Matter" shape
+    ``YYYY-MM-DD HH:MM:SS[.mmm][Z]``. Returns ``(None, None)`` for anything
+    else so callers can omit the field (preserving Trilium's "now" default).
+    """
+    ts_match = re.match(r'^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})(\.\d+)?(Z?)$', raw.strip())
+    if not ts_match:
+        return None, None
+    base, millis, _tz = ts_match.groups()
+    millis = (millis or '.000')[:4].ljust(4, '0')  # ensure exactly .mmm
+    utc_date = f"{base}{millis}Z"
+
+    # Convert to local timezone
+    dt_utc = datetime.strptime(f"{base}{millis}", "%Y-%m-%d %H:%M:%S.%f").replace(
+        tzinfo=timezone.utc)
+    dt_local = dt_utc.astimezone(tzlocal())
+    local_date = dt_local.strftime("%Y-%m-%d %H:%M:%S.") + f"{dt_local.microsecond // 1000:03d}{dt_local.strftime('%z')}"
+    return local_date, utc_date
+
+
+def _read_front_matter_modified(md_file: str) -> tuple[Optional[str], Optional[str]]:
+    """(dateModified, utcDateModified) from a Markdown front matter `updated:` key.
+
+    Returns ``(None, None)`` when the file cannot be read or holds no
+    parseable value, so callers can skip the date restore.
+    """
+    try:
+        with open(md_file, encoding='utf-8') as fh:
+            content = fh.read()
+    except OSError:
+        return None, None
+    frontmatter_match = re.match(r'^---\n(.*?)\n---\n', content, re.DOTALL)
+    if not frontmatter_match:
+        return None, None
+    updated_match = re.search(r'^updated:\s*(.+)$', frontmatter_match.group(1), re.MULTILINE)
+    if not updated_match:
+        return None, None
+    return _format_front_matter_date(updated_match.group(1))
 
 
 class ETAPI:
@@ -135,7 +232,10 @@ class ETAPI:
             isExpanded: Optional[str] = None,
             noteId: Optional[str] = None,
             branchId: Optional[str] = None,
-            dateCreated: Optional[str] = None
+            dateCreated: Optional[str] = None,
+            utcDateCreated: Optional[str] = None,
+            dateModified: Optional[str] = None,
+            utcDateModified: Optional[str] = None
     ) -> dict:
         """
         Actually it's create or update,
@@ -151,7 +251,15 @@ class ETAPI:
         :param isExpanded:
         :param noteId:
         :param branchId:
-        :param dateCreated:
+        :param dateCreated: local-time creation override, already in ETAPI
+            local format (e.g. from _format_front_matter_date)
+        :param utcDateCreated: UTC creation override, already in ETAPI UTC
+            format. The server derives one from the other when only one is
+            given; omit both for the default (current datetime).
+        :param dateModified: local-time last-modified override (needs a Trilium
+            server with ETAPI dateModified support; omitted when None)
+        :param utcDateModified: UTC last-modified override (needs a Trilium
+            server with ETAPI utcDateModified support; omitted when None)
         :return:
         """
         url = f'{self.server_url}/etapi/create-note'
@@ -168,6 +276,9 @@ class ETAPI:
             "noteId": noteId,
             "branchId": branchId,
             "dateCreated": dateCreated,
+            "utcDateCreated": utcDateCreated,
+            "dateModified": dateModified,
+            "utcDateModified": utcDateModified,
         }
 
         res = requests.post(url, json=clean_param(params), headers=self.get_header())
@@ -368,6 +479,8 @@ class ETAPI:
             mime: Optional[str] = None,
             dateCreated: Optional[datetime] = None,
             utcDateCreated: Optional[datetime] = None,
+            dateModified: Optional[str] = None,
+            utcDateModified: Optional[str] = None,
     ) -> dict:
         """
         Update note properties.
@@ -379,6 +492,11 @@ class ETAPI:
             mime (str, optional): New MIME type for the note
             dateCreated (datetime, optional): New creation date (local time)
             utcDateCreated (datetime, optional): New creation date (UTC time)
+            dateModified (str, optional): New last-modified date, already in
+                ETAPI local format (e.g. from _format_front_matter_date).
+                Needs a Trilium server with ETAPI dateModified PATCH support.
+            utcDateModified (str, optional): New last-modified date, already in
+                ETAPI UTC format. Takes precedence over dateModified.
 
         Returns:
             dict: Response from the API
@@ -399,6 +517,8 @@ class ETAPI:
             "mime": mime,
             "dateCreated": formatted_date_created,
             "utcDateCreated": formatted_utc_date_created,
+            "dateModified": dateModified,
+            "utcDateModified": utcDateModified,
         }
         res = requests.patch(url, json=clean_param(params), headers=self.get_header())
         return res.json()
@@ -1043,7 +1163,10 @@ class ETAPI:
             parse_math: bool = True,
             image_and_file_as_attachments: bool = True,
             hasFrontMatter: bool = False,
-            cleanText: bool = False
+            cleanText: bool = False,
+            importTags: bool = False,
+            importModified: bool = False,
+            skipMdFileLinks: bool = False
     ):
         md_file = os.path.abspath(file).replace('\\', '/').replace('//', '/')
         md_full_name = os.path.basename(md_file)
@@ -1059,6 +1182,9 @@ class ETAPI:
 
             utcDateCreated = None
             dateCreated = None
+            dateModified = None
+            utcDateModified = None
+            front_matter_tags: list[str] = []
 
             if hasFrontMatter:
 
@@ -1071,23 +1197,26 @@ class ETAPI:
                     # Extract the 'created' key from FrontMatter
                     created_match = re.search(r'^created:\s*(.+)$', frontmatter, re.MULTILINE)
                     if created_match:
-                        created_raw = created_match.group(1).strip()
-                        # Normalise to millisecond precision: "YYYY-MM-DD HH:MM:SS.mmmZ"
-                        # Input may be "YYYY-MM-DD HH:MM:SSZ" (no millis) or already have them
-                        ts_match = re.match(r'^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})(\.\d+)?(Z?)$', created_raw)
-                        if ts_match:
-                            base, millis, tz = ts_match.groups()
-                            millis = (millis or '.000')[:4].ljust(4, '0')  # ensure exactly .mmm
-                            utcDateCreated = f"{base}{millis}Z"
+                        dateCreated, utcDateCreated = _format_front_matter_date(created_match.group(1))
 
-                            # Convert to local timezone
-                            dt_utc = datetime.strptime(f"{base}{millis}", "%Y-%m-%d %H:%M:%S.%f").replace(
-                                tzinfo=timezone.utc)
-                            local_tz = tzlocal()
-                            dt_local = dt_utc.astimezone(local_tz)
-                            utc_offset = dt_local.strftime("%z")  # e.g. "+0900"
-                            dateCreated = dt_local.strftime(
-                                "%Y-%m-%d %H:%M:%S.") + f"{dt_local.microsecond // 1000:03d}{utc_offset}"
+                    # Extract the 'updated' key as the note's last-modified
+                    # date (opt-in: needs a Trilium server with ETAPI
+                    # dateModified/utcDateModified support).
+                    if importModified:
+                        updated_match = re.search(r'^updated:\s*(.+)$', frontmatter, re.MULTILINE)
+                        if updated_match:
+                            dateModified, utcDateModified = _format_front_matter_date(updated_match.group(1))
+
+                    # Extract the 'tags' list from FrontMatter (e.g. Joplin
+                    # "Markdown + Front Matter" exports) for label import.
+                    if importTags:
+                        front_matter_tags = _parse_front_matter_tags(frontmatter)
+
+                    # The file name is filesystem-sanitised (`/` `?` -> `_`,
+                    # truncated), so prefer the real title when present.
+                    front_matter_title = _parse_front_matter_title(frontmatter)
+                    if front_matter_title:
+                        md_name = front_matter_title
 
             # fix logseq image size format
             logseq_image_pat = r'(\!\[.*\]\(.*\))\{.*?:height.*width.*}'
@@ -1133,10 +1262,32 @@ class ETAPI:
             title=md_name,
             type="text",
             content=html,
-            dateCreated=dateCreated
+            dateCreated=dateCreated,
+            utcDateCreated=utcDateCreated,
+            dateModified=dateModified,
+            utcDateModified=utcDateModified
         )
         note_id = current_note_res['note']['noteId']
         # logger.info(note_id)
+
+        # Import front matter tags (e.g. from Joplin) as Trilium labels.
+        for tag in front_matter_tags:
+            try:
+                res = self.create_attribute(
+                    noteId=note_id, type='label', name=tag, value='', isInheritable=False)
+            except Exception as e:
+                logger.warning(f'Failed to create label {tag!r} on note {note_id}: {e}')
+                continue
+            if not isinstance(res, dict) or 'attributeId' not in res:
+                # trilium-py returns the JSON error body instead of raising.
+                logger.warning(f'Failed to create label {tag!r} on note {note_id}: {res}')
+
+        # Whether the HTML was rewritten to point at uploaded attachments.
+        # Any PUT /content re-stamps dateModified to now on the server, so
+        # these flags decide both whether a rewrite PUT is needed at all and
+        # whether importModified dates must be restored afterwards via PATCH.
+        images_rewritten = False
+        files_rewritten = False
 
         if images:
             # images require manually upload and url need to be replaced
@@ -1212,6 +1363,7 @@ class ETAPI:
                     logger.info(image_url)
 
                 html = html.replace(image_path, image_url)
+                images_rewritten = True
 
                 # add relation for image
                 self.create_attribute(
@@ -1223,8 +1375,12 @@ class ETAPI:
                     isInheritable=False,
                 )
 
-            # replace note content
-            res = self.update_note_content(note_id, html)
+            # Only rewrite the note when an attachment URL actually replaced a
+            # local path. An unconditional PUT re-stamps dateModified to now on
+            # the server, wiping the dateModified/utcDateModified sent on
+            # create-note (e.g. notes with only external http(s) images).
+            if images_rewritten:
+                res = self.update_note_content(note_id, html)
             # logger.info(res)
 
         # detect files
@@ -1236,6 +1392,11 @@ class ETAPI:
             file_path = ''
             if link.startswith(('http:', 'https:')):
                 # skip online link
+                continue
+            if skipMdFileLinks and urllib.parse.unquote(link.split('#', 1)[0]).lower().endswith('.md'):
+                # Note-to-note link: the folder-level second pass resolves
+                # these to internal links once every note exists. Never
+                # snapshot a note's source as a file attachment.
                 continue
             if os.path.exists(link):
                 # absolute file path
@@ -1281,9 +1442,26 @@ class ETAPI:
                     file_url = f"#root/{note_id}/{file_note_id}"
 
                 html = html.replace(link, file_url)
+                files_rewritten = True
 
-            # replace note content
+        # A necessary content rewrite (local attachments replaced) re-stamps
+        # dateModified to now on the server. Restore the front matter dates
+        # afterwards when importModified requested them; older servers without
+        # PATCH dateModified support 400 and the note keeps import-time dates.
+        if files_rewritten:
             res = self.update_note_content(note_id, html)
+
+        if (dateModified or utcDateModified) and (images_rewritten or files_rewritten):
+            try:
+                restore = self.patch_note(
+                    noteId=note_id,
+                    dateModified=dateModified,
+                    utcDateModified=utcDateModified,
+                )
+                if not isinstance(restore, dict) or restore.get('code'):
+                    logger.warning(f'Failed to restore last-modified on note {note_id}: {restore}')
+            except Exception as e:
+                logger.warning(f'Failed to restore last-modified on note {note_id}: {e}')
 
         return current_note_res
 
@@ -1296,7 +1474,10 @@ class ETAPI:
             ignoreFile: Optional[list[str]] = None,
             parse_math: bool = True,
             hasFrontMatter: Optional[bool] = False,
-            cleanText: Optional[bool] = False
+            cleanText: Optional[bool] = False,
+            importTags: bool = False,
+            importModified: bool = False,
+            resolveMdLinks: bool = False
     ):
         includePattern = includePattern or ['.md']
         ignoreFolder = ignoreFolder or []
@@ -1309,7 +1490,22 @@ class ETAPI:
 
         mdFolder = os.path.expandvars(os.path.expanduser(mdFolder))
 
+        # Folder dates exported by our Joplin exporter (_folders.json): plain
+        # directories carry no timestamps, so without this every folder note
+        # stamps import time. A missing/invalid manifest keeps that default.
+        folder_dates: dict = {}
+        try:
+            with open(os.path.join(mdFolder, '_folders.json'), encoding='utf-8') as fh:
+                loaded = json.load(fh)
+                if isinstance(loaded, dict):
+                    folder_dates = loaded
+        except (OSError, ValueError):
+            folder_dates = {}
+
         error_files = {}
+        # Source-md relpath -> created Trilium noteId, for the second pass
+        # that resolves note-to-note links once every target exists.
+        note_map: dict[str, str] = {}
         for root, dirs, files in os.walk(mdFolder, topdown=True):
             root_folder_name = os.path.basename(root)
 
@@ -1334,8 +1530,14 @@ class ETAPI:
                     file_path = os.path.join(root, name)
                     logger.info(file_path)
                     try:
-                        self.upload_md_file(file=file_path, parentNoteId=current_parent_note_id, parse_math=parse_math,
-                                            hasFrontMatter=hasFrontMatter, cleanText=cleanText)
+                        up_res = self.upload_md_file(file=file_path, parentNoteId=current_parent_note_id, parse_math=parse_math,
+                                                     hasFrontMatter=hasFrontMatter, cleanText=cleanText,
+                                                     importTags=importTags, importModified=importModified,
+                                                     skipMdFileLinks=resolveMdLinks)
+                        if resolveMdLinks and isinstance(up_res, dict):
+                            created_id = up_res.get('note', {}).get('noteId') if isinstance(up_res.get('note'), dict) else None
+                            if created_id:
+                                note_map[os.path.normpath(os.path.relpath(file_path, start=mdFolder))] = created_id
                     except Exception as e:
                         error_files[os.path.abspath(file_path)] = e
 
@@ -1346,14 +1548,82 @@ class ETAPI:
                     logger.info(dir_path)
                     rel_path = os.path.relpath(dir_path, start=mdFolder)
                     logger.info(rel_path)
-                    res = self.create_note(
+                    # Directory names are filesystem-sanitised; prefer the
+                    # real notebook title (and its Joplin emoji, appended so
+                    # title sort order is unaffected).
+                    title = name
+                    entry = folder_dates.get(rel_path)
+                    if isinstance(entry, dict):
+                        if entry.get('title'):
+                            title = entry['title']
+                        if entry.get('icon'):
+                            title = f"{title} {entry['icon']}"
+                    folder_kwargs: dict = dict(
                         parentNoteId=current_parent_note_id,
-                        title=name,
+                        title=title,
                         type="text",
                         content=name,
                     )
+                    if isinstance(entry, dict):
+                        if entry.get('created'):
+                            folder_kwargs['dateCreated'], folder_kwargs['utcDateCreated'] = \
+                                _format_front_matter_date(entry['created'])
+                        if importModified and entry.get('updated'):
+                            folder_kwargs['dateModified'], folder_kwargs['utcDateModified'] = \
+                                _format_front_matter_date(entry['updated'])
+                    res = self.create_note(**folder_kwargs)
                     res['note']['noteId']
                     note_tree[rel_path] = res['note']['noteId']
+
+        if resolveMdLinks and note_map:
+            # Second pass: every target now exists, so `.md` hrefs left alone
+            # above can become internal links. Cycles need no special casing:
+            # nothing is resolved until the map is complete.
+            href_re = re.compile(r'<a href="(.*?)">(.*?)</a>')
+            md_link_re = re.compile(r'(\]\(|href="|\]:)\s*\S*\.md', re.IGNORECASE)
+            for md_rel, note_id in note_map.items():
+                src_file = os.path.join(mdFolder, md_rel)
+                try:
+                    with open(src_file, encoding='utf-8') as fh:
+                        if not md_link_re.search(fh.read()):
+                            continue
+                except OSError:
+                    continue
+                try:
+                    html = self.get_note_content(note_id)
+                except Exception as e:
+                    logger.warning(f'Failed to read note {note_id} for link resolving: {e}')
+                    continue
+                new_html = html
+                for href, _text in href_re.findall(html):
+                    if href.startswith(('http:', 'https:', '#', 'api/', 'data:')):
+                        continue
+                    target = urllib.parse.unquote(href.split('#', 1)[0])
+                    if not target.lower().endswith('.md'):
+                        continue
+                    resolved = os.path.normpath(os.path.join(os.path.dirname(md_rel), target))
+                    target_id = note_map.get(resolved)
+                    if not target_id:
+                        continue
+                    new_html = new_html.replace(href, f'#root/{target_id}')
+                if new_html == html:
+                    continue
+                if not self.update_note_content(note_id, new_html):
+                    logger.warning(f'Failed to rewrite note links on note {note_id}')
+                    continue
+                if importModified:
+                    dateModified, utcDateModified = _read_front_matter_modified(src_file)
+                    if dateModified or utcDateModified:
+                        try:
+                            restore = self.patch_note(
+                                noteId=note_id,
+                                dateModified=dateModified,
+                                utcDateModified=utcDateModified,
+                            )
+                            if not isinstance(restore, dict) or restore.get('code'):
+                                logger.warning(f'Failed to restore last-modified on note {note_id}: {restore}')
+                        except Exception as e:
+                            logger.warning(f'Failed to restore last-modified on note {note_id}: {e}')
 
         # count how many errors
         if error_files:

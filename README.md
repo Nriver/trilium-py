@@ -587,11 +587,14 @@ res = ea.upload_md_folder(
     mdFolder="/home/nate/data/joplin_data/",
     ignoreFolder=['_resources', ],
     hasFrontMatter=True,
-    cleanText=True
+    cleanText=True,
+    importTags=True  # import front matter `tags:` as Trilium labels
 )
 ```
 
 Importing with Front Matter will ensure consistent note creation time.
+With `importTags=True`, front matter `tags:` (as written by Joplin) are
+imported as Trilium labels; it requires `hasFrontMatter=True`.
 
 #### Import from Logseq
 

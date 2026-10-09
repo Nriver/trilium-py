@@ -1640,6 +1640,93 @@ class ETAPI:
             except Exception as e:
                 logger.error(e)
 
+    def optimize_image_attachments_recursive(
+            self,
+            noteId: str,
+            mode: Literal['compress', 'webp'] = 'webp',
+            quality: int = 90,
+            skip_webp: bool = True,
+            include_self: bool = True,
+            max_notes: int = 0,
+    ):
+        """
+        Optimize image attachments of a note and all its descendants using BFS traversal.
+
+        This method walks the note tree in breadth-first order to avoid recursion depth
+        issues, and applies either format-preserving compression or WebP conversion
+        on every note's image attachments.
+
+        :param noteId:       Starting note ID
+        :param mode:         Optimization mode
+                             - 'compress' → keep original format, only compress
+                             - 'webp'     → convert images to WebP
+        :param quality:      Image quality (1-100), default 90
+        :param skip_webp:    Only used when mode='webp'. Skip attachments that are
+                             already image/webp. Default True
+        :param include_self: Whether to process the starting note itself. Default True
+        :param max_notes:    Maximum number of notes to process. 0 means no limit
+        """
+        if mode not in ('compress', 'webp'):
+            raise ValueError("mode must be either 'compress' or 'webp'")
+
+        queue = deque()
+        # (note_id, is_root)
+        queue.append((noteId, True))
+        visited = set()
+        processed_count = 0
+
+        while queue:
+            current_id, is_root = queue.popleft()
+
+            if current_id in visited:
+                continue
+            visited.add(current_id)
+
+            # Stop if the limit is reached
+            if max_notes > 0 and processed_count >= max_notes:
+                logger.info(f"Reached max_notes={max_notes}, stopping")
+                break
+
+            try:
+                note = self.get_note(current_id)
+            except Exception as e:
+                logger.error(f"Failed to get note {current_id}: {e}")
+                continue
+
+            title = note.get('title', '')
+            note_type = note.get('type', '')
+            logger.info(
+                f"[{processed_count + 1}] Processing note: {current_id} | "
+                f"type={note_type} | title={title}"
+            )
+
+            # Decide whether to process the current note
+            should_process = include_self if is_root else True
+            if should_process:
+                try:
+                    if mode == 'webp':
+                        self.optimize_image_attachments_to_webp(
+                            noteId=current_id,
+                            quality=quality,
+                            skip_webp=skip_webp,
+                        )
+                    else:  # compress
+                        self.optimize_image_attachments(
+                            noteId=current_id,
+                            quality=quality,
+                        )
+                    processed_count += 1
+                except Exception as e:
+                    logger.error(f"Failed to process note {current_id} ({title}): {e}")
+
+            # Enqueue child notes
+            child_note_ids = note.get('childNoteIds', [])
+            for child_id in child_note_ids:
+                if child_id not in visited:
+                    queue.append((child_id, False))
+
+        logger.info(f"Done. Processed {processed_count} notes in total")
+
     def sort_note_content(self, noteId: str, locale_str: str = 'zh_CN.UTF-8'):
         """
         Sort note content by headings

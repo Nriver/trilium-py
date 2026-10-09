@@ -70,6 +70,7 @@ Python client for Trilium Note's ETAPI and Web API, with additional advanced fea
    * [(Advanced Usage) 🧹 Sort note content](#advanced-usage--sort-note-content)
    * [(Advanced Usage) 🧹 Delete empty new note](#advanced-usage--delete-empty-new-note)
    * [(Advanced Usage) 🗜️ Optimize image size](#advanced-usage-️-optimize-image-size)
+      * [Optimize a note and all its child notes](#optimize-a-note-and-all-its-child-notes)
    * [(Advanced Usage) 🔗 Automatically Add Internal Links](#advanced-usage--automatically-add-internal-links)
       * [Example](#example)
       * [Excluding Notes from Internal Linking](#excluding-notes-from-internal-linking)
@@ -755,6 +756,40 @@ ea.optimize_image_attachments_to_webp('H2q3901uFDCH')
 ```
 
 This action can save significant space if you have many clipped pages. Whoever invented `WebP` is a genius.
+
+### Optimize a note and all its child notes
+
+If you want to optimize images for a whole subtree (a note and all its descendants), use
+`optimize_image_attachments_recursive`. It walks the note tree with BFS to avoid recursion depth issues.
+
+You can choose the optimization mode:
+
+- `mode='compress'` → keep original format and only compress (calls `optimize_image_attachments`)
+- `mode='webp'` → convert images to WebP (calls `optimize_image_attachments_to_webp`)
+
+```python
+# Convert all images under a note tree to WebP
+ea.optimize_image_attachments_recursive(
+    noteId='H2q3901uFDCH',
+    mode='webp',
+    quality=90,
+    skip_webp=True,
+)
+
+# Only compress, keep original format
+ea.optimize_image_attachments_recursive(
+    noteId='H2q3901uFDCH',
+    mode='compress',
+    quality=90,
+)
+
+# Limit the number of notes to process
+ea.optimize_image_attachments_recursive(
+    noteId='H2q3901uFDCH',
+    mode='webp',
+    max_notes=200,
+)
+```
 
 ## (Advanced Usage) 🔗 Automatically Add Internal Links
 

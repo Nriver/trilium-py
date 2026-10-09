@@ -68,6 +68,7 @@ Trilium Note 的 ETAPI 和 Web API 的 Python 客户端，并提供额外的高�
       * [美化笔记及其子笔记](#美化笔记及其子笔记)
    * [(高级用法) 🧹 排序笔记内容](#高级用法--排序笔记内容)
    * [（高级用法）🗜️ 优化图片大小](#高级用法️-优化图片大小)
+      * [优化某个笔记及其所有子笔记](#优化某个笔记及其所有子笔记)
    * [（高级用法）🔗 自动添加内部链接](#高级用法-自动添加内部链接)
       * [示例](#示例)
       * [排除特定笔记的内部链接](#排除特定笔记的内部链接)
@@ -667,6 +668,39 @@ ea.optimize_image_attachments_to_webp('H2q3901uFDCH')
 ```
 
 如果你有很多剪辑的页面，这个操作可以节省大量空间。发明 `WebP` 的人真是个天才。
+
+### 优化某个笔记及其所有子笔记
+
+如果想对整棵子树（某个笔记及其全部后代）批量优化图片，可以使用 `optimize_image_attachments_recursive`。它采用 BFS 遍历笔记树，避免递归过深的问题。
+
+可选优化模式：
+
+- `mode='compress'` → 保持原格式，仅压缩（调用 `optimize_image_attachments`）
+- `mode='webp'` → 将图片转换为 WebP（调用 `optimize_image_attachments_to_webp`）
+
+```python
+# 将某个笔记树下的所有图片转换为 WebP
+ea.optimize_image_attachments_recursive(
+    noteId='H2q3901uFDCH',
+    mode='webp',
+    quality=90,
+    skip_webp=True,
+)
+
+# 仅压缩，保持原格式
+ea.optimize_image_attachments_recursive(
+    noteId='H2q3901uFDCH',
+    mode='compress',
+    quality=90,
+)
+
+# 限制最多处理的笔记数量
+ea.optimize_image_attachments_recursive(
+    noteId='H2q3901uFDCH',
+    mode='webp',
+    max_notes=200,
+)
+```
 
 ## （高级用法）🔗 自动添加内部链接
 
